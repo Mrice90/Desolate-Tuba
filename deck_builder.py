@@ -6,16 +6,33 @@ from cards import Card
 from character_cards import CHARACTER_CARDS, UNIVERSAL_CARDS, CHARACTER_PROGRESSIONS
 
 
+def _scale_amount(cost, resource):
+    """Return a simple damage/heal amount based on card cost and resource."""
+    if resource.lower() == "mana":
+        return max(1, cost * 3)
+    return max(1, cost * 2)
+
+
 def _make_card(info):
-    """Convert a card info dictionary to a Card with simple placeholder effects."""
-    if info.get("type") == "Damage":
-        effect = lambda u, t: simple_damage(u, t, 5)
-    elif info.get("type") == "Buff":
-        effect = lambda u, t: simple_heal(u, u, 3)
+    """Convert a card info dictionary to a Card with scaled placeholder effects."""
+    ctype = info.get("type")
+    if ctype is None:
+        purpose = info.get("purpose", "").lower()
+        if "offense" in purpose:
+            ctype = "Damage"
+        elif "recovery" in purpose or "buff" in purpose or "support" in purpose:
+            ctype = "Buff"
+        else:
+            ctype = "Utility"
+    amount = _scale_amount(info.get("cost", 1), info.get("resource", "stamina"))
+    if ctype == "Damage":
+        effect = lambda u, t, a=amount: simple_damage(u, t, a)
+    elif ctype == "Buff":
+        effect = lambda u, t, a=amount: simple_heal(u, u, a)
     else:
         effect = lambda u, t: None
     card = Card(info["name"], info["cost"], info["resource"].lower(), effect, info.get("effect", ""))
-    card.type = info.get("type", "")
+    card.type = ctype or ""
     return card
 
 
