@@ -2,6 +2,7 @@ import argparse
 
 from battle.engine import create_basic_cards, run_battle
 from battle.gui import BattleGUI
+from start_menu import run_start_menu
 from characters import Character
 
 
@@ -19,7 +20,10 @@ def main():
     enemy = build_sample_character("Enemy")
 
     if args.gui:
-        BattleGUI(player, enemy).start()
+        if run_start_menu():
+            BattleGUI(player, enemy).start()
+        else:
+            print("Exited from start menu.")
     else:
         run_battle(player, enemy)
 
