@@ -121,8 +121,7 @@ class BattleGUI:
             self.player.gain_xp(50)
             self.root.quit()
             return
-        # Keep player's turn active
-        self.show_hand()
+        self.end_player_turn()
 
     def use_item(self, index):
         if not self.player.use_item(index):
@@ -135,6 +134,13 @@ class BattleGUI:
     def enemy_turn(self):
         self.enemy.update_effects()
         self.enemy.regenerate()
+        if self.enemy.is_defeated():
+            self.update_labels()
+            self.log("You won the battle!")
+            messagebox.showinfo("Victory", "You won the battle!")
+            self.player.gain_xp(50)
+            self.root.quit()
+            return
         if not self.enemy.hand:
             self.enemy.refill_hand()
         if self.enemy.hand:
@@ -160,6 +166,12 @@ class BattleGUI:
         self.clear_action_frame()
         self.player.update_effects()
         self.player.regenerate()
+        if self.player.is_defeated():
+            self.update_labels()
+            self.log("You lost the battle!")
+            messagebox.showinfo("Defeat", "You lost the battle!")
+            self.root.quit()
+            return
         self.update_labels()
         
     def start(self):

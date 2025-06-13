@@ -2,29 +2,55 @@ import tkinter as tk
 from character_cards import CHARACTER_CARDS, UNIVERSAL_CARDS
 
 
+def _show_card(card, parent):
+    """Display details for a single card."""
+    win = tk.Toplevel(parent)
+    win.title(card["name"])
+
+    text = tk.Text(win, wrap="word", width=60, height=10)
+    text.pack(fill="both", expand=True)
+
+    entry = (
+        f"{card['name']} ({card['type']}, cost {card['cost']} {card['resource']})\n"
+        f"{card['effect']}"
+    )
+    text.insert("end", entry)
+    text.configure(state="disabled")
+
+    tk.Button(win, text="Close", command=win.destroy).pack(pady=5)
+
+
 def show_card_library():
-    """Display all cards in the library in a scrollable window."""
+    """Display all card names in a scrollable list."""
     root = tk.Tk()
     root.title("Card Library")
 
-    text = tk.Text(root, wrap="word", width=60)
-    scrollbar = tk.Scrollbar(root, command=text.yview)
-    text.configure(yscrollcommand=scrollbar.set)
-    text.pack(side="left", fill="both", expand=True)
+    frame = tk.Frame(root)
+    frame.pack(fill="both", expand=True)
+
+    listbox = tk.Listbox(frame)
+    scrollbar = tk.Scrollbar(frame, orient="vertical", command=listbox.yview)
+    listbox.configure(yscrollcommand=scrollbar.set)
+    listbox.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
 
-    text.insert("end", "Universal Cards\n")
+    all_cards = []
     for card in UNIVERSAL_CARDS:
-        entry = f"- {card['name']} ({card['type']}, cost {card['cost']} {card['resource']})\n  {card['effect']}\n"
-        text.insert("end", entry)
-    text.insert("end", "\n")
+        all_cards.append(card)
+        listbox.insert("end", card["name"])
 
     for name, data in CHARACTER_CARDS.items():
-        text.insert("end", f"{name} - {data['class']}\n")
-        for card in data['cards']:
-            entry = f"- {card['name']} ({card['type']}, cost {card['cost']} {card['resource']})\n  {card['effect']}\n"
-            text.insert("end", entry)
-        text.insert("end", "\n")
+        for card in data["cards"]:
+            label = f"{card['name']} ({name})"
+            all_cards.append(card)
+            listbox.insert("end", label)
+
+    def on_select(event):
+        idxs = listbox.curselection()
+        if idxs:
+            _show_card(all_cards[idxs[0]], root)
+
+    listbox.bind("<Double-Button-1>", on_select)
 
     tk.Button(root, text="Close", command=root.destroy).pack(pady=5)
     root.mainloop()
