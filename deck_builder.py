@@ -1,5 +1,6 @@
 import tkinter as tk
-from battle.engine import simple_damage, simple_heal
+from battle.engine import simple_damage, simple_heal, gain_resource
+from effects.status_effects import StatBuff, DodgeBuff, CounterSpell
 from characters import Character
 from items import create_basic_items
 from cards import Card
@@ -13,25 +14,43 @@ def _scale_amount(cost, resource):
     return max(1, cost * 2)
 
 
+_EFFECT_MAP = {
+    "strike": lambda: ("Damage", lambda u, t: simple_damage(u, t, 3)),
+    "defend": lambda: ("Buff", lambda u, t: u.add_effect(StatBuff("Defend", 1, "armor", 4))),
+    "meditate": lambda: ("Utility", lambda u, t: gain_resource(u, "mana", 3)),
+    "dash": lambda: ("Utility", lambda u, t: u.add_effect(DodgeBuff("Dash", 2, 20))),
+    "focus blast": lambda: ("Damage", lambda u, t: simple_damage(u, t, 5, "thaumaturgy")),
+    "quick draw": lambda: ("Utility", lambda u, t: (u.draw_card(), u.draw_card())),
+    "power surge": lambda: ("Buff", lambda u, t: u.add_effect(StatBuff("Power Surge", 2, "strength_mod", 2))),
+    "second wind": lambda: ("Utility", lambda u, t: simple_heal(u, u, 5)),
+    "counter spell": lambda: ("Utility", lambda u, t: u.add_effect(CounterSpell())),
+    "inspire": lambda: ("Buff", lambda u, t: (u.add_effect(StatBuff("InspireSTR", 2, "strength_mod", 1)), u.add_effect(StatBuff("InspireAGI", 2, "agility_mod", 1)))),
+}
+
+
 def _make_card(info):
     """Convert a card info dictionary to a Card with scaled placeholder effects."""
-    ctype = info.get("type")
-    if ctype is None:
-        purpose = info.get("purpose", "").lower()
-        if "offense" in purpose:
-            ctype = "Damage"
-        elif "recovery" in purpose or "buff" in purpose or "support" in purpose:
-            ctype = "Buff"
-        else:
-            ctype = "Utility"
-    amount = _scale_amount(info.get("cost", 1), info.get("resource", "stamina"))
-    if ctype == "Damage":
-        effect = lambda u, t, a=amount: simple_damage(u, t, a)
-    elif ctype == "Buff":
-        effect = lambda u, t, a=amount: simple_heal(u, u, a)
+    name_key = info["name"].lower()
+    if name_key in _EFFECT_MAP:
+        ctype, effect = _EFFECT_MAP[name_key]()
     else:
-        effect = lambda u, t: None
-    card = Card(info["name"], info["cost"], info["resource"].lower(), effect, info.get("effect", ""))
+        ctype = info.get("type")
+        if ctype is None:
+            purpose = info.get("purpose", "").lower()
+            if "offense" in purpose:
+                ctype = "Damage"
+            elif "recovery" in purpose or "buff" in purpose or "support" in purpose:
+                ctype = "Buff"
+            else:
+                ctype = "Utility"
+        amount = _scale_amount(info.get("cost", 1), info.get("resource", "stamina"))
+        if ctype == "Damage":
+            effect = lambda u, t, a=amount: simple_damage(u, t, a)
+        elif ctype == "Buff":
+            effect = lambda u, t, a=amount: simple_heal(u, u, a)
+        else:
+            effect = lambda u, t: None
+    card = Card(info["name"], info.get("cost", 1), info.get("resource", "stamina").lower(), effect, info.get("effect", ""))
     card.type = ctype or ""
     return card
 

@@ -38,6 +38,8 @@ class Character:
         self.discard_pile = []
         self.items = items or []
         self.effects = []
+        # Chance to completely avoid an incoming attack (0-100)
+        self.dodge_chance = 0
 
     # --- Stat helpers ----------------------------------------------------
     def stat_mod(self, stat: str) -> int:
@@ -85,7 +87,12 @@ class Character:
             self.stamina -= card.cost
         else:
             return False
-        card.effect_function(self, target)
+        # Counter spell check
+        if target and card.resource_type == 'mana' and target.has_effect("Counter Spell"):
+            target.remove_effect("Counter Spell")
+            print(f"{target.name} negates {self.name}'s spell!")
+        else:
+            card.effect_function(self, target)
         self.discard_pile.append(card)
         self.hand.pop(index)
         self.draw_card()
@@ -114,6 +121,19 @@ class Character:
         """Add a new status effect to the character."""
         effect.on_apply(self)
         self.effects.append(effect)
+
+    def has_effect(self, name: str) -> bool:
+        """Return True if an active effect with ``name`` exists."""
+        return any(e.name == name for e in self.effects)
+
+    def remove_effect(self, name: str) -> bool:
+        """Remove the first effect with ``name`` if present."""
+        for e in list(self.effects):
+            if e.name == name:
+                e.on_expire(self)
+                self.effects.remove(e)
+                return True
+        return False
 
     def update_effects(self):
         """Advance all active status effects by one turn."""
