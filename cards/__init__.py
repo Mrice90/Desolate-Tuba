@@ -1,7 +1,13 @@
+from dataclasses import dataclass
+from typing import Callable
+
+
+@dataclass
 class Card:
-    def __init__(self, name, cost, resource_type, effect_function, description=""):
-        self.name = name
-        self.cost = cost
-        self.resource_type = resource_type
-        self.effect_function = effect_function
-        self.description = description
+    """A single card that can be played by a character."""
+
+    name: str
+    cost: int
+    resource_type: str
+    effect_function: Callable
+    description: str = ""

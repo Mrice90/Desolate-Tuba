@@ -1,45 +1,50 @@
 import random
+from dataclasses import dataclass, field
+from typing import List, Optional, Dict
+
 from cards import Card
 from effects.status_effects import StatusEffect
 
+
+@dataclass
 class Character:
-    def __init__(self, name, hp, mana, stamina, deck=None, items=None,
-                 level=1, xp=0, xp_to_next=100,
-                 hp_regen=1, mana_regen=1, stamina_regen=1,
-                 progression=None,
-                 strength_mod=0, thaumaturgy_mod=0,
-                 agility_mod=0, resilience_mod=0, armor=0):
-        self.name = name
-        self.level = level
-        self.xp = xp
-        self.xp_to_next = xp_to_next
+    """A playable or enemy character in the STAR system."""
 
-        self.max_hp = hp
-        self.max_mana = mana
-        self.max_stamina = stamina
+    name: str
+    hp: int
+    mana: int
+    stamina: int
+    deck: Optional[List[Card]] = None
+    items: Optional[List] = None
+    level: int = 1
+    xp: int = 0
+    xp_to_next: int = 100
+    hp_regen: float = 1
+    mana_regen: float = 1
+    stamina_regen: float = 1
+    progression: Optional[Dict] = None
+    strength_mod: int = 0
+    thaumaturgy_mod: int = 0
+    agility_mod: int = 0
+    resilience_mod: int = 0
+    armor: int = 0
 
-        self.hp = hp
-        self.mana = mana
-        self.stamina = stamina
+    # runtime fields -----------------------------------------------------
+    max_hp: int = field(init=False)
+    max_mana: int = field(init=False)
+    max_stamina: int = field(init=False)
+    hand: List[Card] = field(init=False, default_factory=list)
+    discard_pile: List[Card] = field(init=False, default_factory=list)
+    effects: List[StatusEffect] = field(init=False, default_factory=list)
+    dodge_chance: int = field(init=False, default=0)
 
-        self.strength_mod = strength_mod
-        self.thaumaturgy_mod = thaumaturgy_mod
-        self.agility_mod = agility_mod
-        self.resilience_mod = resilience_mod
-        self.armor = armor
-
-        self.hp_regen = hp_regen
-        self.mana_regen = mana_regen
-        self.stamina_regen = stamina_regen
-        self.progression = progression or {}
-
-        self.deck = deck[:] if deck else []
-        self.hand = []
-        self.discard_pile = []
-        self.items = items or []
-        self.effects = []
-        # Chance to completely avoid an incoming attack (0-100)
-        self.dodge_chance = 0
+    def __post_init__(self):
+        self.max_hp = self.hp
+        self.max_mana = self.mana
+        self.max_stamina = self.stamina
+        self.progression = self.progression or {}
+        self.deck = self.deck[:] if self.deck else []
+        self.items = self.items or []
 
     # --- Stat helpers ----------------------------------------------------
     def stat_mod(self, stat: str) -> int:
