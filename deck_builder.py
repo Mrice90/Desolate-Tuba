@@ -14,7 +14,9 @@ def _make_card(info):
         effect = lambda u, t: simple_heal(u, u, 3)
     else:
         effect = lambda u, t: None
-    return Card(info["name"], info["cost"], info["resource"].lower(), effect, info.get("effect", ""))
+    card = Card(info["name"], info["cost"], info["resource"].lower(), effect, info.get("effect", ""))
+    card.type = info.get("type", "")
+    return card
 
 
 def _choose_character():
@@ -46,10 +48,29 @@ def run_deck_builder_menu():
     deck = []
     card_counts = {c.name: 0 for c in card_prototypes}
 
+    start_btn = None
+
     # --- Card selection --------------------------------------------------
-    card_frame = tk.Frame(root)
-    card_frame.pack(padx=10, pady=5)
-    tk.Label(card_frame, text="Build Deck (max 2 of each card)").pack()
+    # Card list inside a scrollable canvas so long lists remain accessible
+    list_container = tk.Frame(root)
+    list_container.pack(fill="both", expand=True, padx=10, pady=5)
+
+    canvas = tk.Canvas(list_container)
+    scrollbar = tk.Scrollbar(list_container, orient="vertical", command=canvas.yview)
+    scroll_frame = tk.Frame(canvas)
+
+    scroll_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+    )
+
+    canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+
+    tk.Label(scroll_frame, text="Build Deck (max 2 of each card)").pack(anchor="w")
 
     count_vars = {}
 
@@ -57,6 +78,10 @@ def run_deck_builder_menu():
         deck_label.config(text=f"Deck size: {len(deck)}/20")
         for name, var in count_vars.items():
             var.set(str(card_counts[name]))
+        if len(deck) == 20:
+            start_btn.config(state="normal")
+        else:
+            start_btn.config(state="disabled")
 
     def add_card(card):
         if card_counts[card.name] >= 2 or len(deck) >= 20:
@@ -77,23 +102,32 @@ def run_deck_builder_menu():
         update_labels()
 
     for c in card_prototypes:
-        row = tk.Frame(card_frame)
+        row = tk.Frame(scroll_frame, bd=1, relief="solid", padx=2, pady=2)
         row.pack(fill="x", pady=2)
-        tk.Label(row, text=f"{c.name} ({c.cost} {c.resource_type})").pack(side="left")
+
+        info = f"{c.name} ({c.type}) - Cost: {c.cost} {c.resource_type}\n{c.description}"
+        tk.Label(row, text=info, justify="left", anchor="w", wraplength=400).grid(row=0, column=0, sticky="w")
+
+        ctrl = tk.Frame(row)
+        ctrl.grid(row=0, column=1, sticky="e", padx=5)
+
         count_var = tk.StringVar(value="0")
         count_vars[c.name] = count_var
-        tk.Label(row, textvariable=count_var, width=3).pack(side="left")
-        tk.Button(row, text="+", command=lambda card=c: add_card(card)).pack(side="left")
-        tk.Button(row, text="-", command=lambda card=c: remove_card(card)).pack(side="left")
+        tk.Label(ctrl, textvariable=count_var, width=2).pack(side="left")
+        tk.Button(ctrl, text="+", command=lambda card=c: add_card(card), width=2).pack(side="left")
+        tk.Button(ctrl, text="-", command=lambda card=c: remove_card(card), width=2).pack(side="left")
 
     deck_label = tk.Label(root, text="Deck size: 0/20")
     deck_label.pack(pady=5)
+
+    start_btn = tk.Button(root, text="Start Game", state="disabled", command=finish)
+    start_btn.pack(pady=5)
 
     def finish():
         if len(deck) == 20:
             root.quit()
 
-    tk.Button(root, text="Start Game", command=finish).pack(pady=5)
+    update_labels()
     root.mainloop()
     root.destroy()
 
