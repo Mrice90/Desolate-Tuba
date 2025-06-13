@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from enemy_ai import choose_card_index
 
 
 class BattleGUI:
@@ -148,9 +149,14 @@ class BattleGUI:
         if not self.enemy.hand:
             self.enemy.refill_hand()
         if self.enemy.hand:
-            card = self.enemy.hand[0]
-            self.enemy.play_card(0, self.player)
-            self.log(f"Enemy plays {card.name}")
+            idx = choose_card_index(self.enemy)
+            if idx is None:
+                self.enemy.discard_hand()
+                self.log(f"{self.enemy.name} hesitates and redraws.")
+            else:
+                card = self.enemy.hand[idx]
+                self.enemy.play_card(idx, self.player)
+                self.log(f"Enemy plays {card.name}")
         self.enemy.refill_hand()
         self.update_labels()
         if self.player.is_defeated():
