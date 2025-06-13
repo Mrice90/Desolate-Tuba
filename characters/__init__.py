@@ -1,5 +1,6 @@
 import random
 from cards import Card
+from effects.status_effects import StatusEffect
 
 class Character:
     def __init__(self, name, hp, mana, stamina, deck=None, items=None,
@@ -28,6 +29,7 @@ class Character:
         self.hand = []
         self.discard_pile = []
         self.items = items or []
+        self.effects = []
 
     def draw_card(self):
         if not self.deck:
@@ -74,6 +76,21 @@ class Character:
         self.discard_pile.extend(self.hand)
         self.hand = []
         self.refill_hand()
+
+    # --- Status effect helpers --------------------------------------------
+    def add_effect(self, effect: StatusEffect):
+        """Add a new status effect to the character."""
+        effect.on_apply(self)
+        self.effects.append(effect)
+
+    def update_effects(self):
+        """Advance all active status effects by one turn."""
+        expired = []
+        for eff in list(self.effects):
+            if eff.tick(self):
+                expired.append(eff)
+        for eff in expired:
+            self.effects.remove(eff)
 
     def use_item(self, index, target=None):
         if index < 0 or index >= len(self.items):
