@@ -1,6 +1,7 @@
 from characters import Character
 from cards import Card
 from effects.status_effects import DamageOverTime
+from enemy_ai import take_turn
 
 
 def simple_damage(user, target, amount):
@@ -57,9 +58,9 @@ def run_battle(player: Character, enemy: Character):
             continue
         if enemy.is_defeated():
             break
-        enemy.play_card(0, player)  # Enemy plays first card for simplicity
-        enemy.refill_hand()
+        take_turn(enemy, player)
     if player.is_defeated():
         print("You lost the battle!")
     else:
         print("You won the battle!")
+
