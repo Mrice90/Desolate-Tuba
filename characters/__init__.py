@@ -57,6 +57,14 @@ class Character:
         self.draw_card()
         return True
 
+    def take_damage(self, amount: int):
+        """Reduce HP by ``amount`` without dropping below zero."""
+        self.hp = max(0, self.hp - amount)
+
+    def heal(self, amount: int):
+        """Increase HP by ``amount`` but do not exceed ``max_hp``."""
+        self.hp = min(self.max_hp, self.hp + amount)
+
     def is_defeated(self):
         return self.hp <= 0
 

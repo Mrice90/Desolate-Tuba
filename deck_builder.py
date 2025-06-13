@@ -120,12 +120,12 @@ def run_deck_builder_menu():
     deck_label = tk.Label(root, text="Deck size: 0/20")
     deck_label.pack(pady=5)
 
-    start_btn = tk.Button(root, text="Start Game", state="disabled", command=finish)
-    start_btn.pack(pady=5)
-
     def finish():
         if len(deck) == 20:
             root.quit()
+
+    start_btn = tk.Button(root, text="Start Game", state="disabled", command=finish)
+    start_btn.pack(pady=5)
 
     update_labels()
     root.mainloop()
