@@ -26,7 +26,24 @@ class DungeonBattleGUI(BattleGUI):
     def redraw(self):
         self.canvas.delete("all")
         self.canvas.create_image(100, 220, image=self.player_img)
-        self.canvas.create_image(300, 80, image=self.enemy_img)
+        enemy_x, enemy_y = 300, 80
+        self.canvas.create_image(enemy_x, enemy_y, image=self.enemy_img)
+
+        # Enemy health bar
+        bar_width = 100
+        bar_height = 10
+        x0 = enemy_x - bar_width // 2
+        y0 = enemy_y - 40
+        hp_frac = max(0, self.enemy.hp) / self.enemy.max_hp
+        # draw missing health in red background
+        self.canvas.create_rectangle(x0, y0, x0 + bar_width, y0 + bar_height,
+                                     fill="red", outline="white")
+        # overlay current health in green
+        self.canvas.create_rectangle(x0, y0, x0 + int(bar_width * hp_frac),
+                                     y0 + bar_height, fill="green", outline="")
+        # enemy name above bar
+        self.canvas.create_text(enemy_x, y0 - 10, text=self.enemy.name,
+                                fill="white")
 
     def update_labels(self):
         super().update_labels()

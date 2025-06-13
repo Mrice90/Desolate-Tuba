@@ -115,10 +115,19 @@ class BattleGUI:
 
     def play_card(self, index):
         card = self.player.hand[index]
+        enemy_hp_before = self.enemy.hp
+        player_hp_before = self.player.hp
         if not self.player.play_card(index, self.enemy):
             self.log("Failed to play card!")
             return
-        self.log(f"You play {card.name}")
+        damage = max(0, enemy_hp_before - self.enemy.hp)
+        heal = max(0, self.player.hp - player_hp_before)
+        msg = f"You play {card.name}"
+        if damage:
+            msg += f" dealing {damage} damage"
+        if heal:
+            msg += f" and heal {heal} HP"
+        self.log(msg)
         self.update_labels()
         if self.enemy.is_defeated():
             self.log("You won the battle!")
@@ -129,9 +138,22 @@ class BattleGUI:
         self.end_player_turn()
 
     def use_item(self, index):
+        hp_before = self.player.hp
+        mana_before = self.player.mana
+        stamina_before = self.player.stamina
         if not self.player.use_item(index):
             return
-        self.log(f"You use {self.player.name}'s item")
+        delta_hp = self.player.hp - hp_before
+        delta_mana = self.player.mana - mana_before
+        delta_stamina = self.player.stamina - stamina_before
+        msg = f"You use {self.player.name}'s item"
+        if delta_hp > 0:
+            msg += f" and recover {delta_hp} HP"
+        if delta_mana > 0:
+            msg += f" and restore {delta_mana} mana"
+        if delta_stamina > 0:
+            msg += f" and restore {delta_stamina} stamina"
+        self.log(msg)
         self.update_labels()
         self.end_player_turn()
 
@@ -155,8 +177,13 @@ class BattleGUI:
                 self.log(f"{self.enemy.name} hesitates and redraws.")
             else:
                 card = self.enemy.hand[idx]
+                player_hp_before = self.player.hp
                 self.enemy.play_card(idx, self.player)
-                self.log(f"Enemy plays {card.name}")
+                damage = max(0, player_hp_before - self.player.hp)
+                msg = f"{self.enemy.name} plays {card.name}"
+                if damage:
+                    msg += f" dealing {damage} damage"
+                self.log(msg)
         self.enemy.refill_hand()
         self.update_labels()
         if self.player.is_defeated():
