@@ -20,6 +20,8 @@ class BattleGUI:
         self.enemy_label.pack()
         self.player_label = tk.Label(self.root, text="")
         self.player_label.pack()
+        self.deck_label = tk.Label(self.root, text="")
+        self.deck_label.pack()
 
         # Frame for dynamic action buttons (cards/items)
         self.action_frame = tk.Frame(self.root)
@@ -64,6 +66,9 @@ class BattleGUI:
     def update_labels(self):
         self.enemy_label.configure(text=self._stats(self.enemy))
         self.player_label.configure(text=self._stats(self.player))
+        self.deck_label.configure(
+            text=f"Deck:{len(self.player.deck)} Discard:{len(self.player.discard_pile)}"
+        )
 
     def clear_action_frame(self):
         for w in self.action_frame.winfo_children():
