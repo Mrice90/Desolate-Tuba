@@ -85,6 +85,8 @@ class BattleGUI:
                             command=lambda i=idx: self.play_card(i))
             btn.pack(fill="x")
             self.card_buttons.append(btn)
+        tk.Button(self.action_frame, text="Back",
+                  command=self.clear_action_frame).pack(fill="x")
 
     def show_items(self):
         self.clear_action_frame()
@@ -97,6 +99,8 @@ class BattleGUI:
                             command=lambda i=idx: self.use_item(i))
             btn.pack(fill="x")
             self.item_buttons.append(btn)
+        tk.Button(self.action_frame, text="Back",
+                  command=self.clear_action_frame).pack(fill="x")
 
     def flee(self):
         self.log("You fled the battle!")
@@ -166,6 +170,7 @@ class BattleGUI:
         self.clear_action_frame()
         self.player.update_effects()
         self.player.regenerate()
+        self.player.refill_hand()
         if self.player.is_defeated():
             self.update_labels()
             self.log("You lost the battle!")
@@ -173,6 +178,7 @@ class BattleGUI:
             self.root.quit()
             return
         self.update_labels()
+        self.show_hand()
         
     def start(self):
         self.player.refill_hand()
