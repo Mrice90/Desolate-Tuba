@@ -272,6 +272,61 @@ BESTIARY = [
         "thaumaturgy": 1,
         "agi": 2,
         "res": 2,
-        "tactics": "They avoid sunlight and use charm or stealth to weaken targets before feeding. Use holy symbols or sunlight to drive them back. Decapitation or stakes through the heart can prevent them from regenerating." 
+        "tactics": "They avoid sunlight and use charm or stealth to weaken targets before feeding. Use holy symbols or sunlight to drive them back. Decapitation or stakes through the heart can prevent them from regenerating."
+    },
+    {
+        "name": "Earth Elemental",
+        "description": "A boulder-like elemental from the Plane of Earth. It is incredibly strong and tough but very slow.",
+        "hp": 50,
+        "damage": 10,
+        "str": 3,
+        "thaumaturgy": 1,
+        "agi": -2,
+        "res": 3,
+        "tactics": "Use magic or elemental countermeasures to break its stony body. Stay mobile and avoid its heavy blows."
+    },
+    {
+        "name": "Air Elemental",
+        "description": "A swirling vortex of air given sentience. Hard to hit and strikes with razor wind.",
+        "hp": 20,
+        "damage": 6,
+        "str": -1,
+        "thaumaturgy": 2,
+        "agi": 3,
+        "res": -1,
+        "tactics": "Magical attacks work best. Anchor yourself so it cannot toss you around with gusts of wind."
+    },
+    {
+        "name": "Hydra",
+        "description": "A multi-headed reptilian beast. Severed heads regrow unless burned.",
+        "hp": 60,
+        "damage": 12,
+        "str": 2,
+        "thaumaturgy": -1,
+        "agi": 0,
+        "res": 2,
+        "tactics": "Use fire to cauterize necks after cutting heads off, or the creature becomes even more dangerous."
+    },
+    {
+        "name": "Werewolf",
+        "description": "A cursed human that transforms into a wolf-like beast with ferocious claws and regenerative abilities.",
+        "hp": 35,
+        "damage": 9,
+        "str": 2,
+        "thaumaturgy": 0,
+        "agi": 2,
+        "res": 1,
+        "tactics": "Silver weapons or fire suppress its regeneration. Avoid fighting it alone at night."
+    },
+    {
+        "name": "Banshee",
+        "description": "A malevolent female spirit whose mournful wail can incapacitate or kill.",
+        "hp": 20,
+        "damage": 10,
+        "str": -1,
+        "thaumaturgy": 3,
+        "agi": 1,
+        "res": 0,
+        "tactics": "Use ear protection or silence magic to counter her wail. Holy magic disrupts her form."
     }
 ]
