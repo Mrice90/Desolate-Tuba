@@ -1,6 +1,11 @@
 from characters import Character
 from cards import Card
-from effects.status_effects import DamageOverTime
+from effects.status_effects import (
+    DamageOverTime,
+    StatBuff,
+    DodgeBuff,
+    CounterSpell,
+)
 from enemy_ai import take_turn
 
 
@@ -10,6 +15,11 @@ def simple_damage(user, target, amount, stat="strength"):
     if hasattr(user, "stat_mod"):
         bonus = user.stat_mod(stat)
     scaled = max(0, amount + bonus)
+    # Dodge check
+    import random
+    if getattr(target, "dodge_chance", 0) > 0 and random.randint(1, 100) <= target.dodge_chance:
+        print(f"{target.name} dodges the attack!")
+        return
     target.take_damage(scaled)
     print(f"{user.name} deals {scaled} damage to {target.name}!")
 
@@ -23,17 +33,29 @@ def simple_heal(user, target, amount):
     print(f"{user.name} heals {scaled} HP!")
 
 
+def gain_resource(user, resource: str, amount: int):
+    bonus = 0
+    if resource == "mana":
+        bonus = getattr(user, "stat_mod", lambda x: 0)("thaumaturgy")
+        user.mana = min(user.max_mana, user.mana + amount + bonus)
+    elif resource == "stamina":
+        bonus = getattr(user, "stat_mod", lambda x: 0)("resilience")
+        user.stamina = min(user.max_stamina, user.stamina + amount + bonus)
+    print(f"{user.name} gains {amount + bonus} {resource}!")
+
+
 def create_basic_cards():
     return [
-        Card("Firebolt", cost=2, resource_type="mana", effect_function=lambda u, t: simple_damage(u, t, 5), description="Deal 5 damage."),
-        Card("Meditate", cost=1, resource_type="mana", effect_function=lambda u, t: simple_heal(u, t, 3), description="Heal 3 HP."),
-        Card("Strike", cost=2, resource_type="stamina", effect_function=lambda u, t: simple_damage(u, t, 4), description="Physical attack."),
-        Card("Focus", cost=1, resource_type="stamina", effect_function=lambda u, t: simple_heal(u, t, 2), description="Recover 2 HP."),
-        Card(
-            "Burn", cost=2, resource_type="mana",
-            effect_function=lambda u, t: t.add_effect(DamageOverTime("Burn", 3, 2)),
-            description="Deal 2 damage each turn for 3 turns."
-        ),
+        Card("Strike", 1, "stamina", lambda u, t: simple_damage(u, t, 3), "Deal 3 physical damage."),
+        Card("Defend", 1, "stamina", lambda u, t: u.add_effect(StatBuff("Defend", 1, "armor", 4)), "Gain 4 defense until next turn."),
+        Card("Meditate", 2, "mana", lambda u, t: gain_resource(u, "mana", 3), "Regain 3 Mana."),
+        Card("Dash", 1, "stamina", lambda u, t: u.add_effect(DodgeBuff("Dash", 2, 20)), "Increase dodge chance by 20% for 2 turns."),
+        Card("Focus Blast", 2, "mana", lambda u, t: simple_damage(u, t, 5, "thaumaturgy"), "Deal 5 magic damage."),
+        Card("Quick Draw", 1, "stamina", lambda u, t: (u.draw_card(), u.draw_card()), "Draw 2 cards."),
+        Card("Power Surge", 2, "mana", lambda u, t: u.add_effect(StatBuff("Power Surge", 2, "strength_mod", 2)), "Increase Strength by 2 for 2 turns."),
+        Card("Second Wind", 2, "stamina", lambda u, t: simple_heal(u, u, 5), "Recover 5 HP."),
+        Card("Counter Spell", 3, "mana", lambda u, t: u.add_effect(CounterSpell()), "Negate the next enemy spell."),
+        Card("Inspire", 2, "mana", lambda u, t: (u.add_effect(StatBuff("InspireSTR", 2, "strength_mod", 1)), u.add_effect(StatBuff("InspireAGI", 2, "agility_mod", 1))), "Boost Agility and Strength by 1 for 2 turns."),
     ]
 
 
