@@ -5,6 +5,8 @@ from deck_builder import run_deck_builder_menu
 from start_menu import run_start_menu
 from characters import Character
 from items import create_basic_items
+from bestiary_viewer import show_bestiary
+from card_library_viewer import show_card_library
 
 
 def build_sample_character(name):
@@ -14,20 +16,27 @@ def build_sample_character(name):
 
 
 def main():
+    player = None
     mode = run_start_menu()
-    if not mode:
-        print("Exited from start menu.")
-        return
+    while mode:
+        if mode == "deckbuilder":
+            player = run_deck_builder_menu()
+        elif mode == "bestiary":
+            show_bestiary()
+        elif mode == "library":
+            show_card_library()
+        else:
+            if player is None:
+                player = run_deck_builder_menu()
+            enemy = build_sample_character("Enemy")
+            if mode == "gui":
+                BattleGUI(player, enemy).start()
+            elif mode == "dungeon":
+                DungeonBattleGUI(player, enemy).start()
+            else:
+                run_battle(player, enemy)
 
-    player = run_deck_builder_menu()
-    enemy = build_sample_character("Enemy")
-
-    if mode == "gui":
-        BattleGUI(player, enemy).start()
-    elif mode == "dungeon":
-        DungeonBattleGUI(player, enemy).start()
-    else:
-        run_battle(player, enemy)
+        mode = run_start_menu()
 
 
 if __name__ == "__main__":
