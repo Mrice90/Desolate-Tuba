@@ -25,3 +25,12 @@ The dungeon mode uses simple placeholder sprites generated at runtime with
 `Pillow`. These sprites are created dynamically in memory, so no image assets
 are stored in the repository.
 
+
+## Data Modules
+
+The repository now includes two data modules used by the engine:
+
+- `bestiary.py` – definitions and lore for common dungeon enemies.
+- `character_cards.py` – card libraries and lore for each playable character along with the universal card set.
+
+These datasets are derived from the design codex and can be imported by other parts of the game for future content.
