@@ -5,7 +5,8 @@ from enemy_ai import take_turn
 
 
 def simple_damage(user, target, amount):
-    target.hp -= amount
+    """Deal ``amount`` damage from ``user`` to ``target``."""
+    target.take_damage(amount)
     print(f"{user.name} deals {amount} damage to {target.name}!")
 
 
