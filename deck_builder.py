@@ -51,28 +51,63 @@ def run_deck_builder_menu():
     start_btn = None
 
     # --- Card selection --------------------------------------------------
-    # Card list inside a scrollable canvas so long lists remain accessible
-    list_container = tk.Frame(root)
-    list_container.pack(fill="both", expand=True, padx=10, pady=5)
+    # Two scrollable columns: available cards and current deck
+    columns = tk.Frame(root)
+    columns.pack(fill="both", expand=True, padx=10, pady=5)
 
-    canvas = tk.Canvas(list_container)
-    scrollbar = tk.Scrollbar(list_container, orient="vertical", command=canvas.yview)
-    scroll_frame = tk.Frame(canvas)
+    # Left column - available cards
+    avail_container = tk.Frame(columns)
+    avail_container.pack(side="left", fill="both", expand=True, padx=(0, 5))
 
-    scroll_frame.bind(
+    avail_canvas = tk.Canvas(avail_container)
+    avail_scroll = tk.Scrollbar(avail_container, orient="vertical", command=avail_canvas.yview)
+    avail_frame = tk.Frame(avail_canvas)
+
+    avail_frame.bind(
         "<Configure>",
-        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        lambda e: avail_canvas.configure(scrollregion=avail_canvas.bbox("all"))
     )
 
-    canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
-    canvas.configure(yscrollcommand=scrollbar.set)
+    avail_canvas.create_window((0, 0), window=avail_frame, anchor="nw")
+    avail_canvas.configure(yscrollcommand=avail_scroll.set)
 
-    canvas.pack(side="left", fill="both", expand=True)
-    scrollbar.pack(side="right", fill="y")
+    avail_canvas.pack(side="left", fill="both", expand=True)
+    avail_scroll.pack(side="right", fill="y")
 
-    tk.Label(scroll_frame, text="Build Deck (max 2 of each card)").pack(anchor="w")
+    tk.Label(avail_frame, text="Available Cards (max 2 of each)").pack(anchor="w")
+
+    # Right column - deck list
+    deck_container = tk.Frame(columns)
+    deck_container.pack(side="left", fill="both", expand=True, padx=(5, 0))
+
+    deck_canvas = tk.Canvas(deck_container)
+    deck_scroll = tk.Scrollbar(deck_container, orient="vertical", command=deck_canvas.yview)
+    deck_frame = tk.Frame(deck_canvas)
+
+    deck_frame.bind(
+        "<Configure>",
+        lambda e: deck_canvas.configure(scrollregion=deck_canvas.bbox("all"))
+    )
+
+    deck_canvas.create_window((0, 0), window=deck_frame, anchor="nw")
+    deck_canvas.configure(yscrollcommand=deck_scroll.set)
+
+    deck_canvas.pack(side="left", fill="both", expand=True)
+    deck_scroll.pack(side="right", fill="y")
+
+    tk.Label(deck_frame, text="Your Deck").pack(anchor="w")
 
     count_vars = {}
+
+    def refresh_deck_display():
+        for widget in deck_frame.winfo_children()[1:]:
+            widget.destroy()
+        for card in deck:
+            row = tk.Frame(deck_frame, bd=1, relief="solid", padx=2, pady=2)
+            row.pack(fill="x", pady=2)
+            tk.Label(row, text=card.name, anchor="w").grid(row=0, column=0, sticky="w")
+            tk.Button(row, text="-", width=2,
+                      command=lambda c=card: remove_card(c)).grid(row=0, column=1, sticky="e")
 
     def update_labels():
         deck_label.config(text=f"Deck size: {len(deck)}/20")
@@ -90,6 +125,7 @@ def run_deck_builder_menu():
         deck.append(Card(card.name, card.cost, card.resource_type,
                          card.effect_function, card.description))
         update_labels()
+        refresh_deck_display()
 
     def remove_card(card):
         if card_counts[card.name] <= 0:
@@ -100,9 +136,10 @@ def run_deck_builder_menu():
                 deck.pop(i)
                 break
         update_labels()
+        refresh_deck_display()
 
     for c in card_prototypes:
-        row = tk.Frame(scroll_frame, bd=1, relief="solid", padx=2, pady=2)
+        row = tk.Frame(avail_frame, bd=1, relief="solid", padx=2, pady=2)
         row.pack(fill="x", pady=2)
 
         info = f"{c.name} ({c.type}) - Cost: {c.cost} {c.resource_type}\n{c.description}"
@@ -116,6 +153,8 @@ def run_deck_builder_menu():
         tk.Label(ctrl, textvariable=count_var, width=2).pack(side="left")
         tk.Button(ctrl, text="+", command=lambda card=c: add_card(card), width=2).pack(side="left")
         tk.Button(ctrl, text="-", command=lambda card=c: remove_card(card), width=2).pack(side="left")
+
+    refresh_deck_display()
 
     deck_label = tk.Label(root, text="Deck size: 0/20")
     deck_label.pack(pady=5)
