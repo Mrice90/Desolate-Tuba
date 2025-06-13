@@ -1,5 +1,4 @@
 from battle.engine import create_basic_cards, run_battle
-from battle.gui import BattleGUI
 from battle.dungeon_gui import DungeonBattleGUI
 from deck_builder import run_deck_builder_menu
 from start_menu import run_start_menu
@@ -29,9 +28,7 @@ def main():
             if player is None:
                 player = run_deck_builder_menu()
             enemy = build_sample_character("Enemy")
-            if mode == "gui":
-                BattleGUI(player, enemy).start()
-            elif mode == "dungeon":
+            if mode == "dungeon":
                 DungeonBattleGUI(player, enemy).start()
             else:
                 run_battle(player, enemy)

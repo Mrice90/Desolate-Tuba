@@ -5,8 +5,6 @@ def run_start_menu():
     """Display a menu for choosing the game mode.
 
     Returns one of:
-    ``"console"`` for the text battle,
-    ``"gui"`` for the graphical battle,
     ``"dungeon"`` for the dungeon crawler,
     ``"deckbuilder"`` to launch the deck builder,
     ``"bestiary"`` to view the bestiary,
@@ -14,14 +12,6 @@ def run_start_menu():
     or ``None`` if the user closes the menu without making a choice.
     """
     selection = {"mode": None}
-
-    def choose_console():
-        selection["mode"] = "console"
-        root.quit()
-
-    def choose_gui():
-        selection["mode"] = "gui"
-        root.quit()
 
     def choose_dungeon():
         selection["mode"] = "dungeon"
@@ -47,8 +37,6 @@ def run_start_menu():
 
     tk.Label(root, text="Medieval Duel", font=("Arial", 24)).pack(pady=10)
 
-    tk.Button(root, text="Console Battle", width=20, command=choose_console).pack(pady=5)
-    tk.Button(root, text="GUI Battle", width=20, command=choose_gui).pack(pady=5)
     tk.Button(root, text="Dungeon Battle", width=20, command=choose_dungeon).pack(pady=5)
     tk.Button(root, text="Deck Builder", width=20, command=choose_deckbuilder).pack(pady=5)
     tk.Button(root, text="Bestiary", width=20, command=choose_bestiary).pack(pady=5)
