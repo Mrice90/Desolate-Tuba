@@ -356,5 +356,9 @@ def create_enemy_for_level(level: int) -> Character:
         stamina=5,
         deck=[attack] * 5,
         level=level,
+        strength_mod=data.get("str", 0),
+        thaumaturgy_mod=data.get("thaumaturgy", 0),
+        agility_mod=data.get("agi", 0),
+        resilience_mod=data.get("res", 0),
     )
     return enemy

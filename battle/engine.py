@@ -4,15 +4,21 @@ from effects.status_effects import DamageOverTime
 from enemy_ai import take_turn
 
 
-def simple_damage(user, target, amount):
-    """Deal ``amount`` damage from ``user`` to ``target`` with level scaling."""
-    scaled = int(amount * (1 + 0.1 * (user.level - 1)))
+def simple_damage(user, target, amount, stat="strength"):
+    """Deal ``amount`` damage from ``user`` to ``target`` using STAR mods."""
+    bonus = 0
+    if hasattr(user, "stat_mod"):
+        bonus = user.stat_mod(stat)
+    scaled = max(0, amount + bonus)
     target.take_damage(scaled)
     print(f"{user.name} deals {scaled} damage to {target.name}!")
 
 
 def simple_heal(user, target, amount):
-    scaled = int(amount * (1 + 0.1 * (user.level - 1)))
+    bonus = 0
+    if hasattr(user, "stat_mod"):
+        bonus = user.stat_mod("resilience")
+    scaled = max(0, amount + bonus)
     user.hp = min(user.max_hp, user.hp + scaled)
     print(f"{user.name} heals {scaled} HP!")
 
