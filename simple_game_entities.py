@@ -11,7 +11,9 @@ class Card:
 
 class Character:
     def __init__(self, name, hp, mana, stamina,
-                 deck=None, hand=None, discard_pile=None, items=None):
+                 deck=None, hand=None, discard_pile=None, items=None,
+                 strength_mod=0, thaumaturgy_mod=0,
+                 agility_mod=0, resilience_mod=0, armor=0):
         self.name = name
         self.max_hp = hp
         self.max_mana = mana
@@ -25,6 +27,27 @@ class Character:
         self.hand = hand or []
         self.discard_pile = discard_pile or []
         self.items = items or []
+        self.strength_mod = strength_mod
+        self.thaumaturgy_mod = thaumaturgy_mod
+        self.agility_mod = agility_mod
+        self.resilience_mod = resilience_mod
+        self.armor = armor
+
+    def stat_mod(self, stat):
+        stat = stat.lower()
+        if stat.startswith("str"):
+            return self.strength_mod
+        if stat.startswith("tha"):
+            return self.thaumaturgy_mod
+        if stat.startswith("agi"):
+            return self.agility_mod
+        if stat.startswith("res"):
+            return self.resilience_mod
+        return 0
+
+    @property
+    def guard(self):
+        return 10 + self.resilience_mod + self.armor
 
     def draw_card(self):
         if not self.deck:

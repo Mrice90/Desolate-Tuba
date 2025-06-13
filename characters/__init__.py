@@ -6,7 +6,9 @@ class Character:
     def __init__(self, name, hp, mana, stamina, deck=None, items=None,
                  level=1, xp=0, xp_to_next=100,
                  hp_regen=1, mana_regen=1, stamina_regen=1,
-                 progression=None):
+                 progression=None,
+                 strength_mod=0, thaumaturgy_mod=0,
+                 agility_mod=0, resilience_mod=0, armor=0):
         self.name = name
         self.level = level
         self.xp = xp
@@ -20,6 +22,12 @@ class Character:
         self.mana = mana
         self.stamina = stamina
 
+        self.strength_mod = strength_mod
+        self.thaumaturgy_mod = thaumaturgy_mod
+        self.agility_mod = agility_mod
+        self.resilience_mod = resilience_mod
+        self.armor = armor
+
         self.hp_regen = hp_regen
         self.mana_regen = mana_regen
         self.stamina_regen = stamina_regen
@@ -30,6 +38,30 @@ class Character:
         self.discard_pile = []
         self.items = items or []
         self.effects = []
+
+    # --- Stat helpers ----------------------------------------------------
+    def stat_mod(self, stat: str) -> int:
+        """Return the modifier for one of the STAR stats."""
+        stat = stat.lower()
+        if stat.startswith("str"):
+            return self.strength_mod
+        if stat.startswith("tha"):
+            return self.thaumaturgy_mod
+        if stat.startswith("agi"):
+            return self.agility_mod
+        if stat.startswith("res"):
+            return self.resilience_mod
+        return 0
+
+    @property
+    def guard(self) -> int:
+        """Basic defense rating based on resilience and armor."""
+        return 10 + self.resilience_mod + self.armor
+
+    @property
+    def speed(self) -> int:
+        """Return base speed derived from Agility."""
+        return max(1, 5 + self.agility_mod)
 
     def draw_card(self):
         if not self.deck:
