@@ -11,6 +11,8 @@ This repository contains a prototype for a card-based RPG duel engine written in
 - Tkinter-based start menu and GUI.
 - Simple "Dungeon Battle" mode that displays placeholder sprites for a 1v1
   encounter.
+- Deck building menu to select a character and construct a 20 card deck
+  (maximum two copies of each card).
 
 ## Running the Demo
 
