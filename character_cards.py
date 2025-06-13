@@ -258,6 +258,28 @@ CHARACTER_CARDS = {
             {"name": "Recharge", "type": "Utility", "cost": 1, "resource": "Mana", "effect": "Draw static energy from the environment to restore a small amount of mana.", "star": "Mana restored scales with Thaumaturgy"},
             {"name": "Cloud Form", "type": "Utility", "cost": 2, "resource": "Mana", "effect": "Turn yourself into a misty cloud briefly, becoming immune to physical damage for one turn.", "star": "No direct stat scaling"}
         ]
+    },
+    "Selene Nightwhisper": {
+        "class": "Assassin",
+        "lore": "Selene is a shadowy assassin from the Nightblade guild. Raised in the slums and trained by a secret order, she eliminates targets with stealth and precision, striking from the darkness.",
+        "cards": [
+            {"name": "Backstab", "type": "Damage", "cost": 2, "resource": "Stamina", "effect": "Deliver a devastating strike to an unaware enemy.", "star": "Damage scales with Strength; crit chance with Agility"},
+            {"name": "Poisoned Dagger", "type": "Damage", "cost": 1, "resource": "Stamina", "effect": "Stab with a poisoned blade, applying damage over time.", "star": "Poison scales with Thaumaturgy"},
+            {"name": "Shadowmeld", "type": "Buff", "cost": 2, "resource": "Mana", "effect": "Become invisible for a short duration, empowering your next attack.", "star": "Bonus damage scales with Thaumaturgy"},
+            {"name": "Poison Trap", "type": "Summon", "cost": 2, "resource": "Stamina", "effect": "Lay a hidden trap that poisons the first enemy to step on it.", "star": "Potency scales with Thaumaturgy"},
+            {"name": "Vanish", "type": "Utility", "cost": 1, "resource": "Stamina", "effect": "Disappear in a puff of smoke, avoiding attacks for the rest of the turn.", "star": "Range increases with Agility"}
+        ]
+    },
+    "Ragnar Ironhide": {
+        "class": "Berserker",
+        "lore": "Ragnar hails from the frozen north. Nicknamed 'Ironhide' for his toughness, he wields his greataxe with unstoppable fury, shrugging off wounds as he goes berserk in battle.",
+        "cards": [
+            {"name": "Heavy Strike", "type": "Damage", "cost": 1, "resource": "Stamina", "effect": "Deliver a heavy overhead swing with your weapon.", "star": "Damage scales with Strength"},
+            {"name": "Cleave", "type": "Damage", "cost": 2, "resource": "Stamina", "effect": "Swing in a wide arc hitting two enemies.", "star": "Damage scales with Strength"},
+            {"name": "Berserker Rage", "type": "Buff", "cost": 2, "resource": "Stamina", "effect": "Enter a furious rage increasing Strength and Resilience for a few turns.", "star": "Bonuses fixed; damage taken reduced if Resilience high"},
+            {"name": "War Banner", "type": "Summon", "cost": 3, "resource": "Stamina", "effect": "Plant a banner inspiring allies and intimidating foes.", "star": "Buff scales with Strength"},
+            {"name": "Second Wind", "type": "Utility", "cost": 0, "resource": "Stamina", "effect": "Recover some health and stamina once per fight.", "star": "Restoration scales with Resilience"}
+        ]
     }
 }
 
@@ -273,3 +295,103 @@ UNIVERSAL_CARDS = [
     {"name": "Inspire", "cost": 1, "resource": "Stamina", "effect": "Encourage an ally, boosting their damage and resistance for a short time.", "purpose": "Support – minor all-round boost"},
     {"name": "Plan Ahead", "cost": 1, "resource": "Mana", "effect": "Take time to strategize, drawing 2 extra cards from your deck.", "purpose": "Utility – increases your options"}
 ]
+
+# Per-character stat progressions used by the leveling system
+CHARACTER_PROGRESSIONS = {
+    "Aurelia Flameheart": {
+        "base_hp": 16, "hp_per_level": 4,
+        "base_mana": 25, "mana_per_level": 5,
+        "base_stamina": 8, "stamina_per_level": 2,
+        "hp_regen": 0.5, "hp_regen_per_level": 0.1,
+        "mana_regen": 1.2, "mana_regen_per_level": 0.2,
+        "stamina_regen": 0.3, "stamina_regen_per_level": 0.1
+    },
+    "Darius Nightshade": {
+        "base_hp": 15, "hp_per_level": 3,
+        "base_mana": 25, "mana_per_level": 5,
+        "base_stamina": 8, "stamina_per_level": 1,
+        "hp_regen": 0.4, "hp_regen_per_level": 0.1,
+        "mana_regen": 1.2, "mana_regen_per_level": 0.2,
+        "stamina_regen": 0.3, "stamina_regen_per_level": 0.05
+    },
+    "Thorne Oakenshade": {
+        "base_hp": 20, "hp_per_level": 5,
+        "base_mana": 20, "mana_per_level": 4,
+        "base_stamina": 12, "stamina_per_level": 3,
+        "hp_regen": 0.8, "hp_regen_per_level": 0.1,
+        "mana_regen": 0.8, "mana_regen_per_level": 0.1,
+        "stamina_regen": 0.8, "stamina_regen_per_level": 0.1
+    },
+    "Seraphina Dawnshield": {
+        "base_hp": 22, "hp_per_level": 5,
+        "base_mana": 20, "mana_per_level": 4,
+        "base_stamina": 12, "stamina_per_level": 3,
+        "hp_regen": 1.0, "hp_regen_per_level": 0.1,
+        "mana_regen": 1.0, "mana_regen_per_level": 0.2,
+        "stamina_regen": 0.5, "stamina_regen_per_level": 0.1
+    },
+    "Malakai Dreadborne": {
+        "base_hp": 18, "hp_per_level": 3,
+        "base_mana": 22, "mana_per_level": 5,
+        "base_stamina": 8, "stamina_per_level": 2,
+        "hp_regen": 0.5, "hp_regen_per_level": 0.1,
+        "mana_regen": 1.0, "mana_regen_per_level": 0.2,
+        "stamina_regen": 0.4, "stamina_regen_per_level": 0.1
+    },
+    "Zara Soulcaller": {
+        "base_hp": 18, "hp_per_level": 4,
+        "base_mana": 22, "mana_per_level": 5,
+        "base_stamina": 10, "stamina_per_level": 2,
+        "hp_regen": 0.5, "hp_regen_per_level": 0.1,
+        "mana_regen": 1.0, "mana_regen_per_level": 0.2,
+        "stamina_regen": 0.5, "stamina_regen_per_level": 0.1
+    },
+    "Lyra Mistbloom": {
+        "base_hp": 14, "hp_per_level": 3,
+        "base_mana": 24, "mana_per_level": 5,
+        "base_stamina": 8, "stamina_per_level": 2,
+        "hp_regen": 0.4, "hp_regen_per_level": 0.1,
+        "mana_regen": 1.0, "mana_regen_per_level": 0.2,
+        "stamina_regen": 0.3, "stamina_regen_per_level": 0.1
+    },
+    "Gideon Spellfury": {
+        "base_hp": 25, "hp_per_level": 6,
+        "base_mana": 15, "mana_per_level": 3,
+        "base_stamina": 15, "stamina_per_level": 3,
+        "hp_regen": 1.0, "hp_regen_per_level": 0.1,
+        "mana_regen": 0.8, "mana_regen_per_level": 0.1,
+        "stamina_regen": 1.0, "stamina_regen_per_level": 0.1
+    },
+    "Kairos Everwatch": {
+        "base_hp": 15, "hp_per_level": 3,
+        "base_mana": 24, "mana_per_level": 5,
+        "base_stamina": 8, "stamina_per_level": 2,
+        "hp_regen": 0.4, "hp_regen_per_level": 0.1,
+        "mana_regen": 1.0, "mana_regen_per_level": 0.2,
+        "stamina_regen": 0.3, "stamina_regen_per_level": 0.1
+    },
+    "Zephyra Stormsoul": {
+        "base_hp": 18, "hp_per_level": 4,
+        "base_mana": 22, "mana_per_level": 4,
+        "base_stamina": 10, "stamina_per_level": 2,
+        "hp_regen": 0.6, "hp_regen_per_level": 0.1,
+        "mana_regen": 1.0, "mana_regen_per_level": 0.2,
+        "stamina_regen": 0.4, "stamina_regen_per_level": 0.1
+    },
+    "Selene Nightwhisper": {
+        "base_hp": 20, "hp_per_level": 4,
+        "base_mana": 10, "mana_per_level": 2,
+        "base_stamina": 18, "stamina_per_level": 4,
+        "hp_regen": 0.5, "hp_regen_per_level": 0.1,
+        "mana_regen": 0.5, "mana_regen_per_level": 0.1,
+        "stamina_regen": 1.2, "stamina_regen_per_level": 0.2
+    },
+    "Ragnar Ironhide": {
+        "base_hp": 30, "hp_per_level": 8,
+        "base_mana": 5, "mana_per_level": 1,
+        "base_stamina": 20, "stamina_per_level": 5,
+        "hp_regen": 1.5, "hp_regen_per_level": 0.2,
+        "mana_regen": 0.2, "mana_regen_per_level": 0.1,
+        "stamina_regen": 2.0, "stamina_regen_per_level": 0.2
+    }
+}

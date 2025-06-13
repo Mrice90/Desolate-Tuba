@@ -1,33 +1,50 @@
 import tkinter as tk
-from battle.engine import create_basic_cards
+from battle.engine import simple_damage, simple_heal
 from characters import Character
 from items import create_basic_items
 from cards import Card
+from character_cards import CHARACTER_CARDS, UNIVERSAL_CARDS, CHARACTER_PROGRESSIONS
+
+
+def _make_card(info):
+    """Convert a card info dictionary to a Card with simple placeholder effects."""
+    if info.get("type") == "Damage":
+        effect = lambda u, t: simple_damage(u, t, 5)
+    elif info.get("type") == "Buff":
+        effect = lambda u, t: simple_heal(u, u, 3)
+    else:
+        effect = lambda u, t: None
+    return Card(info["name"], info["cost"], info["resource"].lower(), effect, info.get("effect", ""))
+
+
+def _choose_character():
+    chars = list(CHARACTER_CARDS.keys())
+    root = tk.Tk()
+    root.title("Choose Character")
+    selected = tk.StringVar(value=chars[0])
+    tk.Label(root, text="Choose Character:").pack(anchor="w")
+    for name in chars:
+        cls = CHARACTER_CARDS[name]["class"]
+        tk.Radiobutton(root, text=f"{name} ({cls})", variable=selected, value=name).pack(anchor="w")
+    tk.Button(root, text="Next", command=root.quit).pack(pady=5)
+    root.mainloop()
+    root.destroy()
+    return selected.get()
 
 
 def run_deck_builder_menu():
     """Interactive menu for selecting a character and building a 20 card deck."""
-    characters = {
-        "Wizard": dict(hp=25, mana=15, stamina=8),
-        "Warrior": dict(hp=35, mana=5, stamina=15),
-        "Rogue": dict(hp=28, mana=10, stamina=12),
-    }
-    card_prototypes = create_basic_cards()
+    char_name = _choose_character()
+    card_infos = UNIVERSAL_CARDS + CHARACTER_CARDS[char_name]["cards"]
+    card_prototypes = [_make_card(c) for c in card_infos]
+
+    progression = CHARACTER_PROGRESSIONS[char_name]
 
     root = tk.Tk()
-    root.title("Deck Builder")
+    root.title(f"Deck Builder - {char_name}")
 
-    selected_character = tk.StringVar(value=list(characters.keys())[0])
     deck = []
     card_counts = {c.name: 0 for c in card_prototypes}
-
-    # --- Character selection --------------------------------------------
-    char_frame = tk.Frame(root)
-    char_frame.pack(padx=10, pady=5, fill="x")
-    tk.Label(char_frame, text="Choose Character:").pack(anchor="w")
-    for name in characters:
-        tk.Radiobutton(char_frame, text=name, variable=selected_character,
-                       value=name).pack(anchor="w")
 
     # --- Card selection --------------------------------------------------
     card_frame = tk.Frame(root)
@@ -80,7 +97,15 @@ def run_deck_builder_menu():
     root.mainloop()
     root.destroy()
 
-    stats = characters[selected_character.get()]
-    return Character(name=selected_character.get(),
-                     hp=stats["hp"], mana=stats["mana"], stamina=stats["stamina"],
-                     deck=deck, items=create_basic_items()[:2])
+    return Character(
+        name=char_name,
+        hp=progression["base_hp"],
+        mana=progression["base_mana"],
+        stamina=progression["base_stamina"],
+        deck=deck,
+        items=create_basic_items()[:2],
+        hp_regen=progression["hp_regen"],
+        mana_regen=progression["mana_regen"],
+        stamina_regen=progression["stamina_regen"],
+        progression=progression,
+    )

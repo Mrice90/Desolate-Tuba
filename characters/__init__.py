@@ -4,7 +4,8 @@ from cards import Card
 class Character:
     def __init__(self, name, hp, mana, stamina, deck=None, items=None,
                  level=1, xp=0, xp_to_next=100,
-                 hp_regen=1, mana_regen=1, stamina_regen=1):
+                 hp_regen=1, mana_regen=1, stamina_regen=1,
+                 progression=None):
         self.name = name
         self.level = level
         self.xp = xp
@@ -21,6 +22,7 @@ class Character:
         self.hp_regen = hp_regen
         self.mana_regen = mana_regen
         self.stamina_regen = stamina_regen
+        self.progression = progression or {}
 
         self.deck = deck[:] if deck else []
         self.hand = []
@@ -85,12 +87,12 @@ class Character:
 
     def level_up(self):
         self.level += 1
-        self.max_hp += 2
-        self.max_mana += 1
-        self.max_stamina += 1
-        self.hp_regen += 1
-        self.mana_regen += 1
-        self.stamina_regen += 1
+        self.max_hp += self.progression.get('hp_per_level', 2)
+        self.max_mana += self.progression.get('mana_per_level', 1)
+        self.max_stamina += self.progression.get('stamina_per_level', 1)
+        self.hp_regen += self.progression.get('hp_regen_per_level', 0.1)
+        self.mana_regen += self.progression.get('mana_regen_per_level', 0.1)
+        self.stamina_regen += self.progression.get('stamina_regen_per_level', 0.1)
         # Restore stats on level up
         self.hp = self.max_hp
         self.mana = self.max_mana
