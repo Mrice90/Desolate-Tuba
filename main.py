@@ -2,11 +2,13 @@ from battle.engine import create_basic_cards, run_battle
 from battle.gui import BattleGUI
 from start_menu import run_start_menu
 from characters import Character
+from items import create_basic_items
 
 
 def build_sample_character(name):
     deck = create_basic_cards() * 10  # 40 cards total
-    return Character(name=name, hp=30, mana=10, stamina=10, deck=deck)
+    items = create_basic_items()[:2]
+    return Character(name=name, hp=30, mana=10, stamina=10, deck=deck, items=items)
 
 
 def main():
