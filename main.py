@@ -1,5 +1,3 @@
-import argparse
-
 from battle.engine import create_basic_cards, run_battle
 from battle.gui import BattleGUI
 from start_menu import run_start_menu
@@ -12,18 +10,16 @@ def build_sample_character(name):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Medieval Duel demo")
-    parser.add_argument("--gui", action="store_true", help="Run graphical interface")
-    args = parser.parse_args()
+    mode = run_start_menu()
+    if not mode:
+        print("Exited from start menu.")
+        return
 
     player = build_sample_character("Player")
     enemy = build_sample_character("Enemy")
 
-    if args.gui:
-        if run_start_menu():
-            BattleGUI(player, enemy).start()
-        else:
-            print("Exited from start menu.")
+    if mode == "gui":
+        BattleGUI(player, enemy).start()
     else:
         run_battle(player, enemy)
 
