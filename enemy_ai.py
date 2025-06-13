@@ -33,8 +33,15 @@ def take_turn(enemy: Character, player: Character) -> None:
     idx = choose_card_index(enemy)
     if idx is not None:
         card = enemy.hand[idx]
+        player_hp_before = player.hp
         enemy.play_card(idx, player)
-        print(f"{enemy.name} plays {card.name}!")
+        dmg = player_hp_before - player.hp
+        msg = f"{enemy.name} plays {card.name}."
+        if dmg > 0:
+            msg += f" It hits for {dmg} damage."
+        else:
+            msg += " It misses or has no effect."
+        print(msg)
     else:
         # If unable to play a card, discard and redraw to try again next round
         enemy.discard_hand()

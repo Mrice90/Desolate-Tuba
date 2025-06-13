@@ -84,9 +84,22 @@ def run_battle(player: Character, enemy: Character):
         except ValueError:
             print("Invalid choice")
             continue
+        card = player.hand[card_index]
+        enemy_hp_before = enemy.hp
+        player_hp_before = player.hp
         if not player.play_card(card_index, enemy):
             print("Failed to play card!")
             continue
+        dmg = enemy_hp_before - enemy.hp
+        heal = player.hp - player_hp_before
+        msg = f"You play {card.name}."
+        if dmg > 0:
+            msg += f" It hits for {dmg} damage."
+        else:
+            msg += " It misses or has no effect."
+        if heal > 0:
+            msg += f" You recover {heal} HP."
+        print(msg)
         if enemy.is_defeated():
             break
         take_turn(enemy, player)
