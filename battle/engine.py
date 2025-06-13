@@ -5,14 +5,16 @@ from enemy_ai import take_turn
 
 
 def simple_damage(user, target, amount):
-    """Deal ``amount`` damage from ``user`` to ``target``."""
-    target.take_damage(amount)
-    print(f"{user.name} deals {amount} damage to {target.name}!")
+    """Deal ``amount`` damage from ``user`` to ``target`` with level scaling."""
+    scaled = int(amount * (1 + 0.1 * (user.level - 1)))
+    target.take_damage(scaled)
+    print(f"{user.name} deals {scaled} damage to {target.name}!")
 
 
 def simple_heal(user, target, amount):
-    user.hp = min(user.max_hp, user.hp + amount)
-    print(f"{user.name} heals {amount} HP!")
+    scaled = int(amount * (1 + 0.1 * (user.level - 1)))
+    user.hp = min(user.max_hp, user.hp + scaled)
+    print(f"{user.name} heals {scaled} HP!")
 
 
 def create_basic_cards():

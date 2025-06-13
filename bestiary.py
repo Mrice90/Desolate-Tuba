@@ -1,3 +1,7 @@
+from characters import Character
+from cards import Card
+from battle.engine import simple_damage
+
 BESTIARY = [
     {
         "name": "Goblin",
@@ -330,3 +334,27 @@ BESTIARY = [
         "tactics": "Use ear protection or silence magic to counter her wail. Holy magic disrupts her form."
     }
 ]
+
+
+def create_enemy_for_level(level: int) -> Character:
+    """Return a simple enemy ``Character`` from ``BESTIARY`` scaled by level."""
+    idx = min(len(BESTIARY) - 1, max(0, level // 2))
+    data = BESTIARY[idx]
+
+    attack = Card(
+        "Attack",
+        cost=1,
+        resource_type="stamina",
+        effect_function=lambda u, t, dmg=data["damage"]: simple_damage(u, t, dmg),
+        description=f"Deal {data['damage']} damage."
+    )
+
+    enemy = Character(
+        name=data["name"],
+        hp=data["hp"],
+        mana=0,
+        stamina=5,
+        deck=[attack] * 5,
+        level=level,
+    )
+    return enemy

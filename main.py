@@ -4,6 +4,7 @@ from deck_builder import run_deck_builder_menu
 from start_menu import run_start_menu
 from characters import Character
 from items import create_basic_items
+from bestiary import create_enemy_for_level
 from bestiary_viewer import show_bestiary
 from card_library_viewer import show_card_library
 
@@ -27,10 +28,11 @@ def main():
         else:
             if player is None:
                 player = run_deck_builder_menu()
-            enemy = build_sample_character("Enemy")
             if mode == "dungeon":
+                enemy = create_enemy_for_level(player.level)
                 DungeonBattleGUI(player, enemy).start()
             else:
+                enemy = build_sample_character("Enemy")
                 run_battle(player, enemy)
 
         mode = run_start_menu()
