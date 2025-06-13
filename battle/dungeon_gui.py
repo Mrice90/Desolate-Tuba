@@ -1,6 +1,9 @@
 import tkinter as tk
+from tkinter import messagebox
+import random
 from PIL import Image, ImageDraw, ImageTk
 from .gui import BattleGUI
+from items import create_basic_items
 
 
 class DungeonBattleGUI(BattleGUI):
@@ -15,6 +18,7 @@ class DungeonBattleGUI(BattleGUI):
     def __init__(self, player, enemy):
         super().__init__(player, enemy)
         self.root.title("Dungeon Battle")
+        self.continue_dungeon = False
 
         self.canvas = tk.Canvas(self.root, width=400, height=300, bg="black")
         self.canvas.pack(before=self.log_text, fill="both", expand=True)
@@ -48,3 +52,22 @@ class DungeonBattleGUI(BattleGUI):
     def update_labels(self):
         super().update_labels()
         self.redraw()
+
+    def end_battle(self, won: bool):
+        """Handle battle conclusion with loot and continue prompt."""
+        self.victory = won
+        if won:
+            self.player.gain_xp(50)
+            loot = None
+            if random.random() < 0.5:
+                loot = random.choice(create_basic_items())
+                self.player.items.append(loot)
+            msg = "You won the battle!"
+            if loot:
+                msg += f"\nYou found {loot.name}!"
+            msg += "\nContinue to next battle?"
+            self.continue_dungeon = messagebox.askyesno("Victory", msg)
+        else:
+            messagebox.showinfo("Defeat", "You lost the battle!")
+            self.continue_dungeon = False
+        self.root.quit()

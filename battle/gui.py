@@ -52,6 +52,12 @@ class BattleGUI:
 
         self.card_buttons = []
         self.item_buttons = []
+        self.victory = None
+
+    def end_battle(self, won: bool):
+        """Set battle result and close the window."""
+        self.victory = won
+        self.root.quit()
 
     # Utility methods -----------------------------------------------------
     def _stats(self, c):
@@ -106,7 +112,7 @@ class BattleGUI:
     def flee(self):
         self.log("You fled the battle!")
         messagebox.showinfo("Flee", "You fled the battle!")
-        self.root.quit()
+        self.end_battle(False)
 
     def fold(self):
         self.player.discard_hand()
@@ -130,10 +136,7 @@ class BattleGUI:
         self.log(msg)
         self.update_labels()
         if self.enemy.is_defeated():
-            self.log("You won the battle!")
-            messagebox.showinfo("Victory", "You won the battle!")
-            self.player.gain_xp(50)
-            self.root.quit()
+            self.end_battle(True)
             return
         self.end_player_turn()
 
@@ -163,10 +166,7 @@ class BattleGUI:
         self.enemy.regenerate()
         if self.enemy.is_defeated():
             self.update_labels()
-            self.log("You won the battle!")
-            messagebox.showinfo("Victory", "You won the battle!")
-            self.player.gain_xp(50)
-            self.root.quit()
+            self.end_battle(True)
             return
         if not self.enemy.hand:
             self.enemy.refill_hand()
@@ -188,8 +188,7 @@ class BattleGUI:
         self.update_labels()
         if self.player.is_defeated():
             self.log("You lost the battle!")
-            messagebox.showinfo("Defeat", "You lost the battle!")
-            self.root.quit()
+            self.end_battle(False)
         else:
             self.new_turn()
 
@@ -207,8 +206,7 @@ class BattleGUI:
         if self.player.is_defeated():
             self.update_labels()
             self.log("You lost the battle!")
-            messagebox.showinfo("Defeat", "You lost the battle!")
-            self.root.quit()
+            self.end_battle(False)
             return
         self.update_labels()
         self.show_hand()
@@ -218,4 +216,5 @@ class BattleGUI:
         self.enemy.refill_hand()
         self.new_turn()
         self.root.mainloop()
+        self.root.destroy()
 

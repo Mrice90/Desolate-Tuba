@@ -29,8 +29,12 @@ def main():
             if player is None:
                 player = run_deck_builder_menu()
             if mode == "dungeon":
-                enemy = create_enemy_for_level(player.level)
-                DungeonBattleGUI(player, enemy).start()
+                continue_dungeon = True
+                while continue_dungeon:
+                    enemy = create_enemy_for_level(player.level)
+                    gui = DungeonBattleGUI(player, enemy)
+                    gui.start()
+                    continue_dungeon = gui.continue_dungeon
             else:
                 enemy = build_sample_character("Enemy")
                 run_battle(player, enemy)
