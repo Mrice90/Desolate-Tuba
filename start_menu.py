@@ -5,7 +5,8 @@ def run_start_menu():
     """Display a menu for choosing the game mode.
 
     Returns "console" for the text battle, "gui" for the graphical battle,
-    or None if the user closes the menu without making a choice.
+    "dungeon" for the placeholder dungeon crawler, or ``None`` if the user
+    closes the menu without making a choice.
     """
     selection = {"mode": None}
 
@@ -15,6 +16,10 @@ def run_start_menu():
 
     def choose_gui():
         selection["mode"] = "gui"
+        root.quit()
+
+    def choose_dungeon():
+        selection["mode"] = "dungeon"
         root.quit()
 
     def exit_game():
@@ -27,6 +32,7 @@ def run_start_menu():
 
     tk.Button(root, text="Console Battle", width=20, command=choose_console).pack(pady=5)
     tk.Button(root, text="GUI Battle", width=20, command=choose_gui).pack(pady=5)
+    tk.Button(root, text="Dungeon Battle", width=20, command=choose_dungeon).pack(pady=5)
     tk.Button(root, text="Quit", width=20, command=exit_game).pack(pady=5)
 
     root.mainloop()

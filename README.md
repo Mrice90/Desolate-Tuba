@@ -9,6 +9,8 @@ This repository contains a prototype for a card-based RPG duel engine written in
 - Example damage and healing card effects.
 - Console interface for testing battles.
 - Tkinter-based start menu and GUI.
+- Simple "Dungeon Battle" mode that displays placeholder sprites for a 1v1
+  encounter.
 
 ## Running the Demo
 
@@ -17,7 +19,7 @@ This repository contains a prototype for a card-based RPG duel engine written in
 3. Run `python main.py` and choose a mode from the start menu.
 
 This project is an early prototype and will expand to include additional characters, cards, and game modes.
+The dungeon mode uses simple placeholder sprites generated at runtime with
+`Pillow`. These sprites are created dynamically in memory, so no image assets
+are stored in the repository.
 
-## Citations
-
-- Placeholder art assets are expected from the [Kenney.nl](https://kenney.nl/assets) collections which are released under the CC0 license.
