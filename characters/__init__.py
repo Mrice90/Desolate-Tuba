@@ -32,6 +32,8 @@ class Character:
     agility_mod: int = 0
     resilience_mod: int = 0
     armor: int = 0
+    unique_library: List[Card] = field(default_factory=list)
+    unlocked_unique_cards: List[Card] = field(default_factory=list)
 
     # runtime fields -----------------------------------------------------
     max_hp: int = field(init=False)
@@ -51,6 +53,8 @@ class Character:
         self.progression = self.progression or {}
         self.deck = self.deck[:] if self.deck else []
         self.items = self.items or []
+        self.unique_library = self.unique_library[:]
+        self.unlocked_unique_cards = self.unlocked_unique_cards[:]
 
     # --- Stat helpers ----------------------------------------------------
     def stat_mod(self, stat: str) -> int:

@@ -13,6 +13,7 @@ This repository contains a prototype for a card-based RPG duel engine written in
   encounter.
 - Deck building menu to select a character and construct a 20 card deck
   (maximum two copies of each card).
+- Quadrant style battle GUI with options for Battle, Fold, Items and Flee.
 
 ## Running the Demo
 
@@ -39,4 +40,4 @@ These datasets are derived from the design codex and can be imported by other pa
 
 Cards come in several rarity categories. **Common**, **Uncommon** and **Rare** cards can be found as loot or purchased from shops. **Unique** cards are tied to a particular character and are earned when that character levels up. The **Universal** card set is always available and can be used in any deck.
 
-Characters gain experience after battles and level up when they reach their XP threshold. Leveling up increases their maximum stats based on the progression table and grants an unspent stat point. Future updates will use level ups to award unique cards.
+Characters gain experience after battles and level up when they reach their XP threshold. Leveling up increases their maximum stats and grants unspent stat points. Each level also unlocks unique ability cards. At level 1 you can choose three unique cards that cost 1 or less, and by level 20 a total of 35 unique cards will be unlocked. These unlocked cards appear in the deck builder alongside the universal card set.

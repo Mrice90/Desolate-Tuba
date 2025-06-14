@@ -35,17 +35,17 @@ class BattleGUI:
         btn_opts = {"font": ("Arial", 16), "height": 2}
         self.battle_btn = tk.Button(self.option_frame, text="Battle",
                                     command=self.show_hand, **btn_opts)
-        self.flee_btn = tk.Button(self.option_frame, text="Flee",
-                                  command=self.flee, **btn_opts)
         self.items_btn = tk.Button(self.option_frame, text="Items",
                                    command=self.show_items, **btn_opts)
         self.fold_btn = tk.Button(self.option_frame, text="Fold",
                                   command=self.fold, **btn_opts)
+        self.flee_btn = tk.Button(self.option_frame, text="Flee",
+                                  command=self.flee, **btn_opts)
 
         self.battle_btn.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
-        self.flee_btn.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
+        self.fold_btn.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
         self.items_btn.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
-        self.fold_btn.grid(row=1, column=1, sticky="nsew", padx=5, pady=5)
+        self.flee_btn.grid(row=1, column=1, sticky="nsew", padx=5, pady=5)
 
         for i in range(2):
             self.option_frame.rowconfigure(i, weight=1)
@@ -143,9 +143,14 @@ class BattleGUI:
         ).pack(fill="x", pady=5)
 
     def flee(self):
-        self.log("You fled the battle!")
-        messagebox.showinfo("Flee", "You fled the battle!")
-        self.end_battle(False)
+        import random
+        if random.randint(1, 100) <= 50:
+            self.log("You fled the battle!")
+            messagebox.showinfo("Flee", "You fled the battle!")
+            self.end_battle(False)
+        else:
+            self.log("Flee attempt failed!")
+            self.end_player_turn()
 
     def fold(self):
         self.player.discard_hand()

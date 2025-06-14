@@ -1,31 +1,31 @@
 import tkinter as tk
 from characters import Character
-from deck_builder import run_deck_builder_menu
+from deck_builder import run_deck_builder_menu, _make_card, get_unique_unlocks_for_level
+from character_cards import CHARACTER_CARDS, CHARACTER_PROGRESSIONS
 from items import create_basic_items
 from ui.fullscreen import create_fullscreen_root
 
 _ICON_OPTIONS = ["@", "#", "&", "%"]
 
-_DEFAULT_PROGRESSION = {
-    "base_hp": 20, "hp_per_level": 3,
-    "base_mana": 10, "mana_per_level": 2,
-    "base_stamina": 10, "stamina_per_level": 2,
-    "hp_regen": 1.0, "hp_regen_per_level": 0.1,
-    "mana_regen": 1.0, "mana_regen_per_level": 0.1,
-    "stamina_regen": 1.0, "stamina_regen_per_level": 0.1,
-}
+
+_DEFAULT_CHARACTER = "Aurelia Flameheart"
+_DEFAULT_PROGRESSION = CHARACTER_PROGRESSIONS[_DEFAULT_CHARACTER]
 
 
 def _new_character():
     prog = _DEFAULT_PROGRESSION
+    unique_pool = [
+        _make_card(c) for c in CHARACTER_CARDS[_DEFAULT_CHARACTER]["cards"]
+    ]
     return Character(
-        name="Adventurer",
+        name=_DEFAULT_CHARACTER,
         hp=prog["base_hp"],
         mana=prog["base_mana"],
         stamina=prog["base_stamina"],
         items=create_basic_items()[:2],
         progression=prog,
         icon=_ICON_OPTIONS[0],
+        unique_library=unique_pool,
     )
 
 
@@ -67,6 +67,13 @@ def run_player_sheet(player: Character | None = None) -> Character:
             f"STR:{player.strength_mod} THA:{player.thaumaturgy_mod} "
             f"AGI:{player.agility_mod} RES:{player.resilience_mod}"
         )).pack()
+        tk.Label(
+            stats_frame,
+            text=(
+                f"Unique Cards: {len(player.unlocked_unique_cards)}/"
+                f"{get_unique_unlocks_for_level(player.level)}"
+            ),
+        ).pack()
         if player.unspent_points:
             tk.Label(stats_frame, text=f"Unspent points: {player.unspent_points}").pack()
 
@@ -85,7 +92,38 @@ def run_player_sheet(player: Character | None = None) -> Character:
         run_deck_builder_menu(player)
         _refresh_stats()
 
+    def unlock_cards():
+        allowed = get_unique_unlocks_for_level(player.level)
+        remaining = allowed - len(player.unlocked_unique_cards)
+        if remaining <= 0:
+            tk.messagebox.showinfo("Unlocks", "No unique card unlocks available.")
+            return
+        root2 = create_fullscreen_root("Select Unique Cards")
+        tk.Label(root2, text=f"Choose up to {remaining} cards").pack()
+        frame = tk.Frame(root2)
+        frame.pack(fill="both", expand=True)
+        vars = []
+        cards = [c for c in player.unique_library if c not in player.unlocked_unique_cards]
+        if player.level == 1:
+            cards = [c for c in cards if c.cost <= 1 and c.resource_type in ("mana", "stamina")]
+        for card in cards:
+            var = tk.IntVar()
+            chk = tk.Checkbutton(frame, text=f"{card.name} (cost {card.cost} {card.resource_type})", variable=var, anchor="w", justify="left")
+            chk.pack(fill="x", padx=5, pady=2)
+            vars.append((var, card))
+        def confirm():
+            selected = [c for v, c in vars if v.get()]
+            if len(selected) > remaining:
+                tk.messagebox.showerror("Too many", "Select fewer cards.")
+                return
+            player.unlocked_unique_cards.extend(selected)
+            root2.destroy()
+            _refresh_stats()
+        tk.Button(root2, text="Confirm", command=confirm).pack(pady=5)
+        root2.mainloop()
+
     tk.Button(root, text="Edit Deck", command=edit_deck, font=("Arial", 16), height=2).pack(pady=10)
+    tk.Button(root, text="Unlock Cards", command=unlock_cards, font=("Arial", 16), height=2).pack(pady=10)
 
     def _confirm():
         player.name = name_var.get()
