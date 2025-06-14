@@ -30,6 +30,9 @@ def choose_card_index(enemy: Character) -> Optional[int]:
 
 def take_turn(enemy: Character, player: Character) -> None:
     """Execute the enemy's turn against ``player``."""
+    if getattr(enemy, "stunned", False):
+        print(f"{enemy.name} is stunned and cannot act!")
+        return
     idx = choose_card_index(enemy)
     if idx is not None:
         card = enemy.hand[idx]

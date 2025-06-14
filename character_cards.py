@@ -340,7 +340,31 @@ UNIVERSAL_CARDS = [
     {"name": "Rally", "cost": 2, "resource": "Stamina", "type": "Buff", "effect": "+2 Strength for 2 turns.", "rarity": "uncommon", "level": 1},
     {"name": "Anticipate", "cost": 1, "resource": "Stamina", "type": "Utility", "effect": "View enemy’s next card and cancel if cost 1 or less.", "rarity": "rare", "level": 1},
     {"name": "Soul Exchange", "cost": 3, "resource": "Mana", "type": "Utility", "effect": "Swap HP with opponent if yours is lower.", "rarity": "rare", "level": 1},
-    {"name": "Overdraw", "cost": 0, "resource": "Stamina", "type": "Utility", "effect": "Draw 2 cards, lose 2 HP.", "rarity": "common", "level": 1}
+    {"name": "Overdraw", "cost": 0, "resource": "Stamina", "type": "Utility", "effect": "Draw 2 cards, lose 2 HP.", "rarity": "common", "level": 1},
+
+    # -- Newly added common cards --
+    {"name": "Spirit Lash", "cost": 1, "resource": "Mana", "type": "Damage", "effect": "Deal 2 + Thaumaturgy damage. +1 if target has a debuff.", "rarity": "common", "level": 1},
+    {"name": "Cunning Step", "cost": 1, "resource": "Stamina", "type": "Utility", "effect": "Gain +2 Agility until next turn and draw a card.", "rarity": "common", "level": 1},
+    {"name": "Magic Sparkle", "cost": 1, "resource": "Mana", "type": "Utility", "effect": "Reveal the top card of the enemy deck.", "rarity": "common", "level": 1},
+    {"name": "Guarded Heart", "cost": 1, "resource": "Stamina", "type": "Buff", "effect": "+1 Resilience for 2 turns.", "rarity": "common", "level": 1},
+    {"name": "Force Push", "cost": 1, "resource": "Mana", "type": "Damage", "effect": "Deal 2 + Strength damage and push the enemy back.", "rarity": "common", "level": 1},
+    {"name": "Fade Step", "cost": 1, "resource": "Stamina", "type": "Utility", "effect": "Gain 20% dodge chance next turn.", "rarity": "common", "level": 1},
+    {"name": "Stone Grip", "cost": 1, "resource": "Stamina", "type": "Debuff", "effect": "Reduce enemy Agility by 1 this turn.", "rarity": "common", "level": 1},
+    {"name": "Ember Shot", "cost": 1, "resource": "Mana", "type": "Damage", "effect": "Deal 2 + Thaumaturgy fire damage. 15% chance to Burn (1 dmg for 2 turns).", "rarity": "common", "level": 1},
+    {"name": "Tactic Study", "cost": 1, "resource": "Mana", "type": "Utility", "effect": "Look at the top two cards of your deck and swap them.", "rarity": "common", "level": 1},
+    {"name": "Intimidate", "cost": 1, "resource": "Stamina", "type": "Debuff", "effect": "Lower enemy Strength by 1 for 2 turns.", "rarity": "common", "level": 1},
+
+    # -- Newly added uncommon cards --
+    {"name": "Whirlwind Slash", "cost": 2, "resource": "Stamina", "type": "Damage", "effect": "Deal 3 + Strength damage. 25% chance to Weaken the enemy.", "rarity": "uncommon", "level": 5, "stats": {"strength": 3}},
+    {"name": "Ice Shards", "cost": 2, "resource": "Mana", "type": "Damage", "effect": "Deal 2 + Thaumaturgy damage and Freeze the enemy (skip next action).", "rarity": "uncommon", "level": 5, "stats": {"thaumaturgy": 3}},
+    {"name": "Barrier Bubble", "cost": 2, "resource": "Mana", "type": "Buff", "effect": "Negate the next source of damage.", "rarity": "uncommon", "level": 5, "stats": {"resilience": 3}},
+    {"name": "Acrobat's Spin", "cost": 2, "resource": "Stamina", "type": "Utility", "effect": "Remove movement debuffs. Gain +2 Agility next turn.", "rarity": "uncommon", "level": 5, "stats": {"agility": 3}},
+    {"name": "Shock Infusion", "cost": 2, "resource": "Mana", "type": "Damage", "effect": "Deal 3 + Thaumaturgy damage (double if target stunned).", "rarity": "uncommon", "level": 5, "stats": {"thaumaturgy": 3}},
+
+    # -- Newly added rare cards --
+    {"name": "Cataclysm Blast", "cost": 4, "resource": "Mana", "type": "Damage", "effect": "Deal 7 + Thaumaturgy damage (9 if target has 2+ effects).", "rarity": "rare", "level": 10, "stats": {"thaumaturgy": 4}},
+    {"name": "Phoenix Pact", "cost": 3, "resource": "Mana", "type": "Utility", "effect": "If you are KO'd this turn, revive at 5 HP next turn.", "rarity": "rare", "level": 10, "stats": {"resilience": 4}},
+    {"name": "Storm Avatar", "cost": 4, "resource": "Mana", "type": "Buff", "effect": "+2 to Strength, Agility and Resilience for 2 turns.", "rarity": "rare", "level": 10, "stats": {"strength": 4}}
 ]
 
 # Per-character stat progressions used by the leveling system

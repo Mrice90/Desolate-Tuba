@@ -39,6 +39,7 @@ class Character:
     effects: List[StatusEffect] = field(init=False, default_factory=list)
     dodge_chance: int = field(init=False, default=0)
     summons: List[Summon] = field(init=False, default_factory=list)
+    stunned: bool = field(init=False, default=False)
 
     def __post_init__(self):
         self.max_hp = self.hp
@@ -112,7 +113,12 @@ class Character:
         return True
 
     def take_damage(self, amount: int):
-        """Reduce HP by ``amount`` without dropping below zero."""
+        """Reduce HP by ``amount`` considering any active damage negation."""
+        from effects.status_effects import DamageNegate
+        for eff in list(self.effects):
+            if isinstance(eff, DamageNegate):
+                self.remove_effect(eff.name)
+                return
         self.hp = max(0, self.hp - amount)
 
     def heal(self, amount: int):

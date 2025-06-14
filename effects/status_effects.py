@@ -75,3 +75,33 @@ class CounterSpell(StatusEffect):
     """Negate the next mana-based card used against the target."""
     name: str = "Counter Spell"
     duration: int = 1
+@dataclass
+class Stun(StatusEffect):
+    """Prevents the target from acting for the duration."""
+
+    def on_apply(self, target):
+        target.stunned = True
+
+    def on_expire(self, target):
+        target.stunned = False
+
+@dataclass
+class DamageNegate(StatusEffect):
+    """Negate the next instance of damage dealt to the target."""
+
+    def on_apply(self, target):
+        pass
+
+    def on_expire(self, target):
+        pass
+
+@dataclass
+class PhoenixPact(StatusEffect):
+    """Revive the target at a set HP if they fall this turn."""
+    revive_hp: int = 5
+
+    def on_expire(self, target):
+        if target.hp <= 0:
+            target.hp = self.revive_hp
+            target.stunned = False
+
