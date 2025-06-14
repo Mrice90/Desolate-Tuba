@@ -332,6 +332,39 @@ BESTIARY = [
         "agi": 1,
         "res": 0,
         "tactics": "Use ear protection or silence magic to counter her wail. Holy magic disrupts her form."
+    },
+    {
+        "name": "TumbleTwig",
+        "description": "A small creature of animated twigs and leaves with glowing eyes. It ambushes prey from piles of foliage.",
+        "hp": 10,
+        "damage": 4,
+        "str": -1,
+        "thaumaturgy": 0,
+        "agi": 1,
+        "res": -1,
+        "tactics": "Uses hit-and-run attacks and camouflage. Vulnerable to fire and heavy blows."
+    },
+    {
+        "name": "Flitterbloom",
+        "description": "A floating flower with butterfly wings that emits a soothing glow and bursts of pollen.",
+        "hp": 10,
+        "damage": 4,
+        "str": -1,
+        "thaumaturgy": 1,
+        "agi": 1,
+        "res": -1,
+        "tactics": "Disorients foes with light and aroma. Easily scattered by strong winds or if pinned down."
+    },
+    {
+        "name": "Giggling Thistle",
+        "description": "A thorny plant creature that chuckles eerily before launching a barrage of prickles.",
+        "hp": 10,
+        "damage": 4,
+        "str": 0,
+        "thaumaturgy": -1,
+        "agi": 0,
+        "res": 1,
+        "tactics": "Distracts with unsettling laughs then pelts targets with thorns. Weak to fire and crushing attacks."
     }
 ]
 

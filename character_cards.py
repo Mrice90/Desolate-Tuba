@@ -280,6 +280,76 @@ CHARACTER_CARDS = {
             {"name": "War Banner", "type": "Summon", "cost": 3, "resource": "Stamina", "effect": "Plant a banner inspiring allies and intimidating foes.", "star": "Buff scales with Strength"},
             {"name": "Second Wind", "type": "Utility", "cost": 0, "resource": "Stamina", "effect": "Recover some health and stamina once per fight.", "star": "Restoration scales with Resilience"}
         ]
+    },
+    "Robin": {
+        "class": "Thaumaturge",
+        "lore": "A young mage from Wonderland who commands playful flames shaped like birds.",
+        "cards": [
+            {"name": "Flame Bird Control", "type": "Utility", "cost": 1, "resource": "Mana", "effect": "Command small birds of flame to distract or fetch.", "star": "Duration increases with Thaumaturgy"},
+            {"name": "Pyrokinetic Blast", "type": "Damage", "cost": 2, "resource": "Mana", "effect": "Unleash a burst of fire at a foe.", "star": "Deals 1D8 + Thaumaturgy fire damage"},
+            {"name": "Ember Shield", "type": "Buff", "cost": 2, "resource": "Mana", "effect": "Form a barrier of flame that absorbs harm.", "star": "Absorbs up to 2D6 damage scaling with Resilience"},
+            {"name": "Firewalk", "type": "Buff", "cost": 1, "resource": "Stamina", "effect": "Dash across the field with fiery speed.", "star": "Grants +2 Agility next turn"}
+        ]
+    },
+    "Liana Swiftarrow": {
+        "class": "Archer",
+        "lore": "An agile huntress raised in mystical woods, renowned for her enchanted arrows.",
+        "cards": [
+            {"name": "Piercing Wind Arrow", "type": "Damage", "cost": 1, "resource": "Stamina", "effect": "Fire a precise arrow that ignores some defense.", "star": "Deals 1D10 damage ignoring 2 Guard"},
+            {"name": "Whirlwind Arrows", "type": "Damage", "cost": 2, "resource": "Stamina", "effect": "Loose several arrows in a wide arc.", "star": "Hit up to three targets for 1D6 each"},
+            {"name": "Shadow Leap", "type": "Utility", "cost": 1, "resource": "Stamina", "effect": "Instantly reposition to a nearby spot.", "star": "Gain +2 dodge for one turn"},
+            {"name": "Eagle Focus", "type": "Buff", "cost": 1, "resource": "Mana", "effect": "Sharpen aim with mystical focus.", "star": "+1 Agility and +1 Strength next turn"}
+        ]
+    },
+    "Sir Hoppington": {
+        "class": "Wonderland Knight",
+        "lore": "A courageous rabbit knight trained by the March Hare, wielding a mighty sword and boundless zeal.",
+        "cards": [
+            {"name": "Mighty Leap Strike", "type": "Damage", "cost": 2, "resource": "Stamina", "effect": "Leap high and smash down on a foe.", "star": "Deals 2D6 damage"},
+            {"name": "Carrot Regeneration", "type": "Buff", "cost": 1, "resource": "Stamina", "effect": "Nibble a magical carrot to heal.", "star": "Restore 2D4 HP"},
+            {"name": "Rabbit Reflexes", "type": "Buff", "cost": 1, "resource": "Stamina", "effect": "Heighten your reflexes to dodge attacks.", "star": "+2 Agility for one turn"},
+            {"name": "Knightly Thrust", "type": "Damage", "cost": 1, "resource": "Stamina", "effect": "Precise sword thrust.", "star": "Damage scales with Strength"}
+        ]
+    },
+    "Sir Shellington": {
+        "class": "Guardian",
+        "lore": "An ancient tortoise sworn to protect the Tulgey Wood with patient strength and sturdy shell.",
+        "cards": [
+            {"name": "Shell Fortress", "type": "Buff", "cost": 2, "resource": "Stamina", "effect": "Withdraw into a near-impenetrable shell.", "star": "Absorbs 3D6 damage"},
+            {"name": "Nature's Boon", "type": "Buff", "cost": 2, "resource": "Mana", "effect": "Call on woodland spirits to heal an ally.", "star": "Heal 2D6 HP"},
+            {"name": "Thorned Vines Strike", "type": "Damage", "cost": 1, "resource": "Mana", "effect": "Summon vines to lash at foes.", "star": "Deals 1D6 piercing"},
+            {"name": "Forest's Wrath", "type": "Damage", "cost": 2, "resource": "Mana", "effect": "Release a burst of natural energy around you.", "star": "Deals 1D8 nature damage and may entangle"}
+        ]
+    },
+    "Zephyr Whispertail": {
+        "class": "Ninja",
+        "lore": "A stealthy Wonderland cat who wields throwing weapons with uncanny grace.",
+        "cards": [
+            {"name": "Rapid Throw", "type": "Damage", "cost": 1, "resource": "Stamina", "effect": "Hurl multiple blades in a flash.", "star": "Up to four hits for 1D6 each"},
+            {"name": "Precision Strike", "type": "Damage", "cost": 2, "resource": "Stamina", "effect": "Aim for an enemy's weak spot.", "star": "Deals 1D8 damage with high crit chance"},
+            {"name": "Shadow Blend", "type": "Buff", "cost": 1, "resource": "Mana", "effect": "Fade into the surroundings, becoming hard to hit.", "star": "Gain invisibility for one turn"},
+            {"name": "Cheshire Vanish", "type": "Utility", "cost": 2, "resource": "Mana", "effect": "Teleport a short distance in a swirl of mist.", "star": "Instant reposition"}
+        ]
+    },
+    "Alderon": {
+        "class": "Jubjub Bird Warden",
+        "lore": "A nymph guardian devoted to protecting Wonderland's forests and creatures.",
+        "cards": [
+            {"name": "Thorned Strike", "type": "Damage", "cost": 1, "resource": "Mana", "effect": "Summon vines to lash and entangle a foe.", "star": "Deals 1D6+2 damage and entangles"},
+            {"name": "Jubjub Roar", "type": "Debuff", "cost": 2, "resource": "Stamina", "effect": "Unleash a fearsome roar that shakes enemies.", "star": "Deals 1D4+1 psychic damage and causes fear"},
+            {"name": "Guardian's Arrow", "type": "Damage", "cost": 1, "resource": "Stamina", "effect": "Loose a carefully aimed shot from your longbow.", "star": "Damage scales with Strength"},
+            {"name": "Forest Ward", "type": "Buff", "cost": 2, "resource": "Mana", "effect": "Call upon nature to shield an ally.", "star": "Increases Resilience for two turns"}
+        ]
+    },
+    "Sir Heartstrong": {
+        "class": "Royal Guard",
+        "lore": "A stalwart knight sworn to the Queen of Hearts, famed for unwavering loyalty and strength.",
+        "cards": [
+            {"name": "Axe of Loyalty", "type": "Damage", "cost": 2, "resource": "Stamina", "effect": "Deliver a powerful axe blow causing bleeding.", "star": "1D10+1 damage and bleed for 2 turns"},
+            {"name": "Tactical Defense", "type": "Buff", "cost": 1, "resource": "Stamina", "effect": "Raise your guard to block attacks.", "star": "Increase Guard by 2 this turn"},
+            {"name": "Shield Bash", "type": "Damage", "cost": 1, "resource": "Stamina", "effect": "Strike with your shield to stagger the foe.", "star": "Deals 1D6 damage"},
+            {"name": "Loyalty Rally", "type": "Buff", "cost": 2, "resource": "Stamina", "effect": "Rally nearby allies with a shout of devotion.", "star": "Allies gain +1 Resilience"}
+        ]
     }
 }
 
@@ -464,5 +534,61 @@ CHARACTER_PROGRESSIONS = {
         "hp_regen": 1.5, "hp_regen_per_level": 0.2,
         "mana_regen": 0.2, "mana_regen_per_level": 0.1,
         "stamina_regen": 2.0, "stamina_regen_per_level": 0.2
+    },
+    "Robin": {
+        "base_hp": 16, "hp_per_level": 4,
+        "base_mana": 20, "mana_per_level": 5,
+        "base_stamina": 12, "stamina_per_level": 3,
+        "hp_regen": 0.6, "hp_regen_per_level": 0.1,
+        "mana_regen": 1.0, "mana_regen_per_level": 0.2,
+        "stamina_regen": 0.4, "stamina_regen_per_level": 0.1
+    },
+    "Liana Swiftarrow": {
+        "base_hp": 14, "hp_per_level": 3,
+        "base_mana": 10, "mana_per_level": 2,
+        "base_stamina": 22, "stamina_per_level": 5,
+        "hp_regen": 0.4, "hp_regen_per_level": 0.1,
+        "mana_regen": 0.4, "mana_regen_per_level": 0.1,
+        "stamina_regen": 1.0, "stamina_regen_per_level": 0.2
+    },
+    "Sir Hoppington": {
+        "base_hp": 24, "hp_per_level": 6,
+        "base_mana": 8, "mana_per_level": 2,
+        "base_stamina": 18, "stamina_per_level": 4,
+        "hp_regen": 1.2, "hp_regen_per_level": 0.2,
+        "mana_regen": 0.3, "mana_regen_per_level": 0.1,
+        "stamina_regen": 1.5, "stamina_regen_per_level": 0.2
+    },
+    "Sir Shellington": {
+        "base_hp": 30, "hp_per_level": 8,
+        "base_mana": 10, "mana_per_level": 2,
+        "base_stamina": 10, "stamina_per_level": 2,
+        "hp_regen": 1.5, "hp_regen_per_level": 0.2,
+        "mana_regen": 0.5, "mana_regen_per_level": 0.1,
+        "stamina_regen": 0.6, "stamina_regen_per_level": 0.1
+    },
+    "Zephyr Whispertail": {
+        "base_hp": 18, "hp_per_level": 4,
+        "base_mana": 12, "mana_per_level": 3,
+        "base_stamina": 20, "stamina_per_level": 5,
+        "hp_regen": 0.5, "hp_regen_per_level": 0.1,
+        "mana_regen": 0.6, "mana_regen_per_level": 0.1,
+        "stamina_regen": 1.0, "stamina_regen_per_level": 0.2
+    },
+    "Alderon": {
+        "base_hp": 20, "hp_per_level": 5,
+        "base_mana": 15, "mana_per_level": 3,
+        "base_stamina": 15, "stamina_per_level": 3,
+        "hp_regen": 0.8, "hp_regen_per_level": 0.1,
+        "mana_regen": 0.8, "mana_regen_per_level": 0.1,
+        "stamina_regen": 0.8, "stamina_regen_per_level": 0.1
+    },
+    "Sir Heartstrong": {
+        "base_hp": 24, "hp_per_level": 5,
+        "base_mana": 12, "mana_per_level": 2,
+        "base_stamina": 18, "stamina_per_level": 4,
+        "hp_regen": 1.0, "hp_regen_per_level": 0.1,
+        "mana_regen": 0.5, "mana_regen_per_level": 0.1,
+        "stamina_regen": 1.2, "stamina_regen_per_level": 0.2
     }
 }
