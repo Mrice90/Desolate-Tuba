@@ -69,7 +69,8 @@ class DungeonBattleGUI(BattleGUI):
         """Handle battle conclusion with loot and continue prompt."""
         self.victory = won
         if won:
-            self.player.gain_xp(50)
+            reward = getattr(self.enemy, "xp_reward", 50)
+            self.player.gain_xp(reward)
             loot = None
             if random.random() < 0.5:
                 loot = random.choice(create_basic_items())
