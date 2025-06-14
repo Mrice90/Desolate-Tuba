@@ -1,5 +1,6 @@
 import tkinter as tk
 from bestiary import BESTIARY
+from ui.fullscreen import create_fullscreen_root
 
 
 def _show_monster(monster, parent):
@@ -25,8 +26,7 @@ def _show_monster(monster, parent):
 
 def show_bestiary():
     """Display bestiary entries as a clickable list of names."""
-    root = tk.Tk()
-    root.title("Bestiary")
+    root = create_fullscreen_root("Bestiary")
 
     frame = tk.Frame(root)
     frame.pack(fill="both", expand=True)

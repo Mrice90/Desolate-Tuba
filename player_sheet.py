@@ -2,6 +2,7 @@ import tkinter as tk
 from characters import Character
 from deck_builder import run_deck_builder_menu
 from items import create_basic_items
+from ui.fullscreen import create_fullscreen_root
 
 _ICON_OPTIONS = ["@", "#", "&", "%"]
 
@@ -33,8 +34,7 @@ def run_player_sheet(player: Character | None = None) -> Character:
     if player is None:
         player = _new_character()
 
-    root = tk.Tk()
-    root.title("Player Sheet")
+    root = create_fullscreen_root("Player Sheet")
 
     name_var = tk.StringVar(value=player.name)
     tk.Label(root, text="Name:").pack()
@@ -85,14 +85,14 @@ def run_player_sheet(player: Character | None = None) -> Character:
         run_deck_builder_menu(player)
         _refresh_stats()
 
-    tk.Button(root, text="Edit Deck", command=edit_deck).pack(pady=5)
+    tk.Button(root, text="Edit Deck", command=edit_deck, font=("Arial", 16), height=2).pack(pady=10)
 
     def _confirm():
         player.name = name_var.get()
         player.icon = icon_var.get()
         root.quit()
 
-    tk.Button(root, text="Confirm", command=_confirm).pack(pady=5)
+    tk.Button(root, text="Confirm", command=_confirm, font=("Arial", 16), height=2).pack(pady=10)
     root.mainloop()
     root.destroy()
     return player

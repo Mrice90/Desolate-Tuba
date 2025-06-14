@@ -1,5 +1,6 @@
 import tkinter as tk
 from battle.engine import simple_damage, simple_heal, gain_resource
+from ui.fullscreen import create_fullscreen_root
 from effects.status_effects import (
     StatBuff,
     DodgeBuff,
@@ -123,8 +124,7 @@ def run_deck_builder_menu(player: Character):
     card_infos = UNIVERSAL_CARDS
     card_prototypes = [_make_card(c) for c in card_infos]
 
-    root = tk.Tk()
-    root.title(f"Deck Builder - {player.name}")
+    root = create_fullscreen_root(f"Deck Builder - {player.name}")
 
     deck = []
     card_counts = {c.name: 0 for c in card_prototypes}
