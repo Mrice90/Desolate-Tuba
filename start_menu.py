@@ -6,7 +6,7 @@ def run_start_menu():
 
     Returns one of:
     ``"dungeon"`` for the dungeon crawler,
-    ``"deckbuilder"`` to launch the deck builder,
+    ``"playersheet"`` to open the player sheet,
     ``"bestiary"`` to view the bestiary,
     ``"library"`` to view the card library,
     or ``None`` if the user closes the menu without making a choice.
@@ -18,7 +18,7 @@ def run_start_menu():
         root.quit()
 
     def choose_deckbuilder():
-        selection["mode"] = "deckbuilder"
+        selection["mode"] = "playersheet"
         root.quit()
 
     def choose_bestiary():
@@ -38,7 +38,7 @@ def run_start_menu():
     tk.Label(root, text="Medieval Duel", font=("Arial", 24)).pack(pady=10)
 
     tk.Button(root, text="Dungeon Battle", width=20, command=choose_dungeon).pack(pady=5)
-    tk.Button(root, text="Deck Builder", width=20, command=choose_deckbuilder).pack(pady=5)
+    tk.Button(root, text="Player Sheet", width=20, command=choose_deckbuilder).pack(pady=5)
     tk.Button(root, text="Bestiary", width=20, command=choose_bestiary).pack(pady=5)
     tk.Button(root, text="Card Library", width=20, command=choose_library).pack(pady=5)
     tk.Button(root, text="Quit", width=20, command=exit_game).pack(pady=5)

@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import simpledialog
 from battle.engine import simple_damage, simple_heal, gain_resource
 from effects.status_effects import (
     StatBuff,
@@ -11,9 +10,8 @@ from effects.status_effects import (
     PhoenixPact,
 )
 from characters import Character
-from items import create_basic_items
 from cards import Card
-from character_cards import CHARACTER_CARDS, UNIVERSAL_CARDS, CHARACTER_PROGRESSIONS
+from character_cards import UNIVERSAL_CARDS
 
 
 # Level based deck size --------------------------------------------------
@@ -118,35 +116,15 @@ def _make_card(info):
     return card
 
 
-def _choose_character():
-    chars = list(CHARACTER_CARDS.keys())
-    root = tk.Tk()
-    root.title("Choose Character")
-    selected = tk.StringVar(value=chars[0])
-    tk.Label(root, text="Choose Character:").pack(anchor="w")
-    for name in chars:
-        cls = CHARACTER_CARDS[name]["class"]
-        tk.Radiobutton(root, text=f"{name} ({cls})", variable=selected, value=name).pack(anchor="w")
-    tk.Button(root, text="Next", command=root.quit).pack(pady=5)
-    root.mainloop()
-    root.destroy()
-    return selected.get()
-
-
-def run_deck_builder_menu():
-    """Interactive menu for selecting a character and building a level-based deck."""
-    char_name = _choose_character()
-    level = simpledialog.askinteger("Level", "Select character level (1-20)", minvalue=1, maxvalue=20)
-    if not level:
-        return None
+def run_deck_builder_menu(player: Character):
+    """Edit ``player`` deck using the universal card pool."""
+    level = player.level
     deck_limit = get_deck_size_for_level(level)
-    card_infos = UNIVERSAL_CARDS + CHARACTER_CARDS[char_name]["cards"]
+    card_infos = UNIVERSAL_CARDS
     card_prototypes = [_make_card(c) for c in card_infos]
 
-    progression = CHARACTER_PROGRESSIONS[char_name]
-
     root = tk.Tk()
-    root.title(f"Deck Builder - {char_name}")
+    root.title(f"Deck Builder - {player.name}")
 
     deck = []
     card_counts = {c.name: 0 for c in card_prototypes}
@@ -268,26 +246,14 @@ def run_deck_builder_menu():
         if len(deck) == deck_limit:
             root.quit()
 
-    start_btn = tk.Button(root, text="Start Game", state="disabled", command=finish)
+    start_btn = tk.Button(root, text="Save", state="disabled", command=finish)
     start_btn.pack(pady=5)
 
     update_labels()
     root.mainloop()
     root.destroy()
 
-    character = Character(
-        name=char_name,
-        hp=progression["base_hp"],
-        mana=progression["base_mana"],
-        stamina=progression["base_stamina"],
-        deck=deck,
-        items=create_basic_items()[:2],
-        hp_regen=progression["hp_regen"],
-        mana_regen=progression["mana_regen"],
-        stamina_regen=progression["stamina_regen"],
-        progression=progression,
-        level=1,
-    )
-    for _ in range(level - 1):
-        character.level_up()
-    return character
+    player.deck = deck
+    player.discard_pile = []
+    player.hand = []
+    return player

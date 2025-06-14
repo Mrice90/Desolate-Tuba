@@ -1,6 +1,6 @@
 from battle.engine import create_basic_cards, run_battle
 from battle.dungeon_gui import DungeonBattleGUI
-from deck_builder import run_deck_builder_menu
+from player_sheet import run_player_sheet
 from start_menu import run_start_menu
 from characters import Character
 from items import create_basic_items
@@ -19,16 +19,17 @@ def main():
     player = None
     mode = run_start_menu()
     while mode:
-        if mode == "deckbuilder":
-            player = run_deck_builder_menu()
+        if mode == "playersheet":
+            player = run_player_sheet(player)
         elif mode == "bestiary":
             show_bestiary()
         elif mode == "library":
             show_card_library()
         else:
             if player is None:
-                player = run_deck_builder_menu()
+                player = run_player_sheet()
             if mode == "dungeon":
+                player = run_player_sheet(player)
                 continue_dungeon = True
                 while continue_dungeon:
                     enemy = create_enemy_for_level(player.level)

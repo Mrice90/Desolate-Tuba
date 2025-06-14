@@ -20,6 +20,9 @@ class Character:
     level: int = 1
     xp: int = 0
     xp_to_next: int = 100
+    icon: str = "@"
+    unspent_points: int = 0
+    xp_reward: int = 0
     hp_regen: float = 1
     mana_regen: float = 1
     stamina_regen: float = 1
@@ -202,7 +205,26 @@ class Character:
         self.hp_regen += self.progression.get('hp_regen_per_level', 0.1)
         self.mana_regen += self.progression.get('mana_regen_per_level', 0.1)
         self.stamina_regen += self.progression.get('stamina_regen_per_level', 0.1)
+        self.unspent_points += 1
         # Restore stats on level up
         self.hp = self.max_hp
         self.mana = self.max_mana
         self.stamina = self.max_stamina
+
+    def allocate_point(self, stat: str) -> bool:
+        """Spend one stat point on ``stat`` if available."""
+        if self.unspent_points <= 0:
+            return False
+        stat = stat.lower()
+        if stat.startswith('str'):
+            self.strength_mod += 1
+        elif stat.startswith('tha'):
+            self.thaumaturgy_mod += 1
+        elif stat.startswith('agi'):
+            self.agility_mod += 1
+        elif stat.startswith('res'):
+            self.resilience_mod += 1
+        else:
+            return False
+        self.unspent_points -= 1
+        return True

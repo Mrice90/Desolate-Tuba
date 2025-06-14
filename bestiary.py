@@ -335,6 +335,11 @@ BESTIARY = [
     }
 ]
 
+# automatically assign an experience reward if missing
+for _idx, _beast in enumerate(BESTIARY, start=1):
+    if 'xp' not in _beast:
+        _beast['xp'] = _beast['hp'] + _beast['damage'] * 2
+
 
 def create_enemy_for_level(level: int) -> Character:
     """Return a simple enemy ``Character`` from ``BESTIARY`` scaled by level."""
@@ -361,4 +366,5 @@ def create_enemy_for_level(level: int) -> Character:
         agility_mod=data.get("agi", 0),
         resilience_mod=data.get("res", 0),
     )
+    enemy.xp_reward = data.get("xp", 50)
     return enemy
