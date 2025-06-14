@@ -4,6 +4,7 @@ from typing import List, Optional, Dict
 
 from cards import Card
 from effects.status_effects import StatusEffect
+from summons import Summon
 
 
 @dataclass
@@ -37,6 +38,7 @@ class Character:
     discard_pile: List[Card] = field(init=False, default_factory=list)
     effects: List[StatusEffect] = field(init=False, default_factory=list)
     dodge_chance: int = field(init=False, default=0)
+    summons: List[Summon] = field(init=False, default_factory=list)
 
     def __post_init__(self):
         self.max_hp = self.hp
@@ -86,6 +88,12 @@ class Character:
         if index < 0 or index >= len(self.hand):
             return False
         card = self.hand[index]
+        # Level/stat requirements
+        if self.level < getattr(card, "level_requirement", 1):
+            return False
+        for stat, req in getattr(card, "stat_requirements", {}).items():
+            if self.stat_mod(stat) < req:
+                return False
         if card.resource_type == 'mana' and self.mana >= card.cost:
             self.mana -= card.cost
         elif card.resource_type == 'stamina' and self.stamina >= card.cost:
@@ -148,6 +156,19 @@ class Character:
                 expired.append(eff)
         for eff in expired:
             self.effects.remove(eff)
+
+    def add_summon(self, summon: Summon):
+        """Add a summon under this character's control."""
+        self.summons.append(summon)
+
+    def update_summons(self, opponent):
+        expired = []
+        for sm in self.summons:
+            sm.act(self, opponent)
+            if sm.expired():
+                expired.append(sm)
+        for sm in expired:
+            self.summons.remove(sm)
 
     def use_item(self, index, target=None):
         if index < 0 or index >= len(self.items):

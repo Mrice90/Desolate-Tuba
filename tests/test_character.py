@@ -37,6 +37,26 @@ class TestCharacterSystems(unittest.TestCase):
         self.assertEqual(enemy.hp, 8)
         self.assertEqual(len(enemy.effects), 0)
 
+    def test_summon_damage(self):
+        from summons import Summon
+        player = Character("Summoner", 10, 10, 10)
+        enemy = Character("Target", 10, 10, 10)
+        player.add_summon(Summon("Imp", 2, 2))
+        player.update_summons(enemy)
+        self.assertEqual(enemy.hp, 8)
+        player.update_summons(enemy)
+        self.assertEqual(enemy.hp, 6)
+        self.assertEqual(len(player.summons), 0)
+
+    def test_card_requirements(self):
+        card = Card("High", 1, "mana", lambda u, t: None, level_requirement=2)
+        char = Character("Mage", 10, 10, 10, deck=[card])
+        char.hand = [card]
+        self.assertFalse(char.play_card(0, None))
+        char.level = 2
+        char.mana = 1
+        self.assertTrue(char.play_card(0, None))
+
 
 if __name__ == "__main__":
     unittest.main()
