@@ -1,7 +1,8 @@
 from battle.engine import create_basic_cards, run_battle
 from battle.dungeon_gui import DungeonBattleGUI
 from player_sheet import run_player_sheet
-from start_menu import run_start_menu
+from start_menu import run_start_menu, run_title_menu
+from save_system import load_game
 from characters import Character
 from items import create_basic_items
 from bestiary import create_enemy_for_level
@@ -17,7 +18,19 @@ def build_sample_character(name):
 
 def main():
     player = None
-    mode = run_start_menu()
+    choice = run_title_menu()
+    if not choice:
+        return
+    if choice["mode"] == "load" or choice["mode"] == "continue":
+        player = load_game()
+    if player is None:
+        player = run_player_sheet()
+
+    result = run_start_menu(player)
+    mode = result.get("mode")
+    if result.get("player") is not None:
+        player = result.get("player")
+
     while mode:
         if mode == "playersheet":
             player = run_player_sheet(player)
@@ -40,7 +53,10 @@ def main():
                 enemy = build_sample_character("Enemy")
                 run_battle(player, enemy)
 
-        mode = run_start_menu()
+        result = run_start_menu(player)
+        if result.get("player") is not None:
+            player = result["player"]
+        mode = result.get("mode")
 
 
 if __name__ == "__main__":
