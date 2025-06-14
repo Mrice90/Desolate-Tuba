@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from enemy_ai import choose_card_index
+from ui.fullscreen import create_fullscreen_root
 
 
 class BattleGUI:
@@ -9,8 +10,7 @@ class BattleGUI:
     def __init__(self, player, enemy):
         self.player = player
         self.enemy = enemy
-        self.root = tk.Tk()
-        self.root.title("Medieval Duel")
+        self.root = create_fullscreen_root("Medieval Duel")
 
         # Log output
         self.log_text = tk.Text(self.root, height=10, state="disabled")
@@ -32,14 +32,15 @@ class BattleGUI:
         self.option_frame = tk.Frame(self.root)
         self.option_frame.pack(fill="both", expand=True)
 
+        btn_opts = {"font": ("Arial", 16), "height": 2}
         self.battle_btn = tk.Button(self.option_frame, text="Battle",
-                                    command=self.show_hand)
+                                    command=self.show_hand, **btn_opts)
         self.flee_btn = tk.Button(self.option_frame, text="Flee",
-                                  command=self.flee)
+                                  command=self.flee, **btn_opts)
         self.items_btn = tk.Button(self.option_frame, text="Items",
-                                   command=self.show_items)
+                                   command=self.show_items, **btn_opts)
         self.fold_btn = tk.Button(self.option_frame, text="Fold",
-                                  command=self.fold)
+                                  command=self.fold, **btn_opts)
 
         self.battle_btn.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
         self.flee_btn.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
@@ -87,13 +88,35 @@ class BattleGUI:
     def show_hand(self):
         self.clear_action_frame()
         for idx, card in enumerate(self.player.hand):
-            text = f"{card.name} ({card.cost} {card.resource_type})"
-            btn = tk.Button(self.action_frame, text=text,
-                            command=lambda i=idx: self.play_card(i))
-            btn.pack(fill="x")
+            row, col = divmod(idx, 2)
+            est = ""
+            if getattr(card, "card_type", "").lower() == "damage":
+                dmg = card.cost * (3 if card.resource_type == "mana" else 2)
+                est = f"\nEst dmg: {dmg}"
+            text = (
+                f"{card.name}\nCost: {card.cost} {card.resource_type}\n"
+                f"{card.description}{est}"
+            )
+            btn = tk.Button(
+                self.action_frame,
+                text=text,
+                wraplength=200,
+                justify="left",
+                font=("Arial", 14),
+                command=lambda i=idx: self.play_card(i),
+            )
+            btn.grid(row=row, column=col, sticky="nsew", padx=5, pady=5)
             self.card_buttons.append(btn)
-        tk.Button(self.action_frame, text="Back",
-                  command=self.clear_action_frame).pack(fill="x")
+        for i in range(2):
+            self.action_frame.rowconfigure(i, weight=1)
+            self.action_frame.columnconfigure(i, weight=1)
+        tk.Button(
+            self.action_frame,
+            text="Back",
+            command=self.clear_action_frame,
+            font=("Arial", 14),
+            height=2,
+        ).grid(row=2, column=0, columnspan=2, pady=5)
 
     def show_items(self):
         self.clear_action_frame()
@@ -102,12 +125,22 @@ class BattleGUI:
             return
         for idx, item in enumerate(self.player.items):
             text = item.name
-            btn = tk.Button(self.action_frame, text=text,
-                            command=lambda i=idx: self.use_item(i))
-            btn.pack(fill="x")
+            btn = tk.Button(
+                self.action_frame,
+                text=text,
+                font=("Arial", 14),
+                height=2,
+                command=lambda i=idx: self.use_item(i),
+            )
+            btn.pack(fill="x", pady=5)
             self.item_buttons.append(btn)
-        tk.Button(self.action_frame, text="Back",
-                  command=self.clear_action_frame).pack(fill="x")
+        tk.Button(
+            self.action_frame,
+            text="Back",
+            command=self.clear_action_frame,
+            font=("Arial", 14),
+            height=2,
+        ).pack(fill="x", pady=5)
 
     def flee(self):
         self.log("You fled the battle!")

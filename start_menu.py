@@ -1,4 +1,5 @@
 import tkinter as tk
+from ui.fullscreen import create_fullscreen_root
 
 
 def run_start_menu():
@@ -32,16 +33,16 @@ def run_start_menu():
     def exit_game():
         root.quit()
 
-    root = tk.Tk()
-    root.title("Medieval Duel - Main Menu")
+    root = create_fullscreen_root("Medieval Duel - Main Menu")
 
-    tk.Label(root, text="Medieval Duel", font=("Arial", 24)).pack(pady=10)
+    tk.Label(root, text="Medieval Duel", font=("Arial", 36)).pack(pady=20)
 
-    tk.Button(root, text="Dungeon Battle", width=20, command=choose_dungeon).pack(pady=5)
-    tk.Button(root, text="Player Sheet", width=20, command=choose_deckbuilder).pack(pady=5)
-    tk.Button(root, text="Bestiary", width=20, command=choose_bestiary).pack(pady=5)
-    tk.Button(root, text="Card Library", width=20, command=choose_library).pack(pady=5)
-    tk.Button(root, text="Quit", width=20, command=exit_game).pack(pady=5)
+    btn_opts = {"font": ("Arial", 20), "width": 20, "height": 2}
+    tk.Button(root, text="Dungeon Battle", command=choose_dungeon, **btn_opts).pack(pady=10)
+    tk.Button(root, text="Player Sheet", command=choose_deckbuilder, **btn_opts).pack(pady=10)
+    tk.Button(root, text="Bestiary", command=choose_bestiary, **btn_opts).pack(pady=10)
+    tk.Button(root, text="Card Library", command=choose_library, **btn_opts).pack(pady=10)
+    tk.Button(root, text="Quit", command=exit_game, **btn_opts).pack(pady=10)
 
     root.mainloop()
     root.destroy()

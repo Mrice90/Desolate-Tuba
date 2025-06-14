@@ -34,3 +34,9 @@ The repository now includes two data modules used by the engine:
 - `character_cards.py` – card libraries and lore for each playable character along with the universal card set.
 
 These datasets are derived from the design codex and can be imported by other parts of the game for future content.
+
+## Card Types and Leveling
+
+Cards come in several rarity categories. **Common**, **Uncommon** and **Rare** cards can be found as loot or purchased from shops. **Unique** cards are tied to a particular character and are earned when that character levels up. The **Universal** card set is always available and can be used in any deck.
+
+Characters gain experience after battles and level up when they reach their XP threshold. Leveling up increases their maximum stats based on the progression table and grants an unspent stat point. Future updates will use level ups to award unique cards.

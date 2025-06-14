@@ -1,5 +1,6 @@
 import tkinter as tk
 from character_cards import CHARACTER_CARDS, UNIVERSAL_CARDS
+from ui.fullscreen import create_fullscreen_root
 
 
 def _show_card(card, parent):
@@ -22,8 +23,7 @@ def _show_card(card, parent):
 
 def show_card_library():
     """Display all card names in a scrollable list."""
-    root = tk.Tk()
-    root.title("Card Library")
+    root = create_fullscreen_root("Card Library")
 
     frame = tk.Frame(root)
     frame.pack(fill="both", expand=True)
