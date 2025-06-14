@@ -1,7 +1,15 @@
 import tkinter as tk
 from tkinter import simpledialog
 from battle.engine import simple_damage, simple_heal, gain_resource
-from effects.status_effects import StatBuff, DodgeBuff, CounterSpell
+from effects.status_effects import (
+    StatBuff,
+    DodgeBuff,
+    CounterSpell,
+    DamageOverTime,
+    Stun,
+    DamageNegate,
+    PhoenixPact,
+)
 from characters import Character
 from items import create_basic_items
 from cards import Card
@@ -29,6 +37,11 @@ def _scale_amount(cost, resource):
     return max(1, cost * 2)
 
 
+def _swap_top_two(deck):
+    if len(deck) >= 2:
+        deck[0], deck[1] = deck[1], deck[0]
+
+
 _EFFECT_MAP = {
     "strike": lambda: ("Damage", lambda u, t: simple_damage(u, t, 3)),
     "defend": lambda: ("Buff", lambda u, t: u.add_effect(StatBuff("Defend", 1, "armor", 4))),
@@ -40,6 +53,26 @@ _EFFECT_MAP = {
     "second wind": lambda: ("Utility", lambda u, t: simple_heal(u, u, 5)),
     "counter spell": lambda: ("Utility", lambda u, t: u.add_effect(CounterSpell())),
     "inspire": lambda: ("Buff", lambda u, t: (u.add_effect(StatBuff("InspireSTR", 2, "strength_mod", 1)), u.add_effect(StatBuff("InspireAGI", 2, "agility_mod", 1)))),
+    "spirit lash": lambda: ("Damage", lambda u, t: simple_damage(u, t, 2 + (1 if t.effects else 0), "thaumaturgy")),
+    "cunning step": lambda: ("Utility", lambda u, t: (u.add_effect(StatBuff("Cunning Step", 2, "agility_mod", 2)), u.draw_card())),
+    "magic sparkle": lambda: ("Utility", lambda u, t: (print(f"Top enemy card: {t.deck[0].name}" if t.deck else "Enemy deck empty"))),
+    "guarded heart": lambda: ("Buff", lambda u, t: u.add_effect(StatBuff("Guarded Heart", 2, "resilience_mod", 1))),
+    "force push": lambda: ("Damage", lambda u, t: (simple_damage(u, t, 2, "strength"), print(f"{t.name} is pushed back!"))),
+    "fade step": lambda: ("Utility", lambda u, t: u.add_effect(DodgeBuff("Fade Step", 1, 20))),
+    "stone grip": lambda: ("Debuff", lambda u, t: t.add_effect(StatBuff("Stone Grip", 1, "agility_mod", -1))),
+    "ember shot": lambda: ("Damage", lambda u, t: (simple_damage(u, t, 2, "thaumaturgy"), __import__('random').randint(1,100) <= 15 and t.add_effect(DamageOverTime("Burn", 2, 1)))),
+    "tactic study": lambda: ("Utility", lambda u, t: _swap_top_two(u.deck)),
+    "intimidate": lambda: ("Debuff", lambda u, t: t.add_effect(StatBuff("Intimidated", 2, "strength_mod", -1))),
+
+    "whirlwind slash": lambda: ("Damage", lambda u, t: (simple_damage(u, t, 3, "strength"), (__import__('random').randint(1,100) <= 25 and t.add_effect(StatBuff("Weaken", 2, "strength_mod", -1))))),
+    "ice shards": lambda: ("Damage", lambda u, t: (simple_damage(u, t, 2, "thaumaturgy"), t.add_effect(Stun("Freeze", 2)))),
+    "barrier bubble": lambda: ("Buff", lambda u, t: u.add_effect(DamageNegate("Barrier Bubble", 99))),
+    "acrobat's spin": lambda: ("Utility", lambda u, t: ([u.remove_effect(e.name) for e in list(u.effects) if isinstance(e, StatBuff) and e.attr=="agility_mod" and e.amount<0], u.add_effect(StatBuff("Acrobat's Spin", 2, "agility_mod", 2)))),
+    "shock infusion": lambda: ("Damage", lambda u, t: simple_damage(u, t, (6 if getattr(t, 'stunned', False) else 3), "thaumaturgy")),
+
+    "cataclysm blast": lambda: ("Damage", lambda u, t: simple_damage(u, t, 9 if len(t.effects)>=2 else 7, "thaumaturgy")),
+    "phoenix pact": lambda: ("Utility", lambda u, t: u.add_effect(PhoenixPact("Phoenix Pact", 2))),
+    "storm avatar": lambda: ("Buff", lambda u, t: (u.add_effect(StatBuff("StormAvatarSTR", 2, "strength_mod", 2)), u.add_effect(StatBuff("StormAvatarAGI", 2, "agility_mod", 2)), u.add_effect(StatBuff("StormAvatarRES", 2, "resilience_mod", 2)))),
 }
 
 

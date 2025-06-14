@@ -75,6 +75,10 @@ def run_battle(player: Character, enemy: Character):
         print(f"\n-- Turn {turn} --")
         print(f"{player.name} HP:{player.hp} Mana:{player.mana} Stamina:{player.stamina}")
         print(f"{enemy.name} HP:{enemy.hp} Mana:{enemy.mana} Stamina:{enemy.stamina}")
+        if getattr(player, "stunned", False):
+            print(f"{player.name} is stunned and cannot act!")
+            take_turn(enemy, player)
+            continue
         print("Your hand:")
         for idx, card in enumerate(player.hand):
             print(f"{idx+1}. {card.name} - Cost {card.cost} {card.resource_type} :: {card.description}")
