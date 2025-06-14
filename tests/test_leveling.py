@@ -7,10 +7,9 @@ from cards import Card
 
 class TestLevelSystems(unittest.TestCase):
     def test_deck_size_progression(self):
-        self.assertEqual(get_deck_size_for_level(1), 3)
-        self.assertEqual(get_deck_size_for_level(5), 8)
-        self.assertEqual(get_deck_size_for_level(10), 15)
-        self.assertEqual(get_deck_size_for_level(20), 35)
+        # Deck size is now fixed at 20 regardless of level
+        for level in (1, 5, 10, 20):
+            self.assertEqual(get_deck_size_for_level(level), 20)
 
     def test_unique_unlock_progression(self):
         self.assertEqual(get_unique_unlocks_for_level(1), 3)

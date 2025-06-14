@@ -19,14 +19,13 @@ from character_cards import UNIVERSAL_CARDS
 _LEVEL_INCREMENTS = {1: 3, 2: 1, 3: 1, 4: 1, 5: 2, 6: 1, 7: 1, 8: 2, 9: 1, 10: 2}
 
 def get_deck_size_for_level(level: int) -> int:
-    """Return total number of cards allowed for a given level."""
-    total = 0
-    for lv in range(1, level + 1):
-        if lv <= 10:
-            total += _LEVEL_INCREMENTS.get(lv, 0)
-        else:
-            total += 2
-    return min(35, total)
+    """Return the maximum number of cards allowed in a deck.
+
+    The prototype previously scaled deck size with the player's level but the
+    game now uses a fixed 20 card deck regardless of level.  This helper is
+    kept for compatibility with existing code/tests.
+    """
+    return 20
 
 
 def get_unique_unlocks_for_level(level: int) -> int:
@@ -137,6 +136,8 @@ def run_deck_builder_menu(player: Character):
     # Include any unique cards the player has unlocked
     card_prototypes.extend(player.unlocked_unique_cards)
 
+    card_types = sorted({c.card_type for c in card_prototypes})
+
     root = create_fullscreen_root(f"Deck Builder - {player.name}")
 
     deck = []
@@ -169,6 +170,28 @@ def run_deck_builder_menu(player: Character):
     avail_scroll.pack(side="right", fill="y")
 
     tk.Label(avail_frame, text="Available Cards (max 2 of each)").pack(anchor="w")
+
+    filter_frame = tk.Frame(avail_frame)
+    filter_frame.pack(anchor="w", pady=(0, 5))
+    filter_vars = {}
+    avail_rows: list[tuple[tk.Frame, Card]] = []
+
+    def refresh_available_display():
+        for row, card in avail_rows:
+            if filter_vars.get(card.card_type, tk.IntVar(value=1)).get():
+                row.pack(fill="x", pady=2)
+            else:
+                row.pack_forget()
+
+    for ctype in card_types:
+        var = tk.IntVar(value=1)
+        filter_vars[ctype] = var
+        tk.Checkbutton(
+            filter_frame,
+            text=ctype,
+            variable=var,
+            command=refresh_available_display,
+        ).pack(side="left")
 
     # Right column - deck list
     deck_container = tk.Frame(columns)
@@ -236,6 +259,7 @@ def run_deck_builder_menu(player: Character):
 
     for c in card_prototypes:
         row = tk.Frame(avail_frame, bd=1, relief="solid", padx=2, pady=2)
+        avail_rows.append((row, c))
         row.pack(fill="x", pady=2)
 
         info = f"{c.name} ({c.card_type}) - Cost: {c.cost} {c.resource_type}\n{c.description}"
@@ -250,6 +274,7 @@ def run_deck_builder_menu(player: Character):
         tk.Button(ctrl, text="+", command=lambda card=c: add_card(card), width=2).pack(side="left")
         tk.Button(ctrl, text="-", command=lambda card=c: remove_card(card), width=2).pack(side="left")
 
+    refresh_available_display()
     refresh_deck_display()
 
     deck_label = tk.Label(root, text=f"Deck size: 0/{deck_limit}")
