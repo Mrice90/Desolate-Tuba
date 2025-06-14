@@ -29,6 +29,17 @@ def get_deck_size_for_level(level: int) -> int:
     return min(35, total)
 
 
+def get_unique_unlocks_for_level(level: int) -> int:
+    """Return how many unique cards should be unlocked by ``level``."""
+    total = 0
+    for lv in range(1, level + 1):
+        if lv <= 10:
+            total += _LEVEL_INCREMENTS.get(lv, 0)
+        else:
+            total += 2
+    return min(35, total)
+
+
 def _scale_amount(cost, resource):
     """Return a simple damage/heal amount based on card cost and resource."""
     if resource.lower() == "mana":
@@ -123,6 +134,8 @@ def run_deck_builder_menu(player: Character):
     deck_limit = get_deck_size_for_level(level)
     card_infos = UNIVERSAL_CARDS
     card_prototypes = [_make_card(c) for c in card_infos]
+    # Include any unique cards the player has unlocked
+    card_prototypes.extend(player.unlocked_unique_cards)
 
     root = create_fullscreen_root(f"Deck Builder - {player.name}")
 
