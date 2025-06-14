@@ -284,16 +284,16 @@ CHARACTER_CARDS = {
 }
 
 UNIVERSAL_CARDS = [
-    {"name": "Strike", "cost": 1, "resource": "Stamina", "effect": "Perform a basic attack with your equipped weapon.", "purpose": "Offense – damage based on Strength"},
-    {"name": "Defend", "cost": 1, "resource": "Stamina", "effect": "Adopt a defensive stance, reducing damage taken until your next turn.", "purpose": "Defense – increases Resilience briefly"},
-    {"name": "Dodge", "cost": 1, "resource": "Stamina", "effect": "Make an evasive maneuver to avoid the next attack.", "purpose": "Defense – negates one incoming attack"},
-    {"name": "Healing Potion", "cost": 0, "resource": "Stamina", "effect": "Consume a potion to restore a moderate amount of health.", "purpose": "Recovery – heals HP"},
-    {"name": "Mana Potion", "cost": 0, "resource": "Stamina", "effect": "Drink a potion to regain a moderate amount of mana.", "purpose": "Recovery – restores mana"},
-    {"name": "Focus", "cost": 1, "resource": "Mana", "effect": "Concentrate to sharpen your next action.", "purpose": "Buff – improves offense of your next move"},
-    {"name": "Dispel Magic", "cost": 2, "resource": "Mana", "effect": "Release a burst of nullifying energy to remove a magical buff from an enemy or a debuff from an ally.", "purpose": "Utility – negates one magical effect"},
-    {"name": "Retreat", "cost": 1, "resource": "Stamina", "effect": "Swiftly move out of melee range without provoking attacks.", "purpose": "Mobility – reposition safely"},
-    {"name": "Inspire", "cost": 1, "resource": "Stamina", "effect": "Encourage an ally, boosting their damage and resistance for a short time.", "purpose": "Support – minor all-round boost"},
-    {"name": "Plan Ahead", "cost": 1, "resource": "Mana", "effect": "Take time to strategize, drawing 2 extra cards from your deck.", "purpose": "Utility – increases your options"}
+    {"name": "Strike", "cost": 1, "resource": "Stamina", "effect": "Perform a basic attack with your equipped weapon.", "purpose": "Offense – damage based on Strength", "category": "universal", "rarity": "common"},
+    {"name": "Defend", "cost": 1, "resource": "Stamina", "effect": "Adopt a defensive stance, reducing damage taken until your next turn.", "purpose": "Defense – increases Resilience briefly", "category": "universal", "rarity": "common"},
+    {"name": "Dodge", "cost": 1, "resource": "Stamina", "effect": "Make an evasive maneuver to avoid the next attack.", "purpose": "Defense – negates one incoming attack", "category": "universal", "rarity": "common"},
+    {"name": "Healing Potion", "cost": 0, "resource": "Stamina", "effect": "Consume a potion to restore a moderate amount of health.", "purpose": "Recovery – heals HP", "category": "universal", "rarity": "common"},
+    {"name": "Mana Potion", "cost": 0, "resource": "Stamina", "effect": "Drink a potion to regain a moderate amount of mana.", "purpose": "Recovery – restores mana", "category": "universal", "rarity": "common"},
+    {"name": "Focus", "cost": 1, "resource": "Mana", "effect": "Concentrate to sharpen your next action.", "purpose": "Buff – improves offense of your next move", "category": "universal", "rarity": "uncommon"},
+    {"name": "Dispel Magic", "cost": 2, "resource": "Mana", "effect": "Release a burst of nullifying energy to remove a magical buff from an enemy or a debuff from an ally.", "purpose": "Utility – negates one magical effect", "category": "universal", "rarity": "uncommon"},
+    {"name": "Retreat", "cost": 1, "resource": "Stamina", "effect": "Swiftly move out of melee range without provoking attacks.", "purpose": "Mobility – reposition safely", "category": "universal", "rarity": "common"},
+    {"name": "Inspire", "cost": 1, "resource": "Stamina", "effect": "Encourage an ally, boosting their damage and resistance for a short time.", "purpose": "Support – minor all-round boost", "category": "universal", "rarity": "uncommon"},
+    {"name": "Plan Ahead", "cost": 1, "resource": "Mana", "effect": "Take time to strategize, drawing 2 extra cards from your deck.", "purpose": "Utility – increases your options", "category": "universal", "rarity": "rare"}
 ]
 
 # Per-character stat progressions used by the leveling system

@@ -33,6 +33,18 @@ class DungeonBattleGUI(BattleGUI):
         enemy_x, enemy_y = 300, 80
         self.canvas.create_image(enemy_x, enemy_y, image=self.enemy_img)
 
+        # Player summons
+        px = 60
+        for sm in self.player.summons:
+            self.canvas.create_oval(px, 180, px + 20, 200, fill=sm.color)
+            px += 25
+
+        # Enemy summons
+        ex = 340
+        for sm in self.enemy.summons:
+            self.canvas.create_oval(ex, 40, ex + 20, 60, fill=sm.color)
+            ex += 25
+
         # Enemy health bar
         bar_width = 100
         bar_height = 10

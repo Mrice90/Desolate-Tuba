@@ -163,6 +163,7 @@ class BattleGUI:
     # Turn management -----------------------------------------------------
     def enemy_turn(self):
         self.enemy.update_effects()
+        self.enemy.update_summons(self.player)
         self.enemy.regenerate()
         if self.enemy.is_defeated():
             self.update_labels()
@@ -201,6 +202,7 @@ class BattleGUI:
     def new_turn(self):
         self.clear_action_frame()
         self.player.update_effects()
+        self.player.update_summons(self.enemy)
         self.player.regenerate()
         self.player.refill_hand()
         if self.player.is_defeated():

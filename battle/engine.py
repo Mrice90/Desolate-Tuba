@@ -68,6 +68,8 @@ def run_battle(player: Character, enemy: Character):
         enemy.regenerate()
         player.update_effects()
         enemy.update_effects()
+        player.update_summons(enemy)
+        enemy.update_summons(player)
         turn += 1
         print(f"\n-- Turn {turn} --")
         print(f"{player.name} HP:{player.hp} Mana:{player.mana} Stamina:{player.stamina}")

@@ -47,11 +47,26 @@ def _make_card(info):
         if ctype == "Damage":
             effect = lambda u, t, a=amount: simple_damage(u, t, a)
         elif ctype == "Buff":
-            effect = lambda u, t, a=amount: simple_heal(u, u, a)
+            effect = lambda u, t, a=amount: u.add_effect(StatBuff(info.get("name", "Buff"), 2, "strength_mod", a))
+        elif ctype == "Debuff":
+            effect = lambda u, t, a=amount: t.add_effect(StatBuff(info.get("name", "Debuff"), 2, "strength_mod", -a))
+        elif ctype == "Summon":
+            from summons import Summon
+            effect = lambda u, t, a=amount: u.add_summon(Summon(info.get("name", "Summon"), a, info.get("duration", 3)))
         else:
             effect = lambda u, t: None
-    card = Card(info["name"], info.get("cost", 1), info.get("resource", "stamina").lower(), effect, info.get("effect", ""))
-    card.type = ctype or ""
+    card = Card(
+        info["name"],
+        info.get("cost", 1),
+        info.get("resource", "stamina").lower(),
+        effect,
+        info.get("effect", ""),
+        card_type=ctype or "",
+        rarity=info.get("rarity", "common"),
+        level_requirement=info.get("level", 1),
+        stat_requirements=info.get("stats", {}),
+        category=info.get("category", "universal"),
+    )
     return card
 
 
@@ -178,7 +193,7 @@ def run_deck_builder_menu():
         row = tk.Frame(avail_frame, bd=1, relief="solid", padx=2, pady=2)
         row.pack(fill="x", pady=2)
 
-        info = f"{c.name} ({c.type}) - Cost: {c.cost} {c.resource_type}\n{c.description}"
+        info = f"{c.name} ({c.card_type}) - Cost: {c.cost} {c.resource_type}\n{c.description}"
         tk.Label(row, text=info, justify="left", anchor="w", wraplength=400).grid(row=0, column=0, sticky="w")
 
         ctrl = tk.Frame(row)
