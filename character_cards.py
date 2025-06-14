@@ -293,7 +293,54 @@ UNIVERSAL_CARDS = [
     {"name": "Dispel Magic", "cost": 2, "resource": "Mana", "effect": "Release a burst of nullifying energy to remove a magical buff from an enemy or a debuff from an ally.", "purpose": "Utility – negates one magical effect", "category": "universal", "rarity": "uncommon"},
     {"name": "Retreat", "cost": 1, "resource": "Stamina", "effect": "Swiftly move out of melee range without provoking attacks.", "purpose": "Mobility – reposition safely", "category": "universal", "rarity": "common"},
     {"name": "Inspire", "cost": 1, "resource": "Stamina", "effect": "Encourage an ally, boosting their damage and resistance for a short time.", "purpose": "Support – minor all-round boost", "category": "universal", "rarity": "uncommon"},
-    {"name": "Plan Ahead", "cost": 1, "resource": "Mana", "effect": "Take time to strategize, drawing 2 extra cards from your deck.", "purpose": "Utility – increases your options", "category": "universal", "rarity": "rare"}
+    {"name": "Plan Ahead", "cost": 1, "resource": "Mana", "effect": "Take time to strategize, drawing 2 extra cards from your deck.", "purpose": "Utility – increases your options", "category": "universal", "rarity": "rare"},
+
+    # --- New common cards ---
+    {"name": "Arcane Flicker", "cost": 1, "resource": "Mana", "type": "Damage", "effect": "Deal 2 damage. Chance to apply Flicker.", "rarity": "common", "level": 1},
+    {"name": "Quick Jab", "cost": 1, "resource": "Stamina", "type": "Damage", "effect": "Deal 2 damage (+1 if Agility ≥2).", "rarity": "common", "level": 1},
+    {"name": "Minor Heal", "cost": 1, "resource": "Mana", "type": "Buff", "effect": "Heal 2 HP.", "rarity": "common", "level": 1},
+    {"name": "Shield Up", "cost": 1, "resource": "Stamina", "type": "Utility", "effect": "Gain +2 Resilience until next turn.", "rarity": "common", "level": 1},
+    {"name": "Reposition", "cost": 1, "resource": "Stamina", "type": "Utility", "effect": "Gain +2 Agility for one turn.", "rarity": "common", "level": 1},
+    {"name": "Spellshot", "cost": 1, "resource": "Mana", "type": "Damage", "effect": "Deal 1 damage to all enemies.", "rarity": "common", "level": 1},
+    {"name": "Nimble Dodge", "cost": 1, "resource": "Stamina", "type": "Utility", "effect": "Avoid next basic attack.", "rarity": "common", "level": 1},
+    {"name": "Weaken", "cost": 1, "resource": "Mana", "type": "Debuff", "effect": "Enemy loses 1 Strength for 1 turn.", "rarity": "common", "level": 1},
+    {"name": "Taunt", "cost": 1, "resource": "Stamina", "type": "Utility", "effect": "Force enemy to target you next round.", "rarity": "common", "level": 1},
+
+    # --- Uncommon cards (level 5+) ---
+    {"name": "Flamewave", "cost": 2, "resource": "Mana", "type": "Damage", "effect": "Deal 4 fire damage in an area.", "rarity": "uncommon", "level": 5, "stats": {"thaumaturgy": 3}},
+    {"name": "Battle Trance", "cost": 2, "resource": "Stamina", "type": "Buff", "effect": "+2 Strength and Agility next turn.", "rarity": "uncommon", "level": 5, "stats": {"strength": 3}},
+    {"name": "Chain Bind", "cost": 2, "resource": "Mana", "type": "Debuff", "effect": "Stun enemy for 1 turn.", "rarity": "uncommon", "level": 5, "stats": {"thaumaturgy": 3}},
+    {"name": "Poison Touch", "cost": 2, "resource": "Stamina", "type": "Debuff", "effect": "Apply Poison (1 dmg/turn for 3 turns).", "rarity": "uncommon", "level": 5, "stats": {"agility": 3}},
+    {"name": "Arcane Trap", "cost": 2, "resource": "Mana", "type": "Utility", "effect": "Enemy takes +1 dmg from next attack.", "rarity": "uncommon", "level": 5, "stats": {"resilience": 3}},
+
+    # --- Rare cards (level 10+) ---
+    {"name": "Meteor Storm", "cost": 4, "resource": "Mana", "type": "Damage", "effect": "Deal 6-8 damage to all enemies, 50% burn chance.", "rarity": "rare", "level": 10, "stats": {"thaumaturgy": 4}},
+    {"name": "Blood Pact", "cost": 3, "resource": "Stamina", "type": "Utility", "effect": "Lose 3 HP, gain +3 mana instantly.", "rarity": "rare", "level": 10, "stats": {"strength": 4}},
+    {"name": "Shadow Clone", "cost": 3, "resource": "Mana", "type": "Summon", "effect": "Summon a clone that duplicates your card next turn.", "rarity": "rare", "level": 10, "stats": {"agility": 4}},
+    {"name": "Nature’s Wrath", "cost": 4, "resource": "Mana", "type": "Damage", "effect": "Deal 5 damage and root enemy.", "rarity": "rare", "level": 10, "stats": {"resilience": 4}},
+    {"name": "Time Stop", "cost": 4, "resource": "Mana", "type": "Utility", "effect": "Skip enemy’s next turn.", "rarity": "rare", "level": 10, "stats": {"thaumaturgy": 4}},
+
+    # --- Additional universal ability cards ---
+    {"name": "Arc Spark", "cost": 1, "resource": "Mana", "type": "Damage", "effect": "Deal 2 lightning damage. Chance to Disrupt.", "rarity": "common", "level": 1},
+    {"name": "Blade Step", "cost": 1, "resource": "Stamina", "type": "Utility", "effect": "Move out of danger, gain +1 Agility next turn.", "rarity": "common", "level": 1},
+    {"name": "Flame Tongue", "cost": 2, "resource": "Mana", "type": "Damage", "effect": "Deal 3 fire damage and apply Burn.", "rarity": "uncommon", "level": 1},
+    {"name": "Spiked Barricade", "cost": 2, "resource": "Mana", "type": "Utility", "effect": "Raise a shield that deals 1 damage when hit for 2 turns.", "rarity": "uncommon", "level": 1},
+    {"name": "Sudden Lunge", "cost": 1, "resource": "Stamina", "type": "Damage", "effect": "Deal 2 damage. If used first in turn, deal +1.", "rarity": "common", "level": 1},
+    {"name": "Restoration", "cost": 2, "resource": "Mana", "type": "Buff", "effect": "Heal 4 HP. Cooldown: 2 turns.", "rarity": "common", "level": 1},
+    {"name": "Shock Trap", "cost": 1, "resource": "Mana", "type": "Debuff", "effect": "Deal 1 damage and Stun for 1 turn.", "rarity": "uncommon", "level": 1},
+    {"name": "Earthbind", "cost": 2, "resource": "Mana", "type": "Debuff", "effect": "Reduce enemy Agility by 2 for 2 turns.", "rarity": "uncommon", "level": 1},
+    {"name": "Mana Infusion", "cost": 1, "resource": "Mana", "type": "Utility", "effect": "Gain +1 mana next turn.", "rarity": "common", "level": 1},
+    {"name": "Fortify Spirit", "cost": 1, "resource": "Stamina", "type": "Buff", "effect": "Gain +1 to all STAR stats for 1 turn.", "rarity": "uncommon", "level": 1},
+    {"name": "Double Cast", "cost": 2, "resource": "Mana", "type": "Utility", "effect": "Repeat the last Mana card used.", "rarity": "rare", "level": 1},
+    {"name": "Feint", "cost": 1, "resource": "Stamina", "type": "Utility", "effect": "Force enemy to mis-target for 1 turn.", "rarity": "common", "level": 1},
+    {"name": "Purge", "cost": 1, "resource": "Mana", "type": "Utility", "effect": "Remove one status effect from yourself.", "rarity": "common", "level": 1},
+    {"name": "Warding Sigil", "cost": 2, "resource": "Mana", "type": "Buff", "effect": "Take half damage from next 2 attacks.", "rarity": "uncommon", "level": 1},
+    {"name": "Vile Toxin", "cost": 2, "resource": "Stamina", "type": "Debuff", "effect": "Apply Poison and Weaken.", "rarity": "uncommon", "level": 1},
+    {"name": "Focus Surge", "cost": 1, "resource": "Mana", "type": "Buff", "effect": "+1 Thaumaturgy for 2 turns.", "rarity": "common", "level": 1},
+    {"name": "Rally", "cost": 2, "resource": "Stamina", "type": "Buff", "effect": "+2 Strength for 2 turns.", "rarity": "uncommon", "level": 1},
+    {"name": "Anticipate", "cost": 1, "resource": "Stamina", "type": "Utility", "effect": "View enemy’s next card and cancel if cost 1 or less.", "rarity": "rare", "level": 1},
+    {"name": "Soul Exchange", "cost": 3, "resource": "Mana", "type": "Utility", "effect": "Swap HP with opponent if yours is lower.", "rarity": "rare", "level": 1},
+    {"name": "Overdraw", "cost": 0, "resource": "Stamina", "type": "Utility", "effect": "Draw 2 cards, lose 2 HP.", "rarity": "common", "level": 1}
 ]
 
 # Per-character stat progressions used by the leveling system

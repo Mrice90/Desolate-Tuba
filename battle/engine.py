@@ -14,7 +14,8 @@ def simple_damage(user, target, amount, stat="strength"):
     bonus = 0
     if hasattr(user, "stat_mod"):
         bonus = user.stat_mod(stat)
-    scaled = max(0, amount + bonus)
+    target_res = getattr(target, "resilience_mod", 0) + getattr(target, "armor", 0)
+    scaled = max(0, amount + bonus - target_res)
     # Dodge check
     import random
     if getattr(target, "dodge_chance", 0) > 0 and random.randint(1, 100) <= target.dodge_chance:

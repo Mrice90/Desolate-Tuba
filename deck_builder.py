@@ -1,10 +1,25 @@
 import tkinter as tk
+from tkinter import simpledialog
 from battle.engine import simple_damage, simple_heal, gain_resource
 from effects.status_effects import StatBuff, DodgeBuff, CounterSpell
 from characters import Character
 from items import create_basic_items
 from cards import Card
 from character_cards import CHARACTER_CARDS, UNIVERSAL_CARDS, CHARACTER_PROGRESSIONS
+
+
+# Level based deck size --------------------------------------------------
+_LEVEL_INCREMENTS = {1: 3, 2: 1, 3: 1, 4: 1, 5: 2, 6: 1, 7: 1, 8: 2, 9: 1, 10: 2}
+
+def get_deck_size_for_level(level: int) -> int:
+    """Return total number of cards allowed for a given level."""
+    total = 0
+    for lv in range(1, level + 1):
+        if lv <= 10:
+            total += _LEVEL_INCREMENTS.get(lv, 0)
+        else:
+            total += 2
+    return min(35, total)
 
 
 def _scale_amount(cost, resource):
@@ -86,8 +101,12 @@ def _choose_character():
 
 
 def run_deck_builder_menu():
-    """Interactive menu for selecting a character and building a 20 card deck."""
+    """Interactive menu for selecting a character and building a level-based deck."""
     char_name = _choose_character()
+    level = simpledialog.askinteger("Level", "Select character level (1-20)", minvalue=1, maxvalue=20)
+    if not level:
+        return None
+    deck_limit = get_deck_size_for_level(level)
     card_infos = UNIVERSAL_CARDS + CHARACTER_CARDS[char_name]["cards"]
     card_prototypes = [_make_card(c) for c in card_infos]
 
@@ -161,16 +180,18 @@ def run_deck_builder_menu():
                       command=lambda c=card: remove_card(c)).grid(row=0, column=1, sticky="e")
 
     def update_labels():
-        deck_label.config(text=f"Deck size: {len(deck)}/20")
+        deck_label.config(text=f"Deck size: {len(deck)}/{deck_limit}")
         for name, var in count_vars.items():
             var.set(str(card_counts[name]))
-        if len(deck) == 20:
+        if len(deck) == deck_limit:
             start_btn.config(state="normal")
         else:
             start_btn.config(state="disabled")
 
     def add_card(card):
-        if card_counts[card.name] >= 2 or len(deck) >= 20:
+        if card_counts[card.name] >= 2 or len(deck) >= deck_limit:
+            return
+        if level < card.level_requirement:
             return
         card_counts[card.name] += 1
         deck.append(Card(card.name, card.cost, card.resource_type,
@@ -207,11 +228,11 @@ def run_deck_builder_menu():
 
     refresh_deck_display()
 
-    deck_label = tk.Label(root, text="Deck size: 0/20")
+    deck_label = tk.Label(root, text=f"Deck size: 0/{deck_limit}")
     deck_label.pack(pady=5)
 
     def finish():
-        if len(deck) == 20:
+        if len(deck) == deck_limit:
             root.quit()
 
     start_btn = tk.Button(root, text="Start Game", state="disabled", command=finish)
@@ -221,7 +242,7 @@ def run_deck_builder_menu():
     root.mainloop()
     root.destroy()
 
-    return Character(
+    character = Character(
         name=char_name,
         hp=progression["base_hp"],
         mana=progression["base_mana"],
@@ -232,4 +253,8 @@ def run_deck_builder_menu():
         mana_regen=progression["mana_regen"],
         stamina_regen=progression["stamina_regen"],
         progression=progression,
+        level=1,
     )
+    for _ in range(level - 1):
+        character.level_up()
+    return character
