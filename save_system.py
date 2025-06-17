@@ -58,6 +58,12 @@ def load_game(path: str = _SAVE_PATH) -> Character | None:
         icon=data.get("icon", "@"),
         items=[],
     )
+    # Rebuild the unique card library for this character
+    if player.name in CHARACTER_CARDS:
+        player.unique_library = [
+            _make_card(info)
+            for info in CHARACTER_CARDS[player.name]["cards"]
+        ]
     player.level = data.get("level", 1)
     player.xp = data.get("xp", 0)
     player.strength_mod = data.get("stats", {}).get("strength_mod", 0)

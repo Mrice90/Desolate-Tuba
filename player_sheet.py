@@ -103,9 +103,12 @@ def run_player_sheet(player: Character | None = None) -> Character:
         frame = tk.Frame(root2)
         frame.pack(fill="both", expand=True)
         vars = []
-        cards = [c for c in player.unique_library if c not in player.unlocked_unique_cards]
-        if player.level == 1:
-            cards = [c for c in cards if c.cost <= 1 and c.resource_type in ("mana", "stamina")]
+        cards = [
+            c
+            for c in player.unique_library
+            if c not in player.unlocked_unique_cards
+            and player.level >= getattr(c, "level_requirement", 1)
+        ]
         for card in cards:
             var = tk.IntVar()
             chk = tk.Checkbutton(frame, text=f"{card.name} (cost {card.cost} {card.resource_type})", variable=var, anchor="w", justify="left")
