@@ -136,6 +136,16 @@ def run_deck_builder_menu(player: Character):
     # Include any unique cards the player has unlocked
     card_prototypes.extend(player.unlocked_unique_cards)
 
+    # Filter out cards that the player cannot currently use
+    allowed_cards = []
+    for c in card_prototypes:
+        if level < getattr(c, "level_requirement", 1):
+            continue
+        if any(player.stat_mod(stat) < req for stat, req in getattr(c, "stat_requirements", {}).items()):
+            continue
+        allowed_cards.append(c)
+    card_prototypes = allowed_cards
+
     card_types = sorted({c.card_type for c in card_prototypes})
 
     root = create_fullscreen_root(f"Deck Builder - {player.name}")
