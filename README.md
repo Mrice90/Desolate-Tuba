@@ -4,6 +4,16 @@ Infinite Conquest is a tactical card game combining deck construction, a shared 
 
 This repository was rebuilt from the former Medieval Duel prototype. The original project remains recoverable through Git history. The separate `Mrice90/Creepy-Tomatoe` Ninja vs Zombies repository is not touched by this work.
 
+## Play the graphical prototype
+
+Requires JDK 17, Gradle 8+, and a desktop environment.
+
+```bash
+gradle :game-gui:run
+```
+
+The graphical client uses the same tested engine as the CLI. Select a hand card or battlefield cell to filter its legal actions, then double-click an action or press **Execute Selected**. It includes the full 4×6 battlefield, card faces, stacks, GP and deck meters, automatic bot turns, reaction windows, match results, and faction-colored placeholder styling ready for later artwork.
+
 ## Play the command-line prototype
 
 Requires JDK 17 and Gradle 8+.
@@ -69,6 +79,7 @@ Ten repetitions produce 3,240 matches. Reports include faction and Capital win r
 
 ## Current capabilities
 
+- desktop graphical client with selectable cards, battlefield cells, legal-action filtering, bot animation, and reaction prompts
 - deterministic Player 1 vs Bot matches with automated bot turns and reactions
 - deterministic headless bot-versus-bot balance simulations and JSON telemetry
 - deterministic setup, hands, draws, GP, phases, and events
