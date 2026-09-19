@@ -21,11 +21,12 @@
 
 ## M2 — Cards and data
 
-- [ ] Versioned JSON schema
-- [ ] Import prototype Drive spreadsheets as editable development content
-- [ ] Stable IDs independent from balance values
-- [ ] Typed effect registry
-- [ ] Expanded Neo-Olympus faction pools and starter decks
+- [x] Versioned JSON schema and validating loader
+- [x] Import current prototype Drive Characters as editable development content
+- [x] Stable IDs independent from balance values
+- [x] Typed keyword effect registry foundation
+- [ ] Import future populated Capital, Structure, Spell, and Land rows
+- [ ] Expanded faction pools and starter decks
 
 ## M3 — Android UI
 
