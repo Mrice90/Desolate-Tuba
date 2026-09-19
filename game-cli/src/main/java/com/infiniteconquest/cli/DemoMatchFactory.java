@@ -1,7 +1,6 @@
 package com.infiniteconquest.cli;
 
 import com.infiniteconquest.core.*;
-import com.infiniteconquest.data.CardCatalog;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -9,33 +8,37 @@ import java.util.List;
 import java.util.UUID;
 
 public final class DemoMatchFactory {
+    private static final List<String> STARTER_IDS = List.of(
+            "neo_proto_naiad_recon_droid", "neo_proto_talus_defender",
+            "neo_proto_asclepius_medibot", "neo_proto_zephyr_scout",
+            "neo_proto_hephaestus_drone", "demo_land_a", "demo_land_b",
+            "demo_land_c", "demo_structure_a", "demo_structure_b");
+
+    private final PrototypeCardPool pool = new PrototypeCardPool();
+
     public GameState create(long seed) {
         List<CardDefinition> deck = demoDeck();
-        GameState state = new MatchFactory().create(seed, MatchRules.current(), deck, deck);
+        return create(seed, deck, deck);
+    }
+
+    public GameState create(long seed, List<CardDefinition> playerZeroDeck,
+                            List<CardDefinition> playerOneDeck) {
+        GameState state = new MatchFactory().create(
+                seed, MatchRules.current(), playerZeroDeck, playerOneDeck);
         deployCapitals(state, seed);
         return state;
     }
 
     public List<CardDefinition> demoDeck() {
-        List<CardDefinition> definitions = new ArrayList<>(
-                CardCatalog.loadResource("/cards/prototype-characters.json").definitions());
-        definitions.add(new CardDefinition("demo_land_a", "Aether Field", CardType.LAND,
-                "DEMO", 0, 0, 0, 0, 0, 6));
-        definitions.add(new CardDefinition("demo_land_b", "Forge District", CardType.LAND,
-                "DEMO", 1, 0, 0, 0, 0, 8));
-        definitions.add(new CardDefinition("demo_land_c", "Moonlit Grove", CardType.LAND,
-                "DEMO", 0, 0, 0, 0, 0, 5));
-        definitions.add(new CardDefinition("demo_structure_a", "Watchtower", CardType.STRUCTURE,
-                "DEMO", 2, 0, 0, 0, 0, 6));
-        definitions.add(new CardDefinition("demo_structure_b", "Aegis Relay", CardType.STRUCTURE,
-                "DEMO", 3, 0, 0, 0, 0, 9));
-
         List<CardDefinition> deck = new ArrayList<>();
-        for (CardDefinition definition : definitions) {
-            for (int copy = 0; copy < 4; copy++) deck.add(definition);
+        for (String id : STARTER_IDS) {
+            CardDefinition definition = pool.require(id);
+            for (int copy = 0; copy < DeckValidator.MAX_COPIES; copy++) deck.add(definition);
         }
         return List.copyOf(deck);
     }
+
+    public PrototypeCardPool pool() { return pool; }
 
     private void deployCapitals(GameState state, long seed) {
         CapitalDeployment deployment = new CapitalDeployment();

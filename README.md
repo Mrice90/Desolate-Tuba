@@ -12,15 +12,29 @@ Requires JDK 17 and Gradle 8+.
 gradle :game-cli:run
 ```
 
-Use an optional deterministic match seed:
+Use an optional deterministic seed:
 
 ```bash
 gradle :game-cli:run --args="42"
 ```
 
-The local two-player prototype displays the battlefield, active hand, GP, card statistics, and opponent hand count. Type `help` for controls or `actions` to list available command forms for the current state.
+## Build a custom deck
 
-The demo uses 40-card decks made from the five imported prototype Characters and clearly labeled development Lands and Structures. These cards exist for testing and remain open to balance and roster changes.
+The editor starts with the demo deck. It supports the complete 24-card prototype pool.
+
+```bash
+gradle :game-cli:run --args="deck"
+```
+
+Use `pool`, `deck`, and `swap <remove-id> <add-id>`, then `save my-deck.json`. A deck saves only when it contains exactly 40 cards and no card has more than four copies.
+
+Play using two saved decks:
+
+```bash
+gradle :game-cli:run --args="play player-one.json player-two.json 42"
+```
+
+All imported and development cards remain editable prototype content rather than locked production balance.
 
 ## Build and test
 
@@ -30,13 +44,11 @@ gradle test
 
 ## Current capabilities
 
-- deterministic setup, five-card opening hands, draws, GP, phases, and events
-- shared 4×6 battlefield with two 4×3 player plots and ordered stacks
-- diagonal movement and range
-- Capital deployment, Character summoning, Structures, combat, HP, destruction, and victory
+- deterministic setup, hands, draws, GP, phases, and events
+- 4×6 battlefield with two 4×3 player plots and ordered stacks
+- movement, range, Capitals, deployment, combat, HP, destruction, and victory
 - Mole, Blink, Vanguard, and line of sight
-- versioned JSON prototype cards with stable IDs
-- command-line local two-player matches
+- private local-player handoff, inspection, and legal-action hints
+- 24-card editable prototype pool
+- validated JSON deck files and interactive deck editor
 - automated JUnit rules and interface tests
-
-The engine remains UI-independent so it can later power Android, AI simulations, replays, and multiplayer. See `docs/roadmap.md` and `docs/game-rules-digital-spec.md`.
