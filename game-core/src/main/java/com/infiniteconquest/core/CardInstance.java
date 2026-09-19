@@ -1,0 +1,34 @@
+package com.infiniteconquest.core;
+
+import java.util.Objects;
+import java.util.UUID;
+
+public final class CardInstance {
+    private final UUID instanceId;
+    private final CardDefinition definition;
+    private final int owner;
+    private Zone zone;
+    private int damage;
+    private boolean tapped;
+
+    public CardInstance(UUID instanceId, CardDefinition definition, int owner, Zone zone) {
+        this.instanceId = Objects.requireNonNull(instanceId);
+        this.definition = Objects.requireNonNull(definition);
+        if (owner < 0 || owner > 1) throw new IllegalArgumentException("Owner must be player 0 or 1");
+        this.owner = owner;
+        this.zone = Objects.requireNonNull(zone);
+    }
+
+    public UUID instanceId() { return instanceId; }
+    public CardDefinition definition() { return definition; }
+    public int owner() { return owner; }
+    public Zone zone() { return zone; }
+    public int damage() { return damage; }
+    public boolean tapped() { return tapped; }
+    public void moveTo(Zone newZone) { zone = Objects.requireNonNull(newZone); }
+    public void addDamage(int amount) {
+        if (amount < 0) throw new IllegalArgumentException("Damage cannot be negative");
+        damage += amount;
+    }
+    public void setTapped(boolean value) { tapped = value; }
+}
