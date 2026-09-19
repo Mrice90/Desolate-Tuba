@@ -1,0 +1,12 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation project(':game-core')
+    implementation project(':game-cli')
+}
+
+application {
+    mainClass = 'com.infiniteconquest.gui.InfiniteConquestGui'
+}
