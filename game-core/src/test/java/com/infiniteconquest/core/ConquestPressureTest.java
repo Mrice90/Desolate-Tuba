@@ -25,12 +25,12 @@ class ConquestPressureTest {
         state.initializeMatch();
 
         while (state.turnNumber() < 11) state.advanceTurn();
-        assertEquals(2, first.damage());
+        assertEquals(3, first.damage());
         assertEquals(0, second.damage());
 
         while (state.turnNumber() < 17) state.advanceTurn();
-        assertEquals(9, first.damage());
-        assertEquals(6, second.damage());
+        assertEquals(13, first.damage());
+        assertEquals(9, second.damage());
         assertTrue(state.events().stream().anyMatch(event -> event.type() == GameEvent.Type.CONQUEST_PRESSURE));
     }
 

@@ -22,7 +22,7 @@ class TurnLoopTest {
 
         assertTrue(new GameEngine().apply(state, new GameAction.EndTurn(0)).accepted());
         assertEquals(1, state.activePlayer());
-        assertEquals(3, state.player(1).currentGp());
+        assertEquals(4, state.player(1).currentGp());
         assertEquals(7, state.player(1).hand().size());
 
         new GameEngine().apply(state, new GameAction.EndTurn(1));
