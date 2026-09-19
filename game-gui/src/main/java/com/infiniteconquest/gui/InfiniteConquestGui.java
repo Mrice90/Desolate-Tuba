@@ -35,9 +35,16 @@ public final class InfiniteConquestGui extends JFrame {
     private CommandProcessor commands;
     private final ActionHints hints = new ActionHints();
     private final BotPlayer bot = new BotPlayer();
+    private final DemoMatchFactory matchFactory = new DemoMatchFactory();
+    private final FactionDecks factionDecks = new FactionDecks(matchFactory.pool());
+    private final CapitalPassiveRules passiveRules = new CapitalPassiveRules();
     private Integer selectedHand;
     private BoardPosition selectedCell;
     private boolean botRunning;
+    private String humanFaction = "ZEUS";
+    private String botFaction = "ARES";
+    private CardDefinition humanCapital;
+    private CardDefinition botCapital;
 
     public InfiniteConquestGui() {
         super("Infinite Conquest");
@@ -171,14 +178,123 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void newMatch() {
+        MatchChoice choice = chooseMatch();
+        if (choice == null && state != null) return;
+        if (choice == null) choice = defaultChoice();
         long seed = System.nanoTime();
-        state = new DemoMatchFactory().create(seed);
+        humanFaction = choice.humanFaction();
+        botFaction = choice.botFaction();
+        humanCapital = choice.humanCapital();
+        botCapital = choice.botCapital();
+        state = matchFactory.create(seed,
+                factionDecks.starter(humanFaction), factionDecks.starter(botFaction),
+                humanCapital, botCapital);
         commands = new CommandProcessor(state);
         selectedHand = null;
         selectedCell = null;
         botRunning = false;
-        message("New match started. Deploy a card or move a unit.");
+        message(humanFaction + " vs " + botFaction + " started. Deploy a card or move a unit.");
         refresh();
+    }
+
+    private MatchChoice defaultChoice() {
+        return new MatchChoice("ZEUS", matchFactory.capitals().forFaction("ZEUS").get(0),
+                "ARES", matchFactory.capitals().forFaction("ARES").get(0));
+    }
+
+    private MatchChoice chooseMatch() {
+        List<String> factions = List.of("ZEUS", "POSEIDON", "HADES", "ARES", "ATHENA", "HEPHAESTUS");
+        JComboBox<String> humanFactionBox = new JComboBox<>(factions.toArray(String[]::new));
+        JComboBox<String> botFactionBox = new JComboBox<>(factions.toArray(String[]::new));
+        humanFactionBox.setSelectedItem(humanFaction);
+        botFactionBox.setSelectedItem(botFaction);
+        JComboBox<CapitalChoice> humanCapitalBox = new JComboBox<>();
+        JComboBox<CapitalChoice> botCapitalBox = new JComboBox<>();
+        JLabel humanStrategy = setupDescription();
+        JLabel botStrategy = setupDescription();
+        JLabel humanPassive = setupDescription();
+        JLabel botPassive = setupDescription();
+
+        Runnable update = () -> {
+            updateCapitalBox(humanCapitalBox, (String) humanFactionBox.getSelectedItem());
+            updateCapitalBox(botCapitalBox, (String) botFactionBox.getSelectedItem());
+            humanStrategy.setText(strategyHtml((String) humanFactionBox.getSelectedItem()));
+            botStrategy.setText(strategyHtml((String) botFactionBox.getSelectedItem()));
+            updatePassiveLabel(humanPassive, (CapitalChoice) humanCapitalBox.getSelectedItem());
+            updatePassiveLabel(botPassive, (CapitalChoice) botCapitalBox.getSelectedItem());
+        };
+        humanFactionBox.addActionListener(e -> update.run());
+        botFactionBox.addActionListener(e -> update.run());
+        humanCapitalBox.addActionListener(e -> updatePassiveLabel(humanPassive,
+                (CapitalChoice) humanCapitalBox.getSelectedItem()));
+        botCapitalBox.addActionListener(e -> updatePassiveLabel(botPassive,
+                (CapitalChoice) botCapitalBox.getSelectedItem()));
+        update.run();
+
+        JPanel setup = new JPanel(new GridBagLayout());
+        setup.setBackground(PANEL);
+        setup.setBorder(new EmptyBorder(10, 10, 10, 10));
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(6, 8, 6, 8);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1;
+        addSetupRow(setup, c, 0, "YOUR FACTION", humanFactionBox, "BOT FACTION", botFactionBox);
+        addSetupRow(setup, c, 1, "STRATEGY", humanStrategy, "STRATEGY", botStrategy);
+        addSetupRow(setup, c, 2, "YOUR CAPITAL", humanCapitalBox, "BOT CAPITAL", botCapitalBox);
+        addSetupRow(setup, c, 3, "PASSIVE", humanPassive, "PASSIVE", botPassive);
+
+        int result = JOptionPane.showConfirmDialog(this, setup, "Configure Conquest",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result != JOptionPane.OK_OPTION) return null;
+        CapitalChoice selectedHuman = (CapitalChoice) humanCapitalBox.getSelectedItem();
+        CapitalChoice selectedBot = (CapitalChoice) botCapitalBox.getSelectedItem();
+        return new MatchChoice((String) humanFactionBox.getSelectedItem(), selectedHuman.card(),
+                (String) botFactionBox.getSelectedItem(), selectedBot.card());
+    }
+
+    private void addSetupRow(JPanel panel, GridBagConstraints c, int row,
+                             String leftTitle, JComponent left, String rightTitle, JComponent right) {
+        c.gridy = row * 2;
+        c.gridx = 0;
+        panel.add(section(leftTitle, new Color(87, 203, 234)), c);
+        c.gridx = 1;
+        panel.add(section(rightTitle, new Color(239, 106, 122)), c);
+        c.gridy = row * 2 + 1;
+        c.gridx = 0;
+        panel.add(left, c);
+        c.gridx = 1;
+        panel.add(right, c);
+    }
+
+    private JLabel setupDescription() {
+        JLabel label = new JLabel();
+        label.setForeground(Color.WHITE);
+        label.setPreferredSize(new Dimension(330, 58));
+        return label;
+    }
+
+    private void updateCapitalBox(JComboBox<CapitalChoice> box, String faction) {
+        Object previous = box.getSelectedItem();
+        box.removeAllItems();
+        for (CardDefinition capital : matchFactory.capitals().forFaction(faction)) {
+            box.addItem(new CapitalChoice(capital));
+        }
+        if (previous instanceof CapitalChoice old) {
+            for (int i = 0; i < box.getItemCount(); i++) {
+                if (box.getItemAt(i).card().id().equals(old.card().id())) box.setSelectedIndex(i);
+            }
+        }
+    }
+
+    private void updatePassiveLabel(JLabel label, CapitalChoice choice) {
+        label.setText(choice == null ? "" : "<html>" + html(passiveRules.description(choice.card())) + "</html>");
+    }
+
+    private String strategyHtml(String faction) {
+        return "<html><b>" + title(faction) + "</b> — "
+                + FactionDecks.PRIMARY_TYPES.get(faction) + " / " + FactionDecks.SECONDARY_TYPES.get(faction)
+                + "<br>Keywords: " + FactionDecks.PRIMARY_KEYWORDS.get(faction)
+                + " / " + FactionDecks.SECONDARY_KEYWORDS.get(faction) + "</html>";
     }
 
     private void selectHand(int index) {
@@ -259,9 +375,9 @@ public final class InfiniteConquestGui extends JFrame {
         turnLabel.setText("Turn " + state.turnNumber() + " • " + phaseText());
         PlayerState human = state.player(0);
         PlayerState enemy = state.player(1);
-        humanLabel.setText("YOU   GP " + human.currentGp() + "/" + human.maximumGp()
+        humanLabel.setText("YOU • " + humanFaction + "   GP " + human.currentGp() + "/" + human.maximumGp()
                 + "   Deck " + human.deck().size() + "   Discard " + human.discard().size());
-        botLabel.setText("BOT   GP " + enemy.currentGp() + "/" + enemy.maximumGp()
+        botLabel.setText("BOT • " + botFaction + "   GP " + enemy.currentGp() + "/" + enemy.maximumGp()
                 + "   Hand " + enemy.hand().size() + "   Deck " + enemy.deck().size());
         refreshBoard();
         refreshHand();
@@ -470,7 +586,18 @@ public final class InfiniteConquestGui extends JFrame {
         return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
+    private String title(String value) {
+        return value.charAt(0) + value.substring(1).toLowerCase(Locale.ROOT);
+    }
+
     private record ActionOption(String label, String command) {
         @Override public String toString() { return label; }
     }
+
+    private record CapitalChoice(CardDefinition card) {
+        @Override public String toString() { return card.name() + " • " + card.hitPoints() + " HP"; }
+    }
+
+    private record MatchChoice(String humanFaction, CardDefinition humanCapital,
+                               String botFaction, CardDefinition botCapital) { }
 }
