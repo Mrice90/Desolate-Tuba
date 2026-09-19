@@ -25,7 +25,8 @@
 - [x] Validated 40-card deck files with a four-copy maximum
 - [ ] Import future populated Drive rows
 - [x] Validated 40-card faction starters
-- [ ] Playtest telemetry and final balance pass
+- [x] Headless faction/Capital simulations and JSON playtest telemetry
+- [ ] Review simulation results and perform the first balance pass
 
 ## M3 — Playable interface
 
@@ -38,6 +39,6 @@
 ## M4 — Human vs AI
 
 - [x] Deterministic legal-action bot for turns and reactions
-- [ ] Headless simulations
+- [x] Headless simulations
 - [x] Complete Player 1 vs Bot CLI match flow
 - [ ] Difficulty levels and stronger tactical evaluation
