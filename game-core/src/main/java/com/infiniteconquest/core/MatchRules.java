@@ -11,6 +11,15 @@ public record MatchRules(int initialHandSize, int maximumGp, int gpGrowthPerPers
         }
     }
     public static MatchRules current() { return new MatchRules(5, 10, 2, 3, 1, 1); }
+    public int initialHandSizeFor(int playerId) {
+        if (playerId < 0 || playerId > 1) throw new IllegalArgumentException("Player must be 0 or 1");
+        return initialHandSize + (playerId == 1 ? 1 : 0);
+    }
+    public int conquestPressureDamage(int globalTurnNumber) {
+        if (globalTurnNumber < 16) return 0;
+        return globalTurnNumber < 20 ? 2 : 3;
+    }
+    public int conquestDeadlineTurn() { return 22; }
     public int gpForTurn(int playerId, int personalTurnNumber) {
         if (personalTurnNumber < 1) throw new IllegalArgumentException("Personal turn number starts at 1");
         if (playerId == 1 && personalTurnNumber <= secondPlayerOpeningGpTurns) {

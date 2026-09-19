@@ -18,12 +18,12 @@ class TurnLoopTest {
         GameState state = new MatchFactory().create(9L, MatchRules.current(), validDeck("a"), validDeck("b"));
         assertEquals(6, state.player(0).hand().size());
         assertEquals(1, state.player(0).currentGp());
-        assertEquals(5, state.player(1).hand().size());
+        assertEquals(6, state.player(1).hand().size());
 
         assertTrue(new GameEngine().apply(state, new GameAction.EndTurn(0)).accepted());
         assertEquals(1, state.activePlayer());
         assertEquals(3, state.player(1).currentGp());
-        assertEquals(6, state.player(1).hand().size());
+        assertEquals(7, state.player(1).hand().size());
 
         new GameEngine().apply(state, new GameAction.EndTurn(1));
         new GameEngine().apply(state, new GameAction.EndTurn(0));

@@ -6,15 +6,16 @@ This document records implemented rules. Prototype card balance remains editable
 
 - Two players share a 4×6 battlefield.
 - Player 0 controls rows 0–2; player 1 controls rows 3–5.
-- Each player draws five opening cards.
+- Player 0 draws five opening cards; Player 1 draws six as a second-player advantage.
 - Capitals are committed secretly and revealed simultaneously.
 
 ## Turns and resources
 
 - Start Phase refreshes controlled cards, grants GP, and draws one card.
 - Normal maximum GP follows 1, 3, 5, 7, 9, 10 across personal turns so mid/high-cost cards enter play sooner.
-- Player 1 receives 3 GP on their first personal turn as the prototype second-player advantage, then follows normal growth.
+- Player 1 receives 3 GP on their first personal turn and one extra opening card as prototype second-player advantages, then follows normal GP growth.
 - Empty-deck draws deal one exhaustion damage to each controlled Permanent.
+- Conquest Pressure deals 2 damage to each active player's Permanent at the start of turns 16–19, then 3 damage from turn 20 onward.
 
 ## Deployment and stacks
 
@@ -46,3 +47,4 @@ This document records implemented rules. Prototype card balance remains editable
 
 - Lands, Structures, and Capitals are Permanents.
 - A player loses immediately after their final Permanent is destroyed.
+- If neither player has won by the end of turn 22, the player with more surviving Permanents wins. If tied, total remaining Permanent HP breaks the tie; equal HP produces a draw.

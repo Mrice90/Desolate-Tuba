@@ -114,7 +114,8 @@ public final class InfiniteConquestCli {
         if (state.phase() == Phase.GAME_OVER) {
             System.out.println();
             System.out.println(renderer.render(state));
-            System.out.println(state.winner().orElseThrow() == 0 ? "You win!" : "The bot wins.");
+            System.out.println(state.winner().isEmpty() ? "The match is a draw."
+                    : state.winner().getAsInt() == 0 ? "You win!" : "The bot wins.");
         }
     }
 
