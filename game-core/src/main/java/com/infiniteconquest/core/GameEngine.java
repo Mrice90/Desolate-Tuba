@@ -26,6 +26,9 @@ public final class GameEngine {
         if (!player.hasInHand(card.instanceId()) || card.zone() != Zone.HAND) {
             return ActionResult.rejected("Land must be in the active player's hand");
         }
+        if (!action.destination().isOnPlayerSide(action.playerId())) {
+            return ActionResult.rejected("Land must be played on its owner's 4x3 plot");
+        }
         if (!state.board().isEmpty(action.destination())) {
             return ActionResult.rejected("Initial Land placement requires an empty cell");
         }
@@ -35,6 +38,7 @@ public final class GameEngine {
         player.removeFromHand(card.instanceId());
         card.moveTo(Zone.BATTLEFIELD);
         state.board().push(action.destination(), card.instanceId());
+        state.recordCardPlayed(card);
         return ActionResult.accepted("Land played");
     }
 }

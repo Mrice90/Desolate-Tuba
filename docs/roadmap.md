@@ -13,11 +13,12 @@
 - [x] Definitions vs instances
 - [x] Deck validation
 - [x] Turn/phase and GP skeleton
-- [ ] Match setup and draw rules
+- [x] Seeded match setup and initial draws
+- [x] Explicit Start/Play/End turn loop
+- [x] Sequenced event/action foundation
 - [ ] Movement and reachability
 - [ ] Combat, damage and destruction
-- [ ] Victory and exhaustion
-- [ ] Event/action log
+- [ ] Victory and exhaustion damage
 
 ## M2 — Cards, decks and data pipeline
 
