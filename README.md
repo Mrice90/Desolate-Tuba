@@ -20,13 +20,13 @@ gradle :game-cli:run --args="42"
 
 ## Build a custom deck
 
-The editor starts with the demo deck. It supports the complete 24-card prototype pool.
+The editor starts with the demo deck. It supports 144 editable prototypes: 120 faction cards plus 24 neutral/development cards.
 
 ```bash
 gradle :game-cli:run --args="deck"
 ```
 
-Use `pool`, `deck`, and `swap <remove-id> <add-id>`, then `save my-deck.json`. A deck saves only when it contains exactly 40 cards and no card has more than four copies.
+Use `factions`, `pool <faction>`, or `reset <faction>` to explore a starter. Use `swap <remove-id> <add-id>`, then `save my-deck.json`. A deck saves only when it contains exactly 40 cards and no card has more than four copies.
 
 Play using two saved decks:
 
@@ -49,6 +49,6 @@ gradle test
 - movement, range, Capitals, deployment, combat, HP, destruction, and victory
 - Mole, Blink, Vanguard, and line of sight
 - private local-player handoff, inspection, and legal-action hints
-- 24-card editable prototype pool
+- six 20-card faction pools plus 24 neutral/development prototypes
 - validated JSON deck files and interactive deck editor
 - automated JUnit rules and interface tests

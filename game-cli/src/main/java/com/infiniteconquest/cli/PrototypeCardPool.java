@@ -13,6 +13,7 @@ public final class PrototypeCardPool {
         List<CardDefinition> loaded = new ArrayList<>();
         loaded.addAll(CardCatalog.loadResource("/cards/prototype-characters.json").definitions());
         loaded.addAll(CardCatalog.loadResource("/cards/development-cards.json").definitions());
+        loaded.addAll(CardCatalog.loadResource("/cards/faction-cards.json").definitions());
         Map<String, CardDefinition> indexed = new LinkedHashMap<>();
         for (CardDefinition card : loaded) {
             if (indexed.putIfAbsent(card.id(), card) != null) {
@@ -24,6 +25,10 @@ public final class PrototypeCardPool {
     }
 
     public List<CardDefinition> cards() { return cards; }
+
+    public List<CardDefinition> cardsForFaction(String faction) {
+        return cards.stream().filter(card -> card.faction().equalsIgnoreCase(faction)).toList();
+    }
 
     public CardDefinition require(String id) {
         CardDefinition card = byId.get(id);
