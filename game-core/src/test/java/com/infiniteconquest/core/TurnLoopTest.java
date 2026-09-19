@@ -27,7 +27,7 @@ class TurnLoopTest {
 
         new GameEngine().apply(state, new GameAction.EndTurn(1));
         new GameEngine().apply(state, new GameAction.EndTurn(0));
-        assertEquals(3, state.player(1).currentGp(), "Second player has exactly 3 GP on first two turns");
+        assertEquals(3, state.player(1).currentGp(), "Second player returns to normal accelerated growth on turn two");
     }
 
     @Test void eventSequenceIsOrderedAndRecordsPhaseChanges() {

@@ -35,3 +35,5 @@ The simulator also resolves lethal exhaustion damage. This closes matches whose 
 ## Interpretation
 
 The current bot is a deterministic heuristic opponent, not a perfect player. Results identify likely balance and usability problems, but human playtests remain necessary. A card with a low play rate may be underpowered, too expensive, too situational, or simply undervalued by the bot's present strategy.
+
+Current prototype targets are approximately 15 total turns for an average match and 22 turns for a long match. Player 1 (the second player in turn order) receives 3 GP on their first personal turn to counter first-player tempo.
