@@ -18,6 +18,22 @@ public final class InfiniteConquestCli {
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
         DemoMatchFactory matches = new DemoMatchFactory();
 
+        if (args.length > 0 && args[0].equalsIgnoreCase("simulate")) {
+            if (args.length > 4) throw new IllegalArgumentException("Use: simulate [matches-per-capital-pair] [seed] [report.json]");
+            int repetitions = args.length >= 2 ? parsePositiveInt(args[1]) : BalanceSimulator.DEFAULT_MATCHES_PER_CAPITAL_PAIR;
+            long simulationSeed = args.length >= 3 ? parseSeed(args[2]) : 1L;
+            Path output = Path.of(args.length >= 4 ? args[3] : "balance-report.json");
+            BalanceSimulator simulator = new BalanceSimulator();
+            BalanceReport report = simulator.simulate(repetitions, simulationSeed);
+            simulator.write(report, output);
+            System.out.println("Simulated " + report.totalMatches() + " matches across every faction and Capital pairing.");
+            System.out.println("Completed: " + report.completedMatches() + " | Draws: " + report.draws()
+                    + " | Average turns: " + report.averageTurns());
+            System.out.println("Balance flags: " + report.balanceFlags().size());
+            System.out.println("Report: " + output.toAbsolutePath());
+            return;
+        }
+
         if (args.length > 0 && args[0].equalsIgnoreCase("deck")) {
             new DeckEditorCli(matches.pool(), new DeckFileStore())
                     .run(input, System.out, matches.demoDeck());
@@ -129,6 +145,16 @@ public final class InfiniteConquestCli {
         try { return Long.parseLong(value); }
         catch (NumberFormatException exception) {
             throw new IllegalArgumentException("Optional seed must be a whole number", exception);
+        }
+    }
+
+    private static int parsePositiveInt(String value) {
+        try {
+            int result = Integer.parseInt(value);
+            if (result < 1) throw new IllegalArgumentException("Match repetitions must be positive");
+            return result;
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException("Match repetitions must be a whole number", exception);
         }
     }
 }

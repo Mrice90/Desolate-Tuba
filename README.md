@@ -51,9 +51,26 @@ All imported and development cards remain editable prototype content rather than
 gradle test
 ```
 
+## Run automated balance simulations
+
+Run deterministic bot-versus-bot matches across all 36 ordered faction matchups and all nine Capital pairings. The default two repetitions per pairing produce 648 matches:
+
+```bash
+gradle :game-cli:run --args="simulate"
+```
+
+Choose repetitions, seed, and JSON report path:
+
+```bash
+gradle :game-cli:run --args="simulate 10 42 reports/balance.json"
+```
+
+Ten repetitions produce 3,240 matches. Reports include faction and Capital win rates, first-player advantage, match length, unused GP, ending hand size, exhaustion frequency, passive activations, card play rates, and automatic balance flags.
+
 ## Current capabilities
 
 - deterministic Player 1 vs Bot matches with automated bot turns and reactions
+- deterministic headless bot-versus-bot balance simulations and JSON telemetry
 - deterministic setup, hands, draws, GP, phases, and events
 - 4×6 battlefield with two 4×3 player plots and ordered stacks
 - movement, range, Capitals, deployment, combat, HP, destruction, and victory

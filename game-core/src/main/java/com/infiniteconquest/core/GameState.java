@@ -41,6 +41,11 @@ public final class GameState {
     public List<CardInstance> battlefieldCards(int playerId) {
         return cards.values().stream().filter(card -> card.owner() == playerId && card.zone() == Zone.BATTLEFIELD).toList();
     }
+    public Optional<CapitalPassive> capitalPassiveFor(int playerId) {
+        return battlefieldCards(playerId).stream()
+                .filter(card -> card.definition().type() == CardType.CAPITAL)
+                .findFirst().flatMap(card -> capitalPassiveRules.passiveFor(card.definition()));
+    }
 
     public void register(CardInstance card) {
         if (cards.putIfAbsent(card.instanceId(), card) != null) throw new IllegalArgumentException("Duplicate card instance ID");
@@ -110,7 +115,9 @@ public final class GameState {
         player(activePlayer).startTurnWithGp(rules.gpForTurn(activePlayer, personalTurns[activePlayer]));
         resetControlledCards(activePlayer);
         for (int i = 0; i < rules.cardsDrawnAtTurnStart(); i++) drawCard(activePlayer);
+        if (phase == Phase.GAME_OVER) return;
         capitalPassiveRules.onTurnStarted(this, activePlayer);
+        if (phase == Phase.GAME_OVER) return;
         emit(GameEvent.Type.TURN_STARTED, activePlayer, "Personal turn " + personalTurns[activePlayer]);
         phase = Phase.PLAY;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "PLAY");
@@ -130,6 +137,8 @@ public final class GameState {
             for (CardInstance card : cards.values()) if (card.owner() == playerId && card.zone() == Zone.BATTLEFIELD && card.definition().isPermanent()) {
                 card.addDamage(1);
                 emit(GameEvent.Type.EXHAUSTION_DAMAGE, playerId, card.instanceId().toString());
+                if (card.damage() >= card.definition().hitPoints()) destroy(card);
+                if (phase == Phase.GAME_OVER) break;
             }
             return;
         }
