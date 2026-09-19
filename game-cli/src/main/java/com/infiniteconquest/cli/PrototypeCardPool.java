@@ -14,6 +14,7 @@ public final class PrototypeCardPool {
         loaded.addAll(CardCatalog.loadResource("/cards/prototype-characters.json").definitions());
         loaded.addAll(CardCatalog.loadResource("/cards/development-cards.json").definitions());
         loaded.addAll(CardCatalog.loadResource("/cards/faction-cards.json").definitions());
+        loaded.addAll(CardCatalog.loadResource("/cards/faction-spells.json").definitions());
         Map<String, CardDefinition> indexed = new LinkedHashMap<>();
         for (CardDefinition card : loaded) {
             if (indexed.putIfAbsent(card.id(), card) != null) {

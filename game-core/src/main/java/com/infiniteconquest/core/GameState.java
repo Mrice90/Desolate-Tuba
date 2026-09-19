@@ -65,6 +65,14 @@ public final class GameState {
     void recordAttack(CardInstance attacker, CardInstance target) {
         emit(GameEvent.Type.ATTACK_RESOLVED, attacker.owner(), attacker.instanceId() + " -> " + target.instanceId());
     }
+    void drawCards(int playerId, int amount) {
+        for (int i = 0; i < amount; i++) drawCard(playerId);
+    }
+    void returnCharacterToHand(CardInstance card) {
+        board.remove(card.instanceId());
+        card.moveTo(Zone.HAND);
+        player(card.owner()).addToHand(card.instanceId());
+    }
     void destroy(CardInstance card) {
         boolean permanent = card.definition().isPermanent();
         board.remove(card.instanceId());

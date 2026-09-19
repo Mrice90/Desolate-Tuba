@@ -38,6 +38,10 @@ public final class PlayerState {
         if (!hand.remove(id)) throw new IllegalStateException("Card is not in hand");
     }
     void addToDiscard(UUID id) { discard.add(Objects.requireNonNull(id)); }
+    public void restoreGp(int amount) {
+        if (amount < 0) throw new IllegalArgumentException("GP restoration cannot be negative");
+        currentGp = Math.min(maximumGp, currentGp + amount);
+    }
     public void spendGp(int amount) {
         if (amount < 0 || amount > currentGp) throw new IllegalArgumentException("Insufficient GP");
         currentGp -= amount;

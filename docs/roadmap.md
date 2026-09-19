@@ -9,13 +9,15 @@
 - [x] Board, stacks, setup, draws, GP, phases, movement, and events
 - [x] Capitals, deployment, combat, HP, destruction, and victory
 - [x] Mole, Blink, Vanguard, and line of sight
-- [ ] Activated abilities, temporary tokens, Spells, and simultaneous effects
+- [x] Typed active-turn and enemy-turn reaction Spells
+- [x] Temporary Spell Attack/Defense modifiers
+- [ ] Permanent activated abilities and simultaneous-effect stack
 
 ## M2 — Cards and data
 
 - [x] Versioned JSON loader and stable IDs
 - [x] Import current Drive Characters as editable prototype content
-- [x] Six lore-driven 20-card faction pools plus neutral/development prototypes
+- [x] Six lore-driven 25-card faction pools plus neutral/development prototypes
 - [x] Validated 40-card deck files with a four-copy maximum
 - [ ] Import future populated Drive rows
 - [x] Validated 40-card faction starters

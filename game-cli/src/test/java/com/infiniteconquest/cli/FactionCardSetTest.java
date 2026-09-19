@@ -16,18 +16,18 @@ class FactionCardSetTest {
     void everyFactionHasExactlyTwentyUniquePlayableCards() {
         PrototypeCardPool pool = new PrototypeCardPool();
 
-        assertEquals(144, pool.cards().size());
+        assertEquals(174, pool.cards().size());
         for (String faction : FactionDecks.FACTIONS) {
             List<CardDefinition> cards = pool.cardsForFaction(faction);
-            assertEquals(20, cards.size(), faction);
-            assertEquals(20, cards.stream().map(CardDefinition::id).distinct().count(), faction);
+            assertEquals(25, cards.size(), faction);
+            assertEquals(25, cards.stream().map(CardDefinition::id).distinct().count(), faction);
 
             Map<CardType, Long> types = cards.stream()
                     .collect(Collectors.groupingBy(CardDefinition::type, Collectors.counting()));
             assertEquals(12L, types.getOrDefault(CardType.CHARACTER, 0L), faction);
             assertEquals(4L, types.getOrDefault(CardType.LAND, 0L), faction);
             assertEquals(4L, types.getOrDefault(CardType.STRUCTURE, 0L), faction);
-            assertFalse(types.containsKey(CardType.SPELL), "Spells are deferred until executable");
+            assertEquals(5L, types.getOrDefault(CardType.SPELL, 0L), faction);
         }
     }
 
@@ -53,7 +53,7 @@ class FactionCardSetTest {
     }
 
     @Test
-    void everyFactionStarterUsesTwoCopiesOfTwentyCardsForFortyTotal() {
+    void everyFactionStarterUsesTwentyFiveCardsForFortyTotal() {
         PrototypeCardPool pool = new PrototypeCardPool();
         FactionDecks decks = new FactionDecks(pool);
         DeckValidator validator = new DeckValidator();
@@ -64,8 +64,8 @@ class FactionCardSetTest {
             assertTrue(validator.isValid(deck), faction);
             Map<String, Long> copies = deck.stream()
                     .collect(Collectors.groupingBy(CardDefinition::id, Collectors.counting()));
-            assertEquals(20, copies.size(), faction);
-            assertTrue(copies.values().stream().allMatch(count -> count == 2));
+            assertEquals(25, copies.size(), faction);
+            assertTrue(copies.values().stream().allMatch(count -> count >= 1 && count <= 2));
         }
     }
 
