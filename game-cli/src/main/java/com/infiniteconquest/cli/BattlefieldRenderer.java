@@ -1,0 +1,63 @@
+package com.infiniteconquest.cli;
+
+import com.infiniteconquest.core.*;
+
+import java.util.List;
+import java.util.UUID;
+
+public final class BattlefieldRenderer {
+    public String render(GameState state) {
+        StringBuilder out = new StringBuilder();
+        out.append("Turn ").append(state.turnNumber())
+                .append(" | Player ").append(state.activePlayer())
+                .append(" | GP ").append(state.player(state.activePlayer()).currentGp())
+                .append('/').append(state.player(state.activePlayer()).maximumGp())
+                .append(System.lineSeparator());
+        out.append("       x0                 x1                 x2                 x3")
+                .append(System.lineSeparator());
+        for (int y = 0; y < BoardPosition.HEIGHT; y++) {
+            out.append("y").append(y).append(" ");
+            for (int x = 0; x < BoardPosition.WIDTH; x++) {
+                BoardPosition position = new BoardPosition(x, y);
+                out.append(String.format("| %-17s ", cell(state, position)));
+            }
+            out.append('|').append(System.lineSeparator());
+        }
+        out.append("Hand:").append(System.lineSeparator());
+        List<UUID> hand = state.player(state.activePlayer()).hand();
+        if (hand.isEmpty()) out.append("  (empty)").append(System.lineSeparator());
+        for (int index = 0; index < hand.size(); index++) {
+            CardInstance card = state.card(hand.get(index)).orElseThrow();
+            CardDefinition d = card.definition();
+            out.append("  [").append(index).append("] ").append(d.name())
+                    .append(" — ").append(d.type()).append(" — ").append(d.cost()).append(" GP");
+            if (d.type() == CardType.CHARACTER) {
+                out.append(" — A").append(d.attack()).append("/D").append(d.defense())
+                        .append("/R").append(d.range()).append("/M").append(d.movement());
+            } else if (d.isPermanent()) {
+                out.append(" — HP ").append(d.hitPoints());
+            }
+            if (!d.keywords().isEmpty()) out.append(" — ").append(d.keywords());
+            out.append(System.lineSeparator());
+        }
+        out.append("Opponent: ").append(state.player(1 - state.activePlayer()).hand().size())
+                .append(" cards in hand");
+        return out.toString();
+    }
+
+    private String cell(GameState state, BoardPosition position) {
+        List<UUID> stack = state.board().stackAt(position);
+        if (stack.isEmpty()) return ".";
+        CardInstance top = state.card(stack.get(stack.size() - 1)).orElseThrow();
+        String type = switch (top.definition().type()) {
+            case CHARACTER -> "C";
+            case LAND -> "L";
+            case STRUCTURE -> "S";
+            case CAPITAL -> "K";
+            case SPELL -> "?";
+        };
+        String name = top.definition().name();
+        if (name.length() > 8) name = name.substring(0, 8);
+        return "P" + top.owner() + " " + type + ":" + name + (stack.size() > 1 ? "[" + stack.size() + "]" : "");
+    }
+}
