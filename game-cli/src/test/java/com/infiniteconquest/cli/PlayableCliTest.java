@@ -26,7 +26,7 @@ class PlayableCliTest {
         assertEquals(1, playerZeroCapitals);
         assertEquals(1, playerOneCapitals);
         assertEquals(6, state.player(0).hand().size());
-        assertEquals(5, state.player(1).hand().size());
+        assertEquals(6, state.player(1).hand().size());
     }
 
     @Test
@@ -38,7 +38,7 @@ class PlayableCliTest {
         assertTrue(rendered.contains("x0"));
         assertTrue(rendered.contains("y5"));
         assertTrue(rendered.contains("Player 1 (You) hand:"));
-        assertTrue(rendered.contains("Opponent: 5 cards in hand"));
+        assertTrue(rendered.contains("Opponent: 6 cards in hand"));
         assertFalse(rendered.contains("Player 1 Capital —"));
     }
 
