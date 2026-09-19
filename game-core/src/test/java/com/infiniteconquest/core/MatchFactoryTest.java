@@ -24,7 +24,8 @@ class MatchFactoryTest {
         assertEquals(first.player(1).hand(), second.player(1).hand());
         assertEquals(6, first.player(0).hand().size(), "Five-card provisional hand plus first Start Phase draw");
         assertEquals(34, first.player(0).deck().size());
-        assertEquals(5, first.player(1).hand().size());
+        assertEquals(6, first.player(1).hand().size(), "Second player receives a sixth opening card");
+        assertEquals(34, first.player(1).deck().size());
     }
 
     @Test void differentSeedChangesOpeningOrder() {
