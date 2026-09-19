@@ -68,7 +68,7 @@ public final class GameEngine {
         state.player(action.playerId()).addToDiscard(spell.instanceId());
         state.recordCardPlayed(spell);
         for (SpellEffect effect : spell.definition().effects()) {
-            applySpellEffect(state, effect, target, action.destination());
+            applySpellEffect(state, action.playerId(), effect, target, action.destination());
             if (state.phase() == Phase.GAME_OVER) break;
         }
         return ActionResult.accepted(action.playerId() == state.activePlayer()
@@ -98,7 +98,7 @@ public final class GameEngine {
         };
     }
 
-    private void applySpellEffect(GameState state, SpellEffect effect,
+    private void applySpellEffect(GameState state, int casterId, SpellEffect effect,
                                   CardInstance target, BoardPosition destination) {
         switch (effect.type()) {
             case STRIKE_CHARACTER -> {
@@ -114,7 +114,10 @@ public final class GameEngine {
                 state.board().moveTop(origin, destination, target.instanceId());
                 state.recordCharacterMoved(target, origin, destination, 0);
             }
-            case RETURN_CHARACTER -> state.returnCharacterToHand(target);
+            case RETURN_CHARACTER -> {
+                state.returnCharacterToHand(target);
+                new CapitalPassiveRules().onCharacterReturnedBySpell(state, casterId, target);
+            }
             case BUFF_ATTACK -> target.addAttackBonus(effect.amount());
             case BUFF_DEFENSE -> target.addDefenseBonus(effect.amount());
         }
@@ -157,6 +160,7 @@ public final class GameEngine {
         card.moveTo(Zone.BATTLEFIELD);
         state.board().insertBelowTop(action.destination(), card.instanceId());
         state.recordCardPlayed(card);
+        new CapitalPassiveRules().onBurrowed(state, card);
         return ActionResult.accepted("Mole burrowed beneath Land");
     }
 
@@ -193,6 +197,7 @@ public final class GameEngine {
         state.board().moveTop(origin, action.destination(), card.instanceId());
         card.markBlinkUsed();
         state.recordCharacterMoved(card, origin, action.destination(), 0);
+        new CapitalPassiveRules().onBlinked(state, card);
         return ActionResult.accepted("Character Blinked");
     }
 
@@ -210,6 +215,7 @@ public final class GameEngine {
         if (from.distanceTo(to) > attacker.definition().range()) return ActionResult.rejected("Target out of range");
         if (!lineOfSightRules.hasLineOfSight(state, from, to)) return ActionResult.rejected("Line of sight blocked");
 
+        new CapitalPassiveRules().beforeAttack(state, attacker, target);
         attacker.markAttacked();
         state.recordAttack(attacker, target);
         if (target.definition().type() == CardType.CHARACTER) {
@@ -231,6 +237,7 @@ public final class GameEngine {
         state.board().moveTop(origin, action.destination(), card.instanceId());
         card.spendMovement(distance);
         state.recordCharacterMoved(card, origin, action.destination(), distance);
+        new CapitalPassiveRules().onMoved(state, card);
         return ActionResult.accepted("Character moved");
     }
 

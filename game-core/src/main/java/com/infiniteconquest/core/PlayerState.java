@@ -38,6 +38,13 @@ public final class PlayerState {
         if (!hand.remove(id)) throw new IllegalStateException("Card is not in hand");
     }
     void addToDiscard(UUID id) { discard.add(Objects.requireNonNull(id)); }
+    Optional<UUID> removeMostRecentDiscard(java.util.function.Predicate<UUID> predicate) {
+        for (int index = discard.size() - 1; index >= 0; index--) {
+            UUID id = discard.get(index);
+            if (predicate.test(id)) { discard.remove(index); return Optional.of(id); }
+        }
+        return Optional.empty();
+    }
     public void restoreGp(int amount) {
         if (amount < 0) throw new IllegalArgumentException("GP restoration cannot be negative");
         currentGp = Math.min(maximumGp, currentGp + amount);

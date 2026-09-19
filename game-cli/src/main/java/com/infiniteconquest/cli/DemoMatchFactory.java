@@ -78,5 +78,6 @@ public final class DemoMatchFactory {
                     new BoardPosition(player == 0 ? 1 : 2, player == 0 ? 0 : 5));
         }
         deployment.reveal(state.board());
+        state.activateInitialCapitalPassive();
     }
 }

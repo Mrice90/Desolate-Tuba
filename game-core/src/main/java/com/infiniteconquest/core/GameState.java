@@ -10,12 +10,15 @@ public final class GameState {
     private final Map<UUID, CardInstance> cards = new LinkedHashMap<>();
     private final List<GameEvent> events = new ArrayList<>();
     private final int[] personalTurns = new int[2];
+    private final Set<String> capitalPassivesUsedThisTurn = new HashSet<>();
+    private final CapitalPassiveRules capitalPassiveRules = new CapitalPassiveRules();
     private int activePlayer;
     private int turnNumber;
     private Phase phase = Phase.START;
     private long nextEventSequence;
     private Integer winner;
     private boolean started;
+    private boolean initialCapitalPassiveActivated;
 
     public GameState(long seed) { this(seed, MatchRules.current(), true); }
     GameState(long seed, MatchRules rules, boolean startImmediately) {
@@ -35,6 +38,9 @@ public final class GameState {
     public OptionalInt winner() { return winner == null ? OptionalInt.empty() : OptionalInt.of(winner); }
     public List<GameEvent> events() { return Collections.unmodifiableList(events); }
     public Optional<CardInstance> card(UUID id) { return Optional.ofNullable(cards.get(id)); }
+    public List<CardInstance> battlefieldCards(int playerId) {
+        return cards.values().stream().filter(card -> card.owner() == playerId && card.zone() == Zone.BATTLEFIELD).toList();
+    }
 
     public void register(CardInstance card) {
         if (cards.putIfAbsent(card.instanceId(), card) != null) throw new IllegalArgumentException("Duplicate card instance ID");
@@ -44,6 +50,12 @@ public final class GameState {
         started = true; activePlayer = 0; turnNumber = 1; personalTurns[0] = 1;
         emit(GameEvent.Type.MATCH_STARTED, 0, "Match seed " + seed);
         startTurn();
+    }
+    public void activateInitialCapitalPassive() {
+        if (!started || turnNumber != 1 || activePlayer != 0) throw new IllegalStateException("Initial Capital passive timing has passed");
+        if (initialCapitalPassiveActivated) throw new IllegalStateException("Initial Capital passive already activated");
+        initialCapitalPassiveActivated = true;
+        capitalPassiveRules.onTurnStarted(this, activePlayer);
     }
     void drawInitialHands() {
         for (int playerId = 0; playerId < 2; playerId++)
@@ -58,6 +70,7 @@ public final class GameState {
     }
     void recordCardPlayed(CardInstance card) {
         emit(GameEvent.Type.CARD_PLAYED, card.owner(), card.instanceId().toString());
+        capitalPassiveRules.onCardPlayed(this, card);
     }
     void recordCharacterMoved(CardInstance card, BoardPosition from, BoardPosition to, int distance) {
         emit(GameEvent.Type.CHARACTER_MOVED, card.owner(), card.instanceId() + " " + from + " -> " + to + " cost " + distance);
@@ -79,6 +92,7 @@ public final class GameState {
         card.moveTo(Zone.DISCARD);
         player(card.owner()).addToDiscard(card.instanceId());
         emit(GameEvent.Type.CARD_DESTROYED, card.owner(), card.instanceId().toString());
+        if (permanent) capitalPassiveRules.onPermanentDestroyed(this, card);
         if (permanent) {
             int result = new VictoryEvaluator().winnerAfterPermanentLoss(this, card.owner());
             if (result >= 0) {
@@ -90,11 +104,13 @@ public final class GameState {
     }
 
     private void startTurn() {
+        capitalPassivesUsedThisTurn.clear();
         phase = Phase.START;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "START");
         player(activePlayer).startTurnWithGp(rules.gpForTurn(activePlayer, personalTurns[activePlayer]));
         resetControlledCards(activePlayer);
         for (int i = 0; i < rules.cardsDrawnAtTurnStart(); i++) drawCard(activePlayer);
+        capitalPassiveRules.onTurnStarted(this, activePlayer);
         emit(GameEvent.Type.TURN_STARTED, activePlayer, "Personal turn " + personalTurns[activePlayer]);
         phase = Phase.PLAY;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "PLAY");
@@ -121,6 +137,24 @@ public final class GameState {
         if (instance == null) throw new IllegalStateException("Deck references unregistered card");
         instance.moveTo(Zone.HAND);
         emit(GameEvent.Type.CARD_DRAWN, playerId, instance.instanceId().toString());
+    }
+    Optional<CardInstance> returnMostRecentDiscardedCharacter(int playerId) {
+        Optional<UUID> id = player(playerId).removeMostRecentDiscard(value -> card(value)
+                .map(card -> card.definition().type() == CardType.CHARACTER).orElse(false));
+        if (id.isEmpty()) return Optional.empty();
+        CardInstance returned = card(id.orElseThrow()).orElseThrow();
+        returned.moveTo(Zone.HAND);
+        player(playerId).addToHand(returned.instanceId());
+        return Optional.of(returned);
+    }
+    boolean tryUseCapitalPassive(int playerId, CapitalPassive passive) {
+        return capitalPassivesUsedThisTurn.add(playerId + ":" + passive.name());
+    }
+    void markCapitalPassiveUsed(int playerId, CapitalPassive passive) {
+        capitalPassivesUsedThisTurn.add(playerId + ":" + passive.name());
+    }
+    void recordCapitalPassive(int playerId, CapitalPassive passive, String detail) {
+        emit(GameEvent.Type.CAPITAL_PASSIVE_TRIGGERED, playerId, passive.name() + ": " + detail);
     }
     private void emit(GameEvent.Type type, int playerId, String detail) {
         events.add(new GameEvent(nextEventSequence++, turnNumber, playerId, type, detail));
