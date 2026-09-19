@@ -73,6 +73,8 @@ public final class BattlefieldRenderer {
         } else if (d.isPermanent()) {
             out.append(" — HP ").append(d.hitPoints());
         }
+        if (d.type() == CardType.CAPITAL) out.append(" — Passive: ")
+                .append(new CapitalPassiveRules().description(d));
         if (!d.keywords().isEmpty()) out.append(" — ").append(d.keywords());
         return out.toString();
     }

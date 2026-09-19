@@ -1,6 +1,7 @@
 package com.infiniteconquest.cli;
 
 import com.infiniteconquest.core.CardDefinition;
+import com.infiniteconquest.core.CapitalPassiveRules;
 import com.infiniteconquest.core.GameState;
 import com.infiniteconquest.core.Phase;
 
@@ -24,11 +25,12 @@ public final class InfiniteConquestCli {
         }
         if (args.length > 0 && args[0].equalsIgnoreCase("capitals")) {
             System.out.println("Selectable Capitals (choose one matching your faction):");
+            CapitalPassiveRules passives = new CapitalPassiveRules();
             for (String faction : new java.util.TreeSet<>(FactionDecks.FACTIONS)) {
                 System.out.println(faction + ":");
                 matches.capitals().forFaction(faction).forEach(capital ->
                         System.out.println("  " + capital.id() + " — " + capital.name()
-                                + " — HP " + capital.hitPoints()));
+                                + " — HP " + capital.hitPoints() + " — " + passives.description(capital)));
             }
             return;
         }

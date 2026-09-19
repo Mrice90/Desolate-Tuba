@@ -60,7 +60,7 @@ gradle test
 - Mole, Blink, Vanguard, line of sight, and typed Spell effects
 - private local-player handoff, inspection, and legal-action hints
 - six 40-card faction pools with primary/secondary type and keyword identities, plus 24 neutral/development prototypes
-- three separately selectable Capitals per faction
+- three separately selectable Capitals per faction, each with a unique implemented passive ability
 - executable active-turn and enemy-turn reaction Spells
 - validated JSON deck files and interactive deck editor
 - automated JUnit rules and interface tests

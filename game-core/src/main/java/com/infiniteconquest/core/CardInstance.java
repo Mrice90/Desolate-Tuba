@@ -60,6 +60,10 @@ public final class CardInstance {
         if (amount < 0 || amount > movementRemaining()) throw new IllegalArgumentException("Insufficient movement");
         movementSpent += amount;
     }
+    public void restoreMovement(int amount) {
+        if (amount < 0) throw new IllegalArgumentException("Movement restoration cannot be negative");
+        movementSpent = Math.max(0, movementSpent - amount);
+    }
     public void markAttacked() { attackedThisTurn = true; }
     public void markBlinkUsed() { blinkUsedThisTurn = true; }
     public void resetTurnActions() {

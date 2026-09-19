@@ -21,6 +21,7 @@
 - [x] Primary/secondary type identities and 60 late-game apex cards
 - [x] Primary/secondary implemented-keyword identities and 30 tiered keyword cards
 - [x] Three selectable Capitals per faction
+- [x] Eighteen unique, engine-resolved Capital passive abilities
 - [x] Validated 40-card deck files with a four-copy maximum
 - [ ] Import future populated Drive rows
 - [x] Validated 40-card faction starters
