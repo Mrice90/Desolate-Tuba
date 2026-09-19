@@ -1,10 +1,14 @@
 package com.infiniteconquest.core;
 
+import com.infiniteconquest.data.Keyword;
+
 import java.util.Objects;
+import java.util.Set;
 
 public record CardDefinition(
         String id, String name, CardType type, String faction, int cost,
-        int attack, int defense, int movement, int range, int hitPoints
+        int attack, int defense, int movement, int range, int hitPoints,
+        Set<Keyword> keywords
 ) {
     public CardDefinition {
         if (id == null || id.isBlank()) throw new IllegalArgumentException("Stable card ID is required");
@@ -16,15 +20,22 @@ public record CardDefinition(
         if (isPermanent(type) && hitPoints == 0) {
             throw new IllegalArgumentException("Lands, Structures and Capitals require positive HP");
         }
+        keywords = keywords == null ? Set.of() : Set.copyOf(keywords);
+    }
+
+    public CardDefinition(String id, String name, CardType type, String faction, int cost,
+                          int attack, int defense, int movement, int range, int hitPoints) {
+        this(id, name, type, faction, cost, attack, defense, movement, range, hitPoints, Set.of());
     }
 
     /** Compatibility constructor for Characters, Spells, and older development fixtures. */
     public CardDefinition(String id, String name, CardType type, String faction, int cost,
                           int attack, int defense, int movement, int range) {
         this(id, name, type, faction, cost, attack, defense, movement, range,
-                isPermanent(type) ? 1 : 0);
+                isPermanent(type) ? 1 : 0, Set.of());
     }
 
+    public boolean hasKeyword(Keyword keyword) { return keywords.contains(keyword); }
     public boolean isPermanent() { return isPermanent(type); }
 
     private static boolean isPermanent(CardType type) {

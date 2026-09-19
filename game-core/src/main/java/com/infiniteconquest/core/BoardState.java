@@ -23,6 +23,12 @@ public final class BoardState {
         if (positionOf(id).isPresent()) throw new IllegalStateException("Card is already on battlefield");
         cells.get(Objects.requireNonNull(position)).add(Objects.requireNonNull(id));
     }
+    public void insertBelowTop(BoardPosition position, UUID id) {
+        if (positionOf(id).isPresent()) throw new IllegalStateException("Card is already on battlefield");
+        List<UUID> stack = cells.get(Objects.requireNonNull(position));
+        if (stack.isEmpty()) throw new IllegalStateException("Cannot insert beneath an empty stack");
+        stack.add(stack.size() - 1, Objects.requireNonNull(id));
+    }
     public UUID pop(BoardPosition position) {
         List<UUID> stack = cells.get(Objects.requireNonNull(position));
         if (stack.isEmpty()) throw new IllegalStateException("Cannot pop empty cell");

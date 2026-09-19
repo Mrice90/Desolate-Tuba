@@ -5,6 +5,7 @@ import com.infiniteconquest.core.CardType;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public record CardData(
         String id,
@@ -43,6 +44,7 @@ public record CardData(
     }
 
     public CardDefinition toDefinition() {
-        return new CardDefinition(id, name, type, faction, cost, attack, defense, movement, range, hitPoints);
+        return new CardDefinition(id, name, type, faction, cost, attack, defense, movement, range,
+                hitPoints, Set.copyOf(keywords));
     }
 }

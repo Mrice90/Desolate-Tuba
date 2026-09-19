@@ -12,6 +12,7 @@ public final class CardInstance {
     private boolean tapped;
     private int movementSpent;
     private boolean attackedThisTurn;
+    private boolean blinkUsedThisTurn;
 
     public CardInstance(UUID instanceId, CardDefinition definition, int owner, Zone zone) {
         this.instanceId = Objects.requireNonNull(instanceId);
@@ -30,6 +31,7 @@ public final class CardInstance {
     public int movementSpent() { return movementSpent; }
     public int movementRemaining() { return Math.max(0, definition.movement() - movementSpent); }
     public boolean attackedThisTurn() { return attackedThisTurn; }
+    public boolean blinkUsedThisTurn() { return blinkUsedThisTurn; }
     public void moveTo(Zone newZone) { zone = Objects.requireNonNull(newZone); }
     public void addDamage(int amount) {
         if (amount < 0) throw new IllegalArgumentException("Damage cannot be negative");
@@ -41,9 +43,11 @@ public final class CardInstance {
         movementSpent += amount;
     }
     public void markAttacked() { attackedThisTurn = true; }
+    public void markBlinkUsed() { blinkUsedThisTurn = true; }
     public void resetTurnActions() {
         movementSpent = 0;
         attackedThisTurn = false;
+        blinkUsedThisTurn = false;
         tapped = false;
     }
 }
