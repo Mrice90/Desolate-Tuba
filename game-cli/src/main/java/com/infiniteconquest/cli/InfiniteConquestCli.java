@@ -15,13 +15,19 @@ public final class InfiniteConquestCli {
         GameState state = new DemoMatchFactory().create(seed);
         BattlefieldRenderer renderer = new BattlefieldRenderer();
         CommandProcessor commands = new CommandProcessor(state);
+        TurnHandoff handoff = new TurnHandoff();
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+        int acknowledgedTurn = -1;
 
         System.out.println("Infinite Conquest — local two-player prototype");
         System.out.println("Seed: " + seed);
         System.out.println(CommandProcessor.help());
 
         while (!commands.quitRequested() && state.phase() != Phase.GAME_OVER) {
+            if (acknowledgedTurn != state.turnNumber()) {
+                handoff.awaitReady(state, input, System.out);
+                acknowledgedTurn = state.turnNumber();
+            }
             System.out.println();
             System.out.println(renderer.render(state));
             System.out.print("> ");

@@ -46,13 +46,8 @@ public final class ActionHints {
                     hints.add("blink " + from.x() + " " + from.y() + " " + to.x() + " " + to.y());
                 }
             }
-            for (BoardPosition to : state.board().positions()) {
-                var targetId = state.board().topAt(to);
-                if (targetId.isEmpty()) continue;
-                CardInstance target = state.card(targetId.orElseThrow()).orElseThrow();
-                if (target.owner() != player && from.distanceTo(to) <= card.definition().range()) {
-                    hints.add("attack " + from.x() + " " + from.y() + " " + to.x() + " " + to.y());
-                }
+            for (BoardPosition to : engine.legalAttackDestinations(state, card.instanceId())) {
+                hints.add("attack " + from.x() + " " + from.y() + " " + to.x() + " " + to.y());
             }
         }
         hints.add("end");
