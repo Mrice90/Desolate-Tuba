@@ -44,7 +44,7 @@ public final class DemoMatchFactory {
         CapitalDeployment deployment = new CapitalDeployment();
         for (int player = 0; player < 2; player++) {
             CardDefinition definition = new CardDefinition(
-                    "demo_capital_p" + player, "Player " + player + " Capital",
+                    "demo_capital_p" + player, "Player " + (player + 1) + " Capital",
                     CardType.CAPITAL, "DEMO", 0, 0, 0, 0, 0, 20);
             UUID id = UUID.nameUUIDFromBytes(
                     (seed + ":capital:" + player).getBytes(StandardCharsets.UTF_8));

@@ -34,10 +34,10 @@ class InterfaceCompletionTest {
         GameState state = new DemoMatchFactory().create(22L);
         CommandProcessor processor = new CommandProcessor(state);
 
-        assertTrue(processor.execute("inspect 0").contains(" — P0 — "));
+        assertTrue(processor.execute("inspect 0").contains(" — Player 1 (You) — "));
         String capital = processor.execute("inspect 1 0");
         assertTrue(capital.contains("stack (bottom to top)"));
-        assertTrue(capital.contains("Player 0 Capital"));
+        assertTrue(capital.contains("Player 1 Capital"));
         assertTrue(capital.contains("damage 0/20"));
     }
 
