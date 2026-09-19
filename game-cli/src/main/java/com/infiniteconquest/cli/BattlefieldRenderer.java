@@ -9,7 +9,7 @@ public final class BattlefieldRenderer {
     public String render(GameState state) {
         StringBuilder out = new StringBuilder();
         out.append("Turn ").append(state.turnNumber())
-                .append(" | Player ").append(state.activePlayer())
+                .append(" | ").append(playerLabel(state.activePlayer()))
                 .append(" | GP ").append(state.player(state.activePlayer()).currentGp())
                 .append('/').append(state.player(state.activePlayer()).maximumGp())
                 .append(System.lineSeparator());
@@ -23,17 +23,23 @@ public final class BattlefieldRenderer {
             }
             out.append('|').append(System.lineSeparator());
         }
-        out.append("Hand:").append(System.lineSeparator());
-        List<UUID> hand = state.player(state.activePlayer()).hand();
+        out.append(renderHand(state, state.activePlayer())).append(System.lineSeparator());
+        out.append("Opponent: ").append(state.player(1 - state.activePlayer()).hand().size())
+                .append(" cards in hand");
+        return out.toString();
+    }
+
+    public String renderHand(GameState state, int playerId) {
+        StringBuilder out = new StringBuilder(playerLabel(playerId)).append(" hand:")
+                .append(System.lineSeparator());
+        List<UUID> hand = state.player(playerId).hand();
         if (hand.isEmpty()) out.append("  (empty)").append(System.lineSeparator());
         for (int index = 0; index < hand.size(); index++) {
             out.append("  [").append(index).append("] ")
                     .append(describe(state.card(hand.get(index)).orElseThrow()))
                     .append(System.lineSeparator());
         }
-        out.append("Opponent: ").append(state.player(1 - state.activePlayer()).hand().size())
-                .append(" cards in hand");
-        return out.toString();
+        return out.toString().stripTrailing();
     }
 
     public String inspectHand(GameState state, int index) {
@@ -59,10 +65,10 @@ public final class BattlefieldRenderer {
     private String describe(CardInstance card) {
         CardDefinition d = card.definition();
         StringBuilder out = new StringBuilder(d.name())
-                .append(" — P").append(card.owner())
+                .append(" — ").append(playerLabel(card.owner()))
                 .append(" — ").append(d.type()).append(" — ").append(d.cost()).append(" GP");
         if (d.type() == CardType.CHARACTER) {
-            out.append(" — A").append(d.attack()).append("/D").append(d.defense())
+            out.append(" — A").append(card.effectiveAttack()).append("/D").append(card.effectiveDefense())
                     .append("/R").append(d.range()).append("/M").append(d.movement());
         } else if (d.isPermanent()) {
             out.append(" — HP ").append(d.hitPoints());
@@ -84,6 +90,11 @@ public final class BattlefieldRenderer {
         };
         String name = top.definition().name();
         if (name.length() > 8) name = name.substring(0, 8);
-        return "P" + top.owner() + " " + type + ":" + name + (stack.size() > 1 ? "[" + stack.size() + "]" : "");
+        return (top.owner() == 0 ? "YOU " : "BOT ") + type + ":" + name
+                + (stack.size() > 1 ? "[" + stack.size() + "]" : "");
+    }
+
+    private String playerLabel(int playerId) {
+        return playerId == 0 ? "Player 1 (You)" : "Player 2 (Bot)";
     }
 }

@@ -34,10 +34,10 @@ class PlayableCliTest {
         GameState state = new DemoMatchFactory().create(7L);
         String rendered = new BattlefieldRenderer().render(state);
 
-        assertTrue(rendered.contains("Turn 1 | Player 0 | GP 1/1"));
+        assertTrue(rendered.contains("Turn 1 | Player 1 (You) | GP 1/1"));
         assertTrue(rendered.contains("x0"));
         assertTrue(rendered.contains("y5"));
-        assertTrue(rendered.contains("Hand:"));
+        assertTrue(rendered.contains("Player 1 (You) hand:"));
         assertTrue(rendered.contains("Opponent: 5 cards in hand"));
         assertFalse(rendered.contains("Player 1 Capital —"));
     }
