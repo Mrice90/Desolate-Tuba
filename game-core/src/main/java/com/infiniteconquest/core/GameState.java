@@ -115,7 +115,9 @@ public final class GameState {
         player(activePlayer).startTurnWithGp(rules.gpForTurn(activePlayer, personalTurns[activePlayer]));
         resetControlledCards(activePlayer);
         for (int i = 0; i < rules.cardsDrawnAtTurnStart(); i++) drawCard(activePlayer);
+        if (phase == Phase.GAME_OVER) return;
         capitalPassiveRules.onTurnStarted(this, activePlayer);
+        if (phase == Phase.GAME_OVER) return;
         emit(GameEvent.Type.TURN_STARTED, activePlayer, "Personal turn " + personalTurns[activePlayer]);
         phase = Phase.PLAY;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "PLAY");
