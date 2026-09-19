@@ -6,41 +6,37 @@ public final class BoardState {
     private final Map<BoardPosition, List<UUID>> cells = new LinkedHashMap<>();
 
     public BoardState() {
-        for (int y = 0; y < BoardPosition.HEIGHT; y++) {
-            for (int x = 0; x < BoardPosition.WIDTH; x++) cells.put(new BoardPosition(x, y), new ArrayList<>());
-        }
+        for (int y = 0; y < BoardPosition.HEIGHT; y++) for (int x = 0; x < BoardPosition.WIDTH; x++)
+            cells.put(new BoardPosition(x, y), new ArrayList<>());
     }
-
     public Set<BoardPosition> positions() { return Collections.unmodifiableSet(cells.keySet()); }
-    public List<UUID> stackAt(BoardPosition position) {
-        return Collections.unmodifiableList(cells.get(Objects.requireNonNull(position)));
-    }
+    public List<UUID> stackAt(BoardPosition position) { return Collections.unmodifiableList(cells.get(Objects.requireNonNull(position))); }
     public Optional<UUID> topAt(BoardPosition position) {
         List<UUID> stack = cells.get(Objects.requireNonNull(position));
         return stack.isEmpty() ? Optional.empty() : Optional.of(stack.get(stack.size() - 1));
     }
-    public Optional<BoardPosition> positionOf(UUID instanceId) {
-        return cells.entrySet().stream().filter(e -> e.getValue().contains(instanceId)).map(Map.Entry::getKey).findFirst();
+    public Optional<BoardPosition> positionOf(UUID id) {
+        return cells.entrySet().stream().filter(e -> e.getValue().contains(id)).map(Map.Entry::getKey).findFirst();
     }
     public boolean isEmpty(BoardPosition position) { return cells.get(Objects.requireNonNull(position)).isEmpty(); }
-
-    public void push(BoardPosition position, UUID instanceId) {
-        Objects.requireNonNull(instanceId);
-        if (positionOf(instanceId).isPresent()) throw new IllegalStateException("Card instance is already on the battlefield");
-        cells.get(Objects.requireNonNull(position)).add(instanceId);
+    public void push(BoardPosition position, UUID id) {
+        if (positionOf(id).isPresent()) throw new IllegalStateException("Card is already on battlefield");
+        cells.get(Objects.requireNonNull(position)).add(Objects.requireNonNull(id));
     }
-
     public UUID pop(BoardPosition position) {
         List<UUID> stack = cells.get(Objects.requireNonNull(position));
-        if (stack.isEmpty()) throw new IllegalStateException("Cannot pop an empty battlefield cell");
+        if (stack.isEmpty()) throw new IllegalStateException("Cannot pop empty cell");
         return stack.remove(stack.size() - 1);
     }
-
-    public void moveTop(BoardPosition from, BoardPosition to, UUID expectedCard) {
+    public void remove(UUID id) {
+        BoardPosition position = positionOf(id).orElseThrow(() -> new IllegalStateException("Card is not on battlefield"));
+        if (!topAt(position).orElseThrow().equals(id)) throw new IllegalStateException("Only top card can be removed");
+        pop(position);
+    }
+    public void moveTop(BoardPosition from, BoardPosition to, UUID expected) {
         if (!isEmpty(to)) throw new IllegalStateException("Movement destination must be empty");
-        UUID actual = topAt(from).orElseThrow(() -> new IllegalStateException("Origin is empty"));
-        if (!actual.equals(expectedCard)) throw new IllegalStateException("Only the top card can move");
+        if (!topAt(from).orElseThrow().equals(expected)) throw new IllegalStateException("Only top card can move");
         pop(from);
-        push(to, actual);
+        push(to, expected);
     }
 }

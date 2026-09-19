@@ -1,37 +1,39 @@
 # Roadmap
 
-## M0 — Repository and build foundation
+## M0 — Foundation
 
-- [x] Pure Java core module and CI
-- [x] Architecture and rules traceability
+- [x] Pure Java core, CI, architecture and rules traceability
 
 ## M1 — Deterministic core rules engine
 
-- [x] 4×6 board with two 4×3 plots and ordered stacks
-- [x] Definitions, instances and deck validation
-- [x] Seeded setup, draws, phases, GP and event history
-- [x] Eight-direction movement and reachable-space calculation
-- [x] Split movement accounting across multiple actions
-- [x] Secret simultaneous Capital commitment/reveal
-- [x] All-Permanents defeat evaluator
-- [ ] Character summoning and full stacking rules
-- [ ] Combat, damage, destruction and automatic victory transition
-- [ ] Permanent HP and exhaustion destruction
+- [x] 4×6 board, plots, ordered stacks and seeded setup
+- [x] Draws, phases, GP and event history
+- [x] Eight-direction split movement and reachability
+- [x] Secret simultaneous Capital deployment
+- [x] Character summoning on or within one diagonal space of a Permanent
+- [x] Structures built on controlled Lands
+- [x] Character combat using strict Attack > Defense
+- [x] Permanent HP, accumulated damage and destruction
+- [x] Automatic all-Permanents victory transition
+- [ ] Beneath-Structure insertion and Mole
+- [ ] Line of sight, Vanguard, Blink and activated abilities
+- [ ] Simultaneous-effect resolution
 
-## M2 — Cards, decks and data pipeline
+## M2 — Cards and data
 
-- [ ] Import Drive card spreadsheets into versioned JSON
+- [ ] Versioned JSON schema
+- [ ] Import prototype Drive spreadsheets as editable development content
+- [ ] Stable IDs independent from balance values
 - [ ] Typed effect registry
-- [ ] Approved Neo-Olympus starter decks
+- [ ] Expanded Neo-Olympus faction pools and starter decks
 
-## M3 — Battlefield and Android UI
+## M3 — Android UI
 
-- [ ] Android application module
-- [ ] Mobile battlefield and card inspection
-- [ ] Legal destination/target highlighting
+- [ ] Application module
+- [ ] Battlefield, card inspection and legal-action highlighting
 
-## M4 — Human vs AI vertical slice
+## M4 — Human vs AI
 
-- [ ] AI through legal-action API
+- [ ] Legal-action AI
 - [ ] Headless simulations
 - [ ] Complete match flow
