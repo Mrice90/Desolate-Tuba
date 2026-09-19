@@ -15,8 +15,9 @@
 - [x] Character combat using strict Attack > Defense
 - [x] Permanent HP, accumulated damage and destruction
 - [x] Automatic all-Permanents victory transition
-- [ ] Beneath-Structure insertion and Mole
-- [ ] Line of sight, Vanguard, Blink and activated abilities
+- [x] Mole deployment beneath controlled Lands
+- [x] Line of sight, Vanguard blocking, and once-per-turn Blink
+- [ ] Activated abilities and temporary tokens
 - [ ] Simultaneous-effect resolution
 
 ## M2 — Cards and data
@@ -28,9 +29,11 @@
 - [ ] Import future populated Capital, Structure, Spell, and Land rows
 - [ ] Expanded faction pools and starter decks
 
-## M3 — Android UI
+## M3 — Playable interface
 
-- [ ] Application module
+- [ ] Command-line match interface
+- [ ] Legal-action listing and battlefield display
+- [ ] Android application module
 - [ ] Battlefield, card inspection and legal-action highlighting
 
 ## M4 — Human vs AI

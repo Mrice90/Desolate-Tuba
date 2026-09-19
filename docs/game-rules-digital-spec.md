@@ -1,37 +1,47 @@
-# Infinite Conquest digital rules specification
+# Infinite Conquest — digital rules specification
 
-This implementation follows the Drive rules and Matt's later decisions. Drive card sheets are prototype balance content, not a locked production set.
+This document records implemented rules. Prototype card balance remains editable.
 
 ## Battlefield and setup
 
-Each player owns a 4×3 plot within the combined 4×6 battlefield. Lands and secret Capitals deploy on their owner's plot. Capitals are committed privately and revealed simultaneously. Opening hands contain five cards.
+- Two players share a 4×6 battlefield.
+- Player 0 controls rows 0–2; player 1 controls rows 3–5.
+- Each player draws five opening cards.
+- Capitals are committed secretly and revealed simultaneously.
 
-## Movement and range
+## Turns and resources
 
-Diagonal and orthogonal steps each cost one. Ordinary movement finds paths through empty cells and may be split across multiple actions before or after an attack. Only the top Character of a stack can move or attack normally.
+- Start Phase refreshes controlled cards, grants GP, and draws one card.
+- Player 1 receives exactly 2 GP on each of their first two personal turns.
+- Empty-deck draws deal one exhaustion damage to each controlled Permanent.
 
-## Placement and stacking
+## Deployment and stacks
 
-- Lands require an empty cell on their owner's plot.
-- Structures require a controlled Land currently on top of the destination stack.
-- Characters may be summoned on a friendly Permanent or into an empty cell one diagonal/orthogonal space from one.
-- On-Structure summoning currently places the Character on top. Beneath-Structure insertion awaits an exact depth decision.
+- Lands enter empty spaces on their owner's plot.
+- Structures enter on top of a controlled Land.
+- Characters may enter on a friendly Permanent or an empty adjacent space, including diagonals.
+- A Character with Mole may instead use the Burrow action to enter directly beneath a controlled Land.
+- Only the top card of a stack normally moves, attacks, blocks line of sight, or can be targeted.
+- Removing a covering Land reveals the Mole beneath it.
 
-## Combat
+## Movement and Blink
 
-A Character attacks once per turn and targets the top enemy card within its diagonal-inclusive range.
+- Normal movement uses eight directions; diagonals cost one space.
+- Movement may be split across actions up to the Character's movement value.
+- Occupied cells block normal movement.
+- A top Character with Blink may move to any empty battlefield square once per personal turn.
+- Blink costs no normal movement points.
 
-- Against a Character: destroy it only when Attack is strictly greater than Defense. Equal values do not destroy.
-- Against a Permanent: add damage equal to Attack. Destroy it when accumulated damage reaches its printed HP.
-- Capitals use 20 HP according to the prototype Capital sheet.
-- Land and Structure HP are data values and may be tuned.
+## Combat and line of sight
 
-Destroyed cards move to their owner's discard pile.
+- Characters attack once per turn and may aim diagonally.
+- Range uses diagonal distance.
+- Structures, Capitals, and top Characters with Vanguard block line of sight through their cell.
+- The attack target does not block its own line of sight.
+- Characters are destroyed only when Attack is strictly greater than Defense.
+- Permanents accumulate Attack as damage and are destroyed at their HP threshold.
 
 ## Victory
 
-Lands, Structures and Capitals are Permanents. Immediately after a player loses a Permanent, if they control no remaining Permanents, the opponent wins and the phase becomes Game Over.
-
-## Content status
-
-Prototype spreadsheet cards may be changed, rebalanced, removed or expanded. Stable software IDs must remain separate from names and balance values.
+- Lands, Structures, and Capitals are Permanents.
+- A player loses immediately after their final Permanent is destroyed.

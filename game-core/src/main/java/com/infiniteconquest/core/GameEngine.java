@@ -1,9 +1,12 @@
 package com.infiniteconquest.core;
 
+import com.infiniteconquest.data.Keyword;
+
 import java.util.*;
 
 public final class GameEngine {
     private final MovementRules movementRules = new MovementRules();
+    private final LineOfSightRules lineOfSightRules = new LineOfSightRules();
 
     public ActionResult apply(GameState state, GameAction action) {
         Objects.requireNonNull(state); Objects.requireNonNull(action);
@@ -13,7 +16,9 @@ public final class GameEngine {
         if (action instanceof GameAction.PlayLand a) return playLand(state, a);
         if (action instanceof GameAction.PlayStructure a) return playStructure(state, a);
         if (action instanceof GameAction.SummonCharacter a) return summonCharacter(state, a);
+        if (action instanceof GameAction.BurrowCharacter a) return burrowCharacter(state, a);
         if (action instanceof GameAction.MoveCharacter a) return moveCharacter(state, a);
+        if (action instanceof GameAction.BlinkCharacter a) return blinkCharacter(state, a);
         if (action instanceof GameAction.Attack a) return attack(state, a);
         return ActionResult.rejected("Unsupported action");
     }
@@ -44,6 +49,24 @@ public final class GameEngine {
         return ActionResult.accepted("Character summoned");
     }
 
+    private ActionResult burrowCharacter(GameState state, GameAction.BurrowCharacter action) {
+        CardInstance card = playableFromHand(state, action.playerId(), action.cardId(), CardType.CHARACTER);
+        if (card == null || !card.definition().hasKeyword(Keyword.MOLE)) {
+            return ActionResult.rejected("Only an affordable Mole Character in hand can burrow");
+        }
+        Optional<UUID> top = state.board().topAt(action.destination());
+        if (top.isEmpty()) return ActionResult.rejected("Mole requires a controlled Land");
+        CardInstance land = state.card(top.orElseThrow()).orElseThrow();
+        if (land.owner() != action.playerId() || land.definition().type() != CardType.LAND) {
+            return ActionResult.rejected("Mole requires a controlled Land on top of the stack");
+        }
+        payAndRemoveFromHand(state, card);
+        card.moveTo(Zone.BATTLEFIELD);
+        state.board().insertBelowTop(action.destination(), card.instanceId());
+        state.recordCardPlayed(card);
+        return ActionResult.accepted("Mole burrowed beneath Land");
+    }
+
     private ActionResult playStructure(GameState state, GameAction.PlayStructure action) {
         CardInstance card = playableFromHand(state, action.playerId(), action.cardId(), CardType.STRUCTURE);
         if (card == null) return ActionResult.rejected("Structure must be owned, affordable, and in hand");
@@ -60,6 +83,26 @@ public final class GameEngine {
         return ActionResult.accepted("Structure played");
     }
 
+    private ActionResult blinkCharacter(GameState state, GameAction.BlinkCharacter action) {
+        CardInstance card = state.card(action.cardId()).orElse(null);
+        if (card == null || card.owner() != action.playerId() || card.definition().type() != CardType.CHARACTER
+                || !card.definition().hasKeyword(Keyword.BLINK)) {
+            return ActionResult.rejected("Invalid Blink Character");
+        }
+        if (card.blinkUsedThisTurn()) return ActionResult.rejected("Blink already used this turn");
+        BoardPosition origin = state.board().positionOf(card.instanceId()).orElse(null);
+        if (origin == null || !state.board().topAt(origin).orElseThrow().equals(card.instanceId())) {
+            return ActionResult.rejected("Only the top Character can Blink");
+        }
+        if (!state.board().isEmpty(action.destination())) {
+            return ActionResult.rejected("Blink destination must be empty");
+        }
+        state.board().moveTop(origin, action.destination(), card.instanceId());
+        card.markBlinkUsed();
+        state.recordCharacterMoved(card, origin, action.destination(), 0);
+        return ActionResult.accepted("Character Blinked");
+    }
+
     private ActionResult attack(GameState state, GameAction.Attack action) {
         CardInstance attacker = state.card(action.attackerId()).orElse(null);
         CardInstance target = state.card(action.targetId()).orElse(null);
@@ -72,6 +115,7 @@ public final class GameEngine {
         if (!state.board().topAt(from).orElseThrow().equals(attacker.instanceId())
                 || !state.board().topAt(to).orElseThrow().equals(target.instanceId())) return ActionResult.rejected("Only top cards interact");
         if (from.distanceTo(to) > attacker.definition().range()) return ActionResult.rejected("Target out of range");
+        if (!lineOfSightRules.hasLineOfSight(state, from, to)) return ActionResult.rejected("Line of sight blocked");
 
         attacker.markAttacked();
         state.recordAttack(attacker, target);
