@@ -1,7 +1,6 @@
 package com.infiniteconquest.core;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public final class DeckValidator {
@@ -15,7 +14,7 @@ public final class DeckValidator {
         if (cards.size() != REQUIRED_SIZE) errors.add("Deck must contain exactly 40 cards");
 
         Map<String, Long> counts = cards.stream()
-                .collect(Collectors.groupingBy(CardDefinition::id, Function.identity(), Collectors.counting()));
+                .collect(Collectors.groupingBy(CardDefinition::id, Collectors.counting()));
         counts.forEach((id, count) -> {
             if (count > MAX_COPIES) errors.add(id + " exceeds the four-copy limit");
         });
