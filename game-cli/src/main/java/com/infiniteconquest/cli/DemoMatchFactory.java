@@ -15,6 +15,7 @@ public final class DemoMatchFactory {
             "demo_land_c", "demo_structure_a", "demo_structure_b");
 
     private final PrototypeCardPool pool = new PrototypeCardPool();
+    private final CapitalRoster capitals = new CapitalRoster();
 
     public GameState create(long seed) {
         List<CardDefinition> deck = demoDeck();
@@ -23,9 +24,19 @@ public final class DemoMatchFactory {
 
     public GameState create(long seed, List<CardDefinition> playerZeroDeck,
                             List<CardDefinition> playerOneDeck) {
+        CardDefinition playerZeroCapital = capitals.defaultForDeck(playerZeroDeck).orElse(null);
+        CardDefinition playerOneCapital = capitals.defaultForDeck(playerOneDeck).orElse(null);
+        return create(seed, playerZeroDeck, playerOneDeck, playerZeroCapital, playerOneCapital);
+    }
+
+    public GameState create(long seed, List<CardDefinition> playerZeroDeck,
+                            List<CardDefinition> playerOneDeck,
+                            CardDefinition playerZeroCapital, CardDefinition playerOneCapital) {
+        validateCapitalChoice(playerZeroDeck, playerZeroCapital);
+        validateCapitalChoice(playerOneDeck, playerOneCapital);
         GameState state = new MatchFactory().create(
                 seed, MatchRules.current(), playerZeroDeck, playerOneDeck);
-        deployCapitals(state, seed);
+        deployCapitals(state, seed, playerZeroCapital, playerOneCapital);
         return state;
     }
 
@@ -39,11 +50,24 @@ public final class DemoMatchFactory {
     }
 
     public PrototypeCardPool pool() { return pool; }
+    public CapitalRoster capitals() { return capitals; }
 
-    private void deployCapitals(GameState state, long seed) {
+    private void validateCapitalChoice(List<CardDefinition> deck, CardDefinition capital) {
+        if (capital == null) return;
+        if (capital.type() != CardType.CAPITAL) throw new IllegalArgumentException("Selected card is not a Capital");
+        java.util.Set<String> factions = deck.stream().map(CardDefinition::faction)
+                .filter(FactionDecks.FACTIONS::contains).collect(java.util.stream.Collectors.toSet());
+        if (factions.size() == 1 && !factions.contains(capital.faction())) {
+            throw new IllegalArgumentException("Capital faction must match the deck faction");
+        }
+    }
+
+    private void deployCapitals(GameState state, long seed,
+                                CardDefinition playerZeroCapital, CardDefinition playerOneCapital) {
         CapitalDeployment deployment = new CapitalDeployment();
         for (int player = 0; player < 2; player++) {
-            CardDefinition definition = new CardDefinition(
+            CardDefinition selected = player == 0 ? playerZeroCapital : playerOneCapital;
+            CardDefinition definition = selected != null ? selected : new CardDefinition(
                     "demo_capital_p" + player, "Player " + (player + 1) + " Capital",
                     CardType.CAPITAL, "DEMO", 0, 0, 0, 0, 0, 20);
             UUID id = UUID.nameUUIDFromBytes(

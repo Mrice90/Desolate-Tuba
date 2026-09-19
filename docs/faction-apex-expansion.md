@@ -19,12 +19,12 @@ Capitals remain pregame cards and are not included in deck-type allocation.
 
 ## Starter construction
 
-Each faction now owns 35 unique cards:
+At the end of the apex phase, each faction owned 35 unique cards:
 
 - the previous 25-card faction pool;
 - ten apex cards.
 
-The faction starter contains one copy of all 35 cards plus a second copy of its five primary-type apex cards. This creates exactly 40 cards, showcases the faction identity, and keeps every card at one or two copies—well below the four-copy limit.
+The later keyword expansion added five more unique cards per faction. The current faction starter is one copy of each of its 40 cards; see `faction-keyword-expansion.md`.
 
 ## Balance principles
 

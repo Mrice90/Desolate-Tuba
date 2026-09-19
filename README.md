@@ -20,7 +20,7 @@ gradle :game-cli:run --args="42"
 
 ## Build a custom deck
 
-The editor starts with the demo deck. It supports 234 editable prototypes: 180 faction cards across regular and apex tiers, plus 24 neutral/development cards.
+The editor starts with the demo deck. It supports 264 editable prototypes: 240 faction cards across regular, apex, and keyword tiers, plus 24 neutral/development cards. The 18 Capitals are selected separately and never count toward the 40-card deck.
 
 ```bash
 gradle :game-cli:run --args="deck"
@@ -33,6 +33,15 @@ Play using a saved human deck against a saved bot deck:
 ```bash
 gradle :game-cli:run --args="play human.json bot.json 42"
 ```
+
+List the three Capital choices for every faction, then optionally select one for each player:
+
+```bash
+gradle :game-cli:run --args="capitals"
+gradle :game-cli:run --args="play human.json bot.json 42 zeus_capital_keraunos_spire ares_capital_red_citadel"
+```
+
+When a deck contains cards from exactly one faction, an omitted Capital defaults to that faction's first choice. A supplied Capital must match a single-faction deck.
 
 All imported and development cards remain editable prototype content rather than locked production balance.
 
@@ -50,7 +59,8 @@ gradle test
 - movement, range, Capitals, deployment, combat, HP, destruction, and victory
 - Mole, Blink, Vanguard, line of sight, and typed Spell effects
 - private local-player handoff, inspection, and legal-action hints
-- six 35-card faction pools with primary/secondary apex identities, plus 24 neutral/development prototypes
+- six 40-card faction pools with primary/secondary type and keyword identities, plus 24 neutral/development prototypes
+- three separately selectable Capitals per faction
 - executable active-turn and enemy-turn reaction Spells
 - validated JSON deck files and interactive deck editor
 - automated JUnit rules and interface tests

@@ -22,25 +22,41 @@ public final class InfiniteConquestCli {
                     .run(input, System.out, matches.demoDeck());
             return;
         }
+        if (args.length > 0 && args[0].equalsIgnoreCase("capitals")) {
+            System.out.println("Selectable Capitals (choose one matching your faction):");
+            for (String faction : new java.util.TreeSet<>(FactionDecks.FACTIONS)) {
+                System.out.println(faction + ":");
+                matches.capitals().forFaction(faction).forEach(capital ->
+                        System.out.println("  " + capital.id() + " — " + capital.name()
+                                + " — HP " + capital.hitPoints()));
+            }
+            return;
+        }
 
         long seed;
         List<CardDefinition> humanDeck;
         List<CardDefinition> botDeck;
+        CardDefinition humanCapital = null;
+        CardDefinition botCapital = null;
         if (args.length > 0 && args[0].equalsIgnoreCase("play")) {
-            if (args.length < 3 || args.length > 4) {
-                throw new IllegalArgumentException("Use: play <human-deck.json> <bot-deck.json> [seed]");
+            if (args.length < 3 || args.length > 6) {
+                throw new IllegalArgumentException("Use: play <human-deck.json> <bot-deck.json> [seed] [human-capital-id] [bot-capital-id]");
             }
             DeckFileStore files = new DeckFileStore();
             humanDeck = files.load(Path.of(args[1]), matches.pool());
             botDeck = files.load(Path.of(args[2]), matches.pool());
-            seed = args.length == 4 ? parseSeed(args[3]) : 1L;
+            seed = args.length >= 4 ? parseSeed(args[3]) : 1L;
+            if (args.length >= 5) humanCapital = matches.capitals().require(args[4]);
+            if (args.length >= 6) botCapital = matches.capitals().require(args[5]);
+            if (humanCapital == null) humanCapital = matches.capitals().defaultForDeck(humanDeck).orElse(null);
+            if (botCapital == null) botCapital = matches.capitals().defaultForDeck(botDeck).orElse(null);
         } else {
             seed = args.length == 0 ? 1L : parseSeed(args[0]);
             humanDeck = matches.demoDeck();
             botDeck = matches.demoDeck();
         }
 
-        runMatch(matches.create(seed, humanDeck, botDeck), seed, input);
+        runMatch(matches.create(seed, humanDeck, botDeck, humanCapital, botCapital), seed, input);
     }
 
     private static void runMatch(GameState state, long seed, BufferedReader input) throws IOException {
