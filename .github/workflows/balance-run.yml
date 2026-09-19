@@ -35,4 +35,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: balance-report
-          path: balance-report.json
+          path: game-cli/balance-report.json
