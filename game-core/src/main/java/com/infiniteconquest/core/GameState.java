@@ -64,12 +64,16 @@ public final class GameState {
     }
     void drawInitialHands() {
         for (int playerId = 0; playerId < 2; playerId++)
-            for (int i = 0; i < rules.initialHandSize(); i++) drawCard(playerId);
+            for (int i = 0; i < rules.initialHandSizeFor(playerId); i++) drawCard(playerId);
     }
     void advanceTurn() {
         phase = Phase.END;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "END");
         emit(GameEvent.Type.TURN_ENDED, activePlayer, "Turn ended");
+        if (turnNumber >= rules.conquestDeadlineTurn()) {
+            resolveConquestDeadline();
+            return;
+        }
         activePlayer = 1 - activePlayer; turnNumber++; personalTurns[activePlayer]++;
         startTurn();
     }
@@ -93,6 +97,7 @@ public final class GameState {
     }
     void destroy(CardInstance card) {
         boolean permanent = card.definition().isPermanent();
+        BoardPosition formerPosition = board.positionOf(card.instanceId()).orElse(null);
         board.remove(card.instanceId());
         card.moveTo(Zone.DISCARD);
         player(card.owner()).addToDiscard(card.instanceId());
@@ -101,10 +106,14 @@ public final class GameState {
         if (permanent) {
             int result = new VictoryEvaluator().winnerAfterPermanentLoss(this, card.owner());
             if (result >= 0) {
-                winner = result;
-                phase = Phase.GAME_OVER;
-                emit(GameEvent.Type.GAME_OVER, result, "Player " + result + " wins");
+                finishGame(result, "Player " + result + " wins");
             }
+        }
+        if (phase != Phase.GAME_OVER && formerPosition != null) {
+            board.topAt(formerPosition).flatMap(this::card)
+                    .filter(revealed -> revealed.definition().isPermanent())
+                    .filter(revealed -> revealed.damage() >= revealed.definition().hitPoints())
+                    .ifPresent(this::destroy);
         }
     }
 
@@ -117,6 +126,8 @@ public final class GameState {
         for (int i = 0; i < rules.cardsDrawnAtTurnStart(); i++) drawCard(activePlayer);
         if (phase == Phase.GAME_OVER) return;
         capitalPassiveRules.onTurnStarted(this, activePlayer);
+        if (phase == Phase.GAME_OVER) return;
+        applyConquestPressure();
         if (phase == Phase.GAME_OVER) return;
         emit(GameEvent.Type.TURN_STARTED, activePlayer, "Personal turn " + personalTurns[activePlayer]);
         phase = Phase.PLAY;
@@ -137,7 +148,9 @@ public final class GameState {
             for (CardInstance card : cards.values()) if (card.owner() == playerId && card.zone() == Zone.BATTLEFIELD && card.definition().isPermanent()) {
                 card.addDamage(1);
                 emit(GameEvent.Type.EXHAUSTION_DAMAGE, playerId, card.instanceId().toString());
-                if (card.damage() >= card.definition().hitPoints()) destroy(card);
+                if (card.damage() >= card.definition().hitPoints()
+                        && board.positionOf(card.instanceId()).flatMap(board::topAt)
+                        .filter(card.instanceId()::equals).isPresent()) destroy(card);
                 if (phase == Phase.GAME_OVER) break;
             }
             return;
@@ -164,6 +177,51 @@ public final class GameState {
     }
     void recordCapitalPassive(int playerId, CapitalPassive passive, String detail) {
         emit(GameEvent.Type.CAPITAL_PASSIVE_TRIGGERED, playerId, passive.name() + ": " + detail);
+    }
+    private void applyConquestPressure() {
+        int damage = rules.conquestPressureDamage(turnNumber);
+        if (damage == 0) return;
+        List<CardInstance> controlledPermanents = new ArrayList<>(battlefieldCards(activePlayer).stream()
+                .filter(card -> card.definition().isPermanent()).toList());
+        for (CardInstance card : controlledPermanents) {
+            if (card.zone() != Zone.BATTLEFIELD) continue;
+            card.addDamage(damage);
+            emit(GameEvent.Type.CONQUEST_PRESSURE, activePlayer,
+                    card.instanceId() + " takes " + damage + " damage");
+            if (card.damage() >= card.definition().hitPoints()
+                    && board.positionOf(card.instanceId()).flatMap(board::topAt)
+                    .filter(card.instanceId()::equals).isPresent()) destroy(card);
+            if (phase == Phase.GAME_OVER) return;
+        }
+    }
+    private void resolveConquestDeadline() {
+        int firstCount = permanentCount(0);
+        int secondCount = permanentCount(1);
+        if (firstCount != secondCount) {
+            int result = firstCount > secondCount ? 0 : 1;
+            finishGame(result, "Conquest deadline: " + firstCount + " permanents to " + secondCount);
+            return;
+        }
+        int firstHealth = remainingPermanentHealth(0);
+        int secondHealth = remainingPermanentHealth(1);
+        if (firstHealth != secondHealth) {
+            int result = firstHealth > secondHealth ? 0 : 1;
+            finishGame(result, "Conquest deadline: " + firstHealth + " health to " + secondHealth);
+            return;
+        }
+        finishGame(null, "Conquest deadline draw");
+    }
+    private int permanentCount(int playerId) {
+        return (int) battlefieldCards(playerId).stream().filter(card -> card.definition().isPermanent()).count();
+    }
+    private int remainingPermanentHealth(int playerId) {
+        return battlefieldCards(playerId).stream().filter(card -> card.definition().isPermanent())
+                .mapToInt(card -> Math.max(0, card.definition().hitPoints() - card.damage())).sum();
+    }
+    private void finishGame(Integer winningPlayer, String detail) {
+        winner = winningPlayer;
+        phase = Phase.GAME_OVER;
+        emit(GameEvent.Type.GAME_OVER, winningPlayer == null ? -1 : winningPlayer, detail);
     }
     private void emit(GameEvent.Type type, int playerId, String detail) {
         events.add(new GameEvent(nextEventSequence++, turnNumber, playerId, type, detail));

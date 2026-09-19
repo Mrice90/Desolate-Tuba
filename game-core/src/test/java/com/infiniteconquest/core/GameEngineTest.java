@@ -34,7 +34,7 @@ class GameEngineTest {
         assertTrue(new GameEngine().apply(state, new GameAction.EndTurn(0)).accepted());
         assertEquals(1, state.activePlayer());
         assertEquals(2, state.turnNumber());
-        assertEquals(2, state.player(1).currentGp());
+        assertEquals(4, state.player(1).currentGp());
     }
 
     @Test void rejectsOpponentAction() {
