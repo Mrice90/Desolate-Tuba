@@ -17,18 +17,18 @@ class ConquestPressureTest {
     }
 
     @Test
-    void conquestPressureBeginsOnTurnElevenAndEscalatesOnTurnSeventeen() {
+    void conquestPressureBeginsOnTurnNineAndEscalatesOnTurnFifteen() {
         MatchRules rules = new MatchRules(0, 10, 2, 3, 1, 0);
         GameState state = new GameState(1L, rules, false);
         CardInstance first = permanent(state, 0, "first", 50, new BoardPosition(0, 0));
         CardInstance second = permanent(state, 1, "second", 50, new BoardPosition(0, 5));
         state.initializeMatch();
 
-        while (state.turnNumber() < 11) state.advanceTurn();
+        while (state.turnNumber() < 9) state.advanceTurn();
         assertEquals(3, first.damage());
         assertEquals(0, second.damage());
 
-        while (state.turnNumber() < 17) state.advanceTurn();
+        while (state.turnNumber() < 15) state.advanceTurn();
         assertEquals(13, first.damage());
         assertEquals(9, second.damage());
         assertTrue(state.events().stream().anyMatch(event -> event.type() == GameEvent.Type.CONQUEST_PRESSURE));

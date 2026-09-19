@@ -76,7 +76,7 @@ class CapitalPassiveRulesTest {
         new GameEngine().apply(state, new GameAction.EndTurn(0));
         new GameEngine().apply(state, new GameAction.EndTurn(1));
 
-        assertEquals(3, bronzeHeart.damage());
+        assertEquals(4, bronzeHeart.damage());
         assertEquals(1, passiveEvents(state, CapitalPassive.BRONZE_REGENERATION));
     }
 
