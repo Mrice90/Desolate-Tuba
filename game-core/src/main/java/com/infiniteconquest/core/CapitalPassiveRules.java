@@ -26,9 +26,9 @@ public final class CapitalPassiveRules {
             Map.entry("hephaestus_capital_bronze_heart", CapitalPassive.BRONZE_REGENERATION));
 
     private static final Map<CapitalPassive, String> DESCRIPTIONS = Map.ofEntries(
-            Map.entry(CapitalPassive.OLYMPIAN_MUSTER, "Start of your turn: your first Blink Character gains +2 Attack this turn."),
+            Map.entry(CapitalPassive.OLYMPIAN_MUSTER, "Start of your turn: your first Blink Character gains +3 Attack this turn."),
             Map.entry(CapitalPassive.STORM_TITHE, "The first Spell you cast each turn refunds 3 GP."),
-            Map.entry(CapitalPassive.CLOUDWARD, "The first Character you Blink each turn gains +3 Defense until your next turn."),
+            Map.entry(CapitalPassive.CLOUDWARD, "The first Character you Blink each turn gains +4 Defense until your next turn."),
             Map.entry(CapitalPassive.TIDAL_RENEWAL, "Start of your turn: heal 3 damage from your most damaged Land."),
             Map.entry(CapitalPassive.TRIDENT_RESTORATION, "The first Land you play each turn heals your Capital for 2."),
             Map.entry(CapitalPassive.DEEP_RESERVES, "The first Mole you burrow each turn refunds 2 GP."),
@@ -62,7 +62,7 @@ public final class CapitalPassiveRules {
         switch (activePassive) {
             case OLYMPIAN_MUSTER -> firstBattlefieldCard(state, playerId,
                     card -> card.definition().type() == CardType.CHARACTER && card.definition().hasKeyword(Keyword.BLINK))
-                    .ifPresent(card -> { card.addAttackBonus(2); trigger(state, playerId, CapitalPassive.OLYMPIAN_MUSTER); });
+                    .ifPresent(card -> { card.addAttackBonus(3); trigger(state, playerId, CapitalPassive.OLYMPIAN_MUSTER); });
             case TIDAL_RENEWAL -> mostDamaged(state, playerId, CardType.LAND).ifPresent(card -> {
                 card.healDamage(3); trigger(state, playerId, CapitalPassive.TIDAL_RENEWAL);
             });
@@ -106,7 +106,7 @@ public final class CapitalPassiveRules {
     void onBlinked(GameState state, CardInstance card) {
         if (passive(state, card.owner()).orElse(null) == CapitalPassive.CLOUDWARD
                 && use(state, card.owner(), CapitalPassive.CLOUDWARD)) {
-            card.addDefenseBonus(3); emit(state, card.owner(), CapitalPassive.CLOUDWARD);
+            card.addDefenseBonus(4); emit(state, card.owner(), CapitalPassive.CLOUDWARD);
         }
     }
 

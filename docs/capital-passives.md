@@ -4,9 +4,9 @@ Every faction has three 20 HP Capital choices. Capitals remain outside the 40-ca
 
 | Faction | Capital | Passive | Implemented effect |
 |---|---|---|---|
-| Zeus | Olympus Citadel | Olympian Muster | At the start of your turn, the first Blink Character gains +2 Attack for the turn. |
+| Zeus | Olympus Citadel | Olympian Muster | At the start of your turn, the first Blink Character gains +3 Attack for the turn. |
 | Zeus | Keraunos Spire | Storm Tithe | The first Spell cast each turn refunds 3 GP. |
-| Zeus | Cloud Throne | Cloudward | The first Character that Blinks each turn gains +3 Defense until its owner's next turn. |
+| Zeus | Cloud Throne | Cloudward | The first Character that Blinks each turn gains +4 Defense until its owner's next turn. |
 | Poseidon | Atlantis Nexus | Tidal Renewal | At the start of your turn, heal 3 damage from your most damaged Land. |
 | Poseidon | Trident Bastion | Trident Restoration | The first Land played each turn heals the Capital for 2. |
 | Poseidon | Abyssal Court | Deep Reserves | The first Mole burrowed each turn refunds 2 GP. |
