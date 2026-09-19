@@ -27,22 +27,22 @@ public final class CapitalPassiveRules {
 
     private static final Map<CapitalPassive, String> DESCRIPTIONS = Map.ofEntries(
             Map.entry(CapitalPassive.OLYMPIAN_MUSTER, "Start of your turn: your first Blink Character gains +1 Attack this turn."),
-            Map.entry(CapitalPassive.STORM_TITHE, "The first Spell you cast each turn refunds 1 GP."),
-            Map.entry(CapitalPassive.CLOUDWARD, "The first Character you Blink each turn gains +1 Defense until your next turn."),
-            Map.entry(CapitalPassive.TIDAL_RENEWAL, "Start of your turn: heal 2 damage from your most damaged Land."),
-            Map.entry(CapitalPassive.TRIDENT_RESTORATION, "The first Land you play each turn heals your Capital for 1."),
-            Map.entry(CapitalPassive.DEEP_RESERVES, "The first Mole you burrow each turn refunds 1 GP."),
-            Map.entry(CapitalPassive.DEATHLESS_LEVY, "Every third personal turn, return your most recently discarded Character to your hand."),
-            Map.entry(CapitalPassive.FERRY_TOLL, "The first enemy Character your Spell returns each turn restores 1 GP."),
-            Map.entry(CapitalPassive.TARTARUS_ENDURANCE, "The first friendly Permanent destroyed each turn heals another damaged friendly Permanent for 2."),
+            Map.entry(CapitalPassive.STORM_TITHE, "The first Spell you cast each turn refunds 2 GP."),
+            Map.entry(CapitalPassive.CLOUDWARD, "The first Character you Blink each turn gains +2 Defense until your next turn."),
+            Map.entry(CapitalPassive.TIDAL_RENEWAL, "Start of your turn: heal 3 damage from your most damaged Land."),
+            Map.entry(CapitalPassive.TRIDENT_RESTORATION, "The first Land you play each turn heals your Capital for 2."),
+            Map.entry(CapitalPassive.DEEP_RESERVES, "The first Mole you burrow each turn refunds 2 GP."),
+            Map.entry(CapitalPassive.DEATHLESS_LEVY, "Every second personal turn, return your most recently discarded Character to your hand."),
+            Map.entry(CapitalPassive.FERRY_TOLL, "The first enemy Character your Spell returns each turn restores 2 GP."),
+            Map.entry(CapitalPassive.TARTARUS_ENDURANCE, "The first friendly Permanent destroyed each turn heals another damaged friendly Permanent for 3."),
             Map.entry(CapitalPassive.BLOODLUST, "Your first attack each turn gains +1 Attack for that turn."),
-            Map.entry(CapitalPassive.WAR_CAMP_DRILL, "The first Character you summon each turn gains +1 Attack and +1 Defense this turn."),
+            Map.entry(CapitalPassive.WAR_CAMP_DRILL, "The first Character you summon each turn gains +1 Attack until your next turn."),
             Map.entry(CapitalPassive.RELENTLESS_ADVANCE, "The first Character you move each turn recovers 1 movement."),
             Map.entry(CapitalPassive.AEGIS_FORMATION, "Start of your turn: your first Vanguard Character gains +1 Defense this turn."),
-            Map.entry(CapitalPassive.ARCHIVED_FORESIGHT, "Draw one additional card every third personal turn."),
-            Map.entry(CapitalPassive.OWLWARD, "The first enemy attack on your Character each turn grants that defender +1 Defense for the turn."),
+            Map.entry(CapitalPassive.ARCHIVED_FORESIGHT, "Draw one additional card every fourth personal turn."),
+            Map.entry(CapitalPassive.OWLWARD, "The first enemy attack on your Vanguard Character each turn grants +1 Defense until your next turn."),
             Map.entry(CapitalPassive.FORGE_EFFICIENCY, "The first Structure you play each turn refunds 1 GP."),
-            Map.entry(CapitalPassive.SALVAGE_FIRES, "The first friendly Structure destroyed each turn heals your Capital for 2."),
+            Map.entry(CapitalPassive.SALVAGE_FIRES, "The first friendly Structure destroyed each turn heals your Capital for 3."),
             Map.entry(CapitalPassive.BRONZE_REGENERATION, "Start of your turn: heal your Capital for 2."));
 
     public Optional<CapitalPassive> passiveFor(CardDefinition capital) {
@@ -64,10 +64,10 @@ public final class CapitalPassiveRules {
                     card -> card.definition().type() == CardType.CHARACTER && card.definition().hasKeyword(Keyword.BLINK))
                     .ifPresent(card -> { card.addAttackBonus(1); trigger(state, playerId, CapitalPassive.OLYMPIAN_MUSTER); });
             case TIDAL_RENEWAL -> mostDamaged(state, playerId, CardType.LAND).ifPresent(card -> {
-                card.healDamage(2); trigger(state, playerId, CapitalPassive.TIDAL_RENEWAL);
+                card.healDamage(3); trigger(state, playerId, CapitalPassive.TIDAL_RENEWAL);
             });
             case DEATHLESS_LEVY -> {
-                if (state.personalTurnNumber(playerId) % 3 == 0) {
+                if (state.personalTurnNumber(playerId) % 2 == 0) {
                     state.returnMostRecentDiscardedCharacter(playerId).ifPresent(card ->
                             trigger(state, playerId, CapitalPassive.DEATHLESS_LEVY));
                 }
@@ -76,7 +76,7 @@ public final class CapitalPassiveRules {
                     card -> card.definition().type() == CardType.CHARACTER && card.definition().hasKeyword(Keyword.VANGUARD))
                     .ifPresent(card -> { card.addDefenseBonus(1); trigger(state, playerId, CapitalPassive.AEGIS_FORMATION); });
             case ARCHIVED_FORESIGHT -> {
-                if (state.personalTurnNumber(playerId) % 3 == 0) {
+                if (state.personalTurnNumber(playerId) % 4 == 0) {
                     state.drawCards(playerId, 1); trigger(state, playerId, CapitalPassive.ARCHIVED_FORESIGHT);
                 }
             }
@@ -93,21 +93,21 @@ public final class CapitalPassiveRules {
         if (passive == CapitalPassive.STORM_TITHE && card.definition().type() == CardType.SPELL) refund(state, card.owner(), passive);
         if (passive == CapitalPassive.TRIDENT_RESTORATION && card.definition().type() == CardType.LAND
                 && use(state, card.owner(), passive)) {
-            capital(state, card.owner()).ifPresent(value -> value.healDamage(1)); emit(state, card.owner(), passive);
+            capital(state, card.owner()).ifPresent(value -> value.healDamage(2)); emit(state, card.owner(), passive);
         }
         if (passive == CapitalPassive.WAR_CAMP_DRILL && card.definition().type() == CardType.CHARACTER
-                && use(state, card.owner(), passive)) { card.addAttackBonus(1); card.addDefenseBonus(1); emit(state, card.owner(), passive); }
+                && use(state, card.owner(), passive)) { card.addAttackBonus(1); emit(state, card.owner(), passive); }
         if (passive == CapitalPassive.FORGE_EFFICIENCY && card.definition().type() == CardType.STRUCTURE) refund(state, card.owner(), passive);
     }
 
     void onBurrowed(GameState state, CardInstance card) {
-        if (passive(state, card.owner()).orElse(null) == CapitalPassive.DEEP_RESERVES) refund(state, card.owner(), CapitalPassive.DEEP_RESERVES);
+        if (passive(state, card.owner()).orElse(null) == CapitalPassive.DEEP_RESERVES) refund(state, card.owner(), CapitalPassive.DEEP_RESERVES, 2);
     }
 
     void onBlinked(GameState state, CardInstance card) {
         if (passive(state, card.owner()).orElse(null) == CapitalPassive.CLOUDWARD
                 && use(state, card.owner(), CapitalPassive.CLOUDWARD)) {
-            card.addDefenseBonus(1); emit(state, card.owner(), CapitalPassive.CLOUDWARD);
+            card.addDefenseBonus(2); emit(state, card.owner(), CapitalPassive.CLOUDWARD);
         }
     }
 
@@ -123,7 +123,7 @@ public final class CapitalPassiveRules {
                 && use(state, attacker.owner(), CapitalPassive.BLOODLUST)) {
             attacker.addAttackBonus(1); emit(state, attacker.owner(), CapitalPassive.BLOODLUST);
         }
-        if (target.definition().type() == CardType.CHARACTER
+        if (target.definition().type() == CardType.CHARACTER && target.definition().hasKeyword(Keyword.VANGUARD)
                 && passive(state, target.owner()).orElse(null) == CapitalPassive.OWLWARD
                 && use(state, target.owner(), CapitalPassive.OWLWARD)) {
             target.addDefenseBonus(1); emit(state, target.owner(), CapitalPassive.OWLWARD);
@@ -132,7 +132,7 @@ public final class CapitalPassiveRules {
 
     void onCharacterReturnedBySpell(GameState state, int casterId, CardInstance target) {
         if (target.owner() != casterId && passive(state, casterId).orElse(null) == CapitalPassive.FERRY_TOLL) {
-            refund(state, casterId, CapitalPassive.FERRY_TOLL);
+            refund(state, casterId, CapitalPassive.FERRY_TOLL, 2);
         }
     }
 
@@ -140,11 +140,11 @@ public final class CapitalPassiveRules {
         int owner = destroyed.owner();
         CapitalPassive passive = passive(state, owner).orElse(null);
         if (passive == CapitalPassive.TARTARUS_ENDURANCE && use(state, owner, passive)) {
-            mostDamagedPermanent(state, owner).ifPresent(card -> card.healDamage(2)); emit(state, owner, passive);
+            mostDamagedPermanent(state, owner).ifPresent(card -> card.healDamage(3)); emit(state, owner, passive);
         }
         if (passive == CapitalPassive.SALVAGE_FIRES && destroyed.definition().type() == CardType.STRUCTURE
                 && use(state, owner, passive)) {
-            capital(state, owner).ifPresent(card -> card.healDamage(2)); emit(state, owner, passive);
+            capital(state, owner).ifPresent(card -> card.healDamage(3)); emit(state, owner, passive);
         }
     }
 
@@ -173,8 +173,12 @@ public final class CapitalPassiveRules {
     }
 
     private void refund(GameState state, int playerId, CapitalPassive passive) {
+        refund(state, playerId, passive, passive == CapitalPassive.STORM_TITHE ? 2 : 1);
+    }
+
+    private void refund(GameState state, int playerId, CapitalPassive passive, int amount) {
         if (use(state, playerId, passive)) {
-            state.player(playerId).restoreGp(1); emit(state, playerId, passive);
+            state.player(playerId).restoreGp(amount); emit(state, playerId, passive);
         }
     }
 

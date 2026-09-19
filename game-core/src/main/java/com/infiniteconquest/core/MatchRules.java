@@ -10,7 +10,7 @@ public record MatchRules(int initialHandSize, int maximumGp, int gpGrowthPerPers
             throw new IllegalArgumentException("Rule values cannot be negative");
         }
     }
-    public static MatchRules current() { return new MatchRules(5, 10, 1, 2, 2, 1); }
+    public static MatchRules current() { return new MatchRules(5, 10, 1, 3, 2, 1); }
     public int gpForTurn(int playerId, int personalTurnNumber) {
         if (personalTurnNumber < 1) throw new IllegalArgumentException("Personal turn number starts at 1");
         if (playerId == 1 && personalTurnNumber <= secondPlayerOpeningGpTurns) {

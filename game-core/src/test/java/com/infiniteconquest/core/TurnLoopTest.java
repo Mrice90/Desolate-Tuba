@@ -22,12 +22,12 @@ class TurnLoopTest {
 
         assertTrue(new GameEngine().apply(state, new GameAction.EndTurn(0)).accepted());
         assertEquals(1, state.activePlayer());
-        assertEquals(2, state.player(1).currentGp());
+        assertEquals(3, state.player(1).currentGp());
         assertEquals(6, state.player(1).hand().size());
 
         new GameEngine().apply(state, new GameAction.EndTurn(1));
         new GameEngine().apply(state, new GameAction.EndTurn(0));
-        assertEquals(2, state.player(1).currentGp(), "Second player has exactly 2 GP on first two turns");
+        assertEquals(3, state.player(1).currentGp(), "Second player has exactly 3 GP on first two turns");
     }
 
     @Test void eventSequenceIsOrderedAndRecordsPhaseChanges() {

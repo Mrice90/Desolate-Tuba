@@ -12,7 +12,7 @@ This document records implemented rules. Prototype card balance remains editable
 ## Turns and resources
 
 - Start Phase refreshes controlled cards, grants GP, and draws one card.
-- Player 1 receives exactly 2 GP on each of their first two personal turns.
+- Player 1 receives exactly 3 GP on each of their first two personal turns as the prototype first-player-bias correction.
 - Empty-deck draws deal one exhaustion damage to each controlled Permanent.
 
 ## Deployment and stacks
