@@ -28,7 +28,7 @@
 
 - [x] Command-line local two-player match interface
 - [x] Legal-action listing and battlefield display
-- [ ] Hidden-information handoff screen
+- [x] Hidden-information handoff screen and card/stack inspection
 - [ ] Android application module
 - [ ] Battlefield, card inspection and legal-action highlighting
 

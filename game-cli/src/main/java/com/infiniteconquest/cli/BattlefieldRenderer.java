@@ -27,21 +27,47 @@ public final class BattlefieldRenderer {
         List<UUID> hand = state.player(state.activePlayer()).hand();
         if (hand.isEmpty()) out.append("  (empty)").append(System.lineSeparator());
         for (int index = 0; index < hand.size(); index++) {
-            CardInstance card = state.card(hand.get(index)).orElseThrow();
-            CardDefinition d = card.definition();
-            out.append("  [").append(index).append("] ").append(d.name())
-                    .append(" — ").append(d.type()).append(" — ").append(d.cost()).append(" GP");
-            if (d.type() == CardType.CHARACTER) {
-                out.append(" — A").append(d.attack()).append("/D").append(d.defense())
-                        .append("/R").append(d.range()).append("/M").append(d.movement());
-            } else if (d.isPermanent()) {
-                out.append(" — HP ").append(d.hitPoints());
-            }
-            if (!d.keywords().isEmpty()) out.append(" — ").append(d.keywords());
-            out.append(System.lineSeparator());
+            out.append("  [").append(index).append("] ")
+                    .append(describe(state.card(hand.get(index)).orElseThrow()))
+                    .append(System.lineSeparator());
         }
         out.append("Opponent: ").append(state.player(1 - state.activePlayer()).hand().size())
                 .append(" cards in hand");
+        return out.toString();
+    }
+
+    public String inspectHand(GameState state, int index) {
+        UUID id = state.player(state.activePlayer()).hand().get(index);
+        return describe(state.card(id).orElseThrow());
+    }
+
+    public String inspectCell(GameState state, BoardPosition position) {
+        List<UUID> stack = state.board().stackAt(position);
+        if (stack.isEmpty()) return position + ": empty";
+        StringBuilder out = new StringBuilder(position + " stack (bottom to top):");
+        for (int index = 0; index < stack.size(); index++) {
+            CardInstance card = state.card(stack.get(index)).orElseThrow();
+            out.append(System.lineSeparator()).append("  ").append(index + 1).append(". ")
+                    .append(describe(card));
+            if (card.definition().isPermanent()) {
+                out.append(" — damage ").append(card.damage()).append('/').append(card.definition().hitPoints());
+            }
+        }
+        return out.toString();
+    }
+
+    private String describe(CardInstance card) {
+        CardDefinition d = card.definition();
+        StringBuilder out = new StringBuilder(d.name())
+                .append(" — P").append(card.owner())
+                .append(" — ").append(d.type()).append(" — ").append(d.cost()).append(" GP");
+        if (d.type() == CardType.CHARACTER) {
+            out.append(" — A").append(d.attack()).append("/D").append(d.defense())
+                    .append("/R").append(d.range()).append("/M").append(d.movement());
+        } else if (d.isPermanent()) {
+            out.append(" — HP ").append(d.hitPoints());
+        }
+        if (!d.keywords().isEmpty()) out.append(" — ").append(d.keywords());
         return out.toString();
     }
 

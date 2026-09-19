@@ -27,6 +27,31 @@ public final class GameEngine {
         return state.card(id).map(c -> movementRules.legalDestinations(state, c)).orElse(Set.of());
     }
 
+    public Set<BoardPosition> legalAttackDestinations(GameState state, UUID attackerId) {
+        CardInstance attacker = state.card(attackerId).orElse(null);
+        if (attacker == null || attacker.owner() != state.activePlayer()
+                || attacker.definition().type() != CardType.CHARACTER || attacker.attackedThisTurn()) {
+            return Set.of();
+        }
+        BoardPosition from = state.board().positionOf(attacker.instanceId()).orElse(null);
+        if (from == null || !state.board().topAt(from).orElseThrow().equals(attacker.instanceId())) {
+            return Set.of();
+        }
+        Set<BoardPosition> legal = new LinkedHashSet<>();
+        for (BoardPosition to : state.board().positions()) {
+            Optional<UUID> targetId = state.board().topAt(to);
+            if (targetId.isEmpty()) continue;
+            CardInstance target = state.card(targetId.orElseThrow()).orElseThrow();
+            if (target.owner() != attacker.owner()
+                    && (target.definition().type() == CardType.CHARACTER || target.definition().isPermanent())
+                    && from.distanceTo(to) <= attacker.definition().range()
+                    && lineOfSightRules.hasLineOfSight(state, from, to)) {
+                legal.add(to);
+            }
+        }
+        return Collections.unmodifiableSet(legal);
+    }
+
     private ActionResult summonCharacter(GameState state, GameAction.SummonCharacter action) {
         CardInstance card = playableFromHand(state, action.playerId(), action.cardId(), CardType.CHARACTER);
         if (card == null) return ActionResult.rejected("Character must be owned, affordable, and in hand");

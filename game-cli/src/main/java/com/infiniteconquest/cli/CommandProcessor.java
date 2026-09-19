@@ -36,6 +36,7 @@ public final class CommandProcessor {
             return switch (command) {
                 case "help" -> help();
                 case "board", "hand" -> renderer.render(state);
+                case "inspect" -> inspect(parts);
                 case "actions" -> String.join(System.lineSeparator(), hints.forActivePlayer(state, engine));
                 case "play" -> apply(play(parts, false));
                 case "burrow" -> apply(play(parts, true));
@@ -49,6 +50,12 @@ public final class CommandProcessor {
         } catch (IllegalArgumentException | IndexOutOfBoundsException exception) {
             return "Invalid command: " + exception.getMessage();
         }
+    }
+
+    private String inspect(String[] parts) {
+        if (parts.length == 2) return renderer.inspectHand(state, number(parts[1]));
+        if (parts.length == 3) return renderer.inspectCell(state, position(parts[1], parts[2]));
+        throw new IllegalArgumentException("Use inspect <hand#> or inspect <x> <y>");
     }
 
     private GameAction play(String[] parts, boolean burrow) {
@@ -107,7 +114,9 @@ public final class CommandProcessor {
         return """
                 Commands:
                   board                         show battlefield and active hand
-                  actions                       list currently available command forms
+                  actions                       list currently legal command forms
+                  inspect <hand#>               inspect a card in your hand
+                  inspect <x> <y>               inspect a battlefield stack
                   play <hand#> <x> <y>          play Land, Structure, or Character
                   burrow <hand#> <x> <y>        place a Mole beneath your top Land
                   move <fromX> <fromY> <x> <y>  move the top Character
