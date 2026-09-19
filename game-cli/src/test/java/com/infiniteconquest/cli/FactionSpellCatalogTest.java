@@ -16,7 +16,8 @@ class FactionSpellCatalogTest {
         PrototypeCardPool pool = new PrototypeCardPool();
         for (String faction : FactionDecks.FACTIONS) {
             List<CardDefinition> spells = pool.cardsForFaction(faction).stream()
-                    .filter(card -> card.type() == CardType.SPELL).toList();
+                    .filter(card -> card.type() == CardType.SPELL)
+                    .filter(card -> !card.id().contains("_apex_")).toList();
             assertEquals(5, spells.size(), faction);
             for (CardDefinition spell : spells) {
                 assertFalse(spell.effects().isEmpty(), spell.id());

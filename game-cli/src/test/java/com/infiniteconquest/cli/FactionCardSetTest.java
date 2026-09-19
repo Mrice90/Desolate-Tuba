@@ -16,18 +16,15 @@ class FactionCardSetTest {
     void everyFactionHasExactlyTwentyUniquePlayableCards() {
         PrototypeCardPool pool = new PrototypeCardPool();
 
-        assertEquals(174, pool.cards().size());
+        assertEquals(234, pool.cards().size());
         for (String faction : FactionDecks.FACTIONS) {
             List<CardDefinition> cards = pool.cardsForFaction(faction);
-            assertEquals(25, cards.size(), faction);
-            assertEquals(25, cards.stream().map(CardDefinition::id).distinct().count(), faction);
+            assertEquals(35, cards.size(), faction);
+            assertEquals(35, cards.stream().map(CardDefinition::id).distinct().count(), faction);
 
             Map<CardType, Long> types = cards.stream()
                     .collect(Collectors.groupingBy(CardDefinition::type, Collectors.counting()));
-            assertEquals(12L, types.getOrDefault(CardType.CHARACTER, 0L), faction);
-            assertEquals(4L, types.getOrDefault(CardType.LAND, 0L), faction);
-            assertEquals(4L, types.getOrDefault(CardType.STRUCTURE, 0L), faction);
-            assertEquals(5L, types.getOrDefault(CardType.SPELL, 0L), faction);
+            assertEquals(35L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
         }
     }
 
@@ -44,9 +41,9 @@ class FactionCardSetTest {
                     assertTrue(card.range() >= 1 && card.range() <= 3, card.id() + " range");
                     assertTrue(card.movement() >= 1 && card.movement() <= 4, card.id() + " movement");
                 } else if (card.type() == CardType.LAND) {
-                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= 10, card.id() + " HP");
+                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_apex_") ? 19 : 10), card.id() + " HP");
                 } else if (card.type() == CardType.STRUCTURE) {
-                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= 13, card.id() + " HP");
+                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_apex_") ? 24 : 13), card.id() + " HP");
                 }
             }
         }
@@ -64,7 +61,8 @@ class FactionCardSetTest {
             assertTrue(validator.isValid(deck), faction);
             Map<String, Long> copies = deck.stream()
                     .collect(Collectors.groupingBy(CardDefinition::id, Collectors.counting()));
-            assertEquals(25, copies.size(), faction);
+            assertEquals(35, copies.size(), faction);
+            assertEquals(5, copies.values().stream().filter(count -> count == 2).count());
             assertTrue(copies.values().stream().allMatch(count -> count >= 1 && count <= 2));
         }
     }

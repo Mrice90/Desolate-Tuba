@@ -17,7 +17,8 @@
 
 - [x] Versioned JSON loader and stable IDs
 - [x] Import current Drive Characters as editable prototype content
-- [x] Six lore-driven 25-card faction pools plus neutral/development prototypes
+- [x] Six lore-driven 35-card faction pools plus neutral/development prototypes
+- [x] Primary/secondary type identities and 60 late-game apex cards
 - [x] Validated 40-card deck files with a four-copy maximum
 - [ ] Import future populated Drive rows
 - [x] Validated 40-card faction starters
