@@ -1,33 +1,42 @@
 # Infinite Conquest
 
-Infinite Conquest is a tactical card game combining deck construction, a 4×3 battlefield, spatial combat, stacking, and faction-driven strategies.
+Infinite Conquest is a tactical card game combining deck construction, a shared 4×6 battlefield, spatial combat, stacking, and faction-driven strategies.
 
-This repository is being rebuilt from the former Medieval Duel prototype. The original project remains recoverable through Git history. The separate `Mrice90/Creepy-Tomatoe` Ninja vs Zombies repository is not touched by this work.
+This repository was rebuilt from the former Medieval Duel prototype. The original project remains recoverable through Git history. The separate `Mrice90/Creepy-Tomatoe` Ninja vs Zombies repository is not touched by this work.
 
-## Current milestone
-
-M1 foundation currently provides:
-
-- pure Java `game-core` module independent of Android
-- deterministic match seed and explicit phase state
-- authoritative 4×3 board with ordered stacks
-- stable card-definition and card-instance identifiers
-- 40-card deck validation (maximum four copies, minimum ten distinct definitions)
-- GP progression capped at 10
-- legal-action validation for playing lands and ending turns
-- automated JUnit rule tests
-- GitHub Actions build and test workflow
-
-This is an engine foundation, not yet a complete playable game.
-
-## Build and test
+## Play the command-line prototype
 
 Requires JDK 17 and Gradle 8+.
+
+```bash
+gradle :game-cli:run
+```
+
+Use an optional deterministic match seed:
+
+```bash
+gradle :game-cli:run --args="42"
+```
+
+The local two-player prototype displays the battlefield, active hand, GP, card statistics, and opponent hand count. Type `help` for controls or `actions` to list available command forms for the current state.
+
+The demo uses 40-card decks made from the five imported prototype Characters and clearly labeled development Lands and Structures. These cards exist for testing and remain open to balance and roster changes.
+
+## Build and test
 
 ```bash
 gradle test
 ```
 
-## Direction
+## Current capabilities
 
-The engine remains UI-independent so it can later power Android, desktop tools, AI simulations, replays, and potential multiplayer. See `docs/roadmap.md` and `docs/game-rules-digital-spec.md`.
+- deterministic setup, five-card opening hands, draws, GP, phases, and events
+- shared 4×6 battlefield with two 4×3 player plots and ordered stacks
+- diagonal movement and range
+- Capital deployment, Character summoning, Structures, combat, HP, destruction, and victory
+- Mole, Blink, Vanguard, and line of sight
+- versioned JSON prototype cards with stable IDs
+- command-line local two-player matches
+- automated JUnit rules and interface tests
+
+The engine remains UI-independent so it can later power Android, AI simulations, replays, and multiplayer. See `docs/roadmap.md` and `docs/game-rules-digital-spec.md`.
