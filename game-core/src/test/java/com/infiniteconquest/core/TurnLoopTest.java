@@ -27,7 +27,7 @@ class TurnLoopTest {
 
         new GameEngine().apply(state, new GameAction.EndTurn(1));
         new GameEngine().apply(state, new GameAction.EndTurn(0));
-        assertEquals(3, state.player(1).currentGp(), "Second player returns to normal accelerated growth on turn two");
+        assertEquals(4, state.player(1).currentGp(), "Second player keeps the opening boost for two personal turns");
     }
 
     @Test void eventSequenceIsOrderedAndRecordsPhaseChanges() {
