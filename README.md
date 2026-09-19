@@ -1,43 +1,33 @@
-# Medieval Duel: The Arcane Tournament
+# Infinite Conquest
 
-This repository contains a prototype for a card-based RPG duel engine written in Python. It provides the foundations for building a tournament-style game with magic-using characters, each with their own deck of cards.
+Infinite Conquest is a tactical card game combining deck construction, a 4×3 battlefield, spatial combat, stacking, and faction-driven strategies.
 
-## Features
+This repository is being rebuilt from the former Medieval Duel prototype. The original project remains recoverable through Git history. The separate `Mrice90/Creepy-Tomatoe` Ninja vs Zombies repository is not touched by this work.
 
-- `Card` and `Character` classes representing the basic gameplay pieces.
-- A simple battle engine where two characters play cards from a 4-card hand.
-- Example damage and healing card effects.
-- Console interface for testing battles.
-- Tkinter-based start menu and GUI.
-- Simple "Dungeon Battle" mode that displays placeholder sprites for a 1v1
-  encounter.
-- Deck building menu to select a character and construct a 20 card deck
-  (maximum two copies of each card).
-- Quadrant style battle GUI with options for Battle, Fold, Items and Flee.
+## Current milestone
 
-## Running the Demo
+M1 foundation currently provides:
 
-1. Ensure you have Python 3.8+ installed.
-2. Install dependencies with `pip install -r requirements.txt`.
-3. Run `python main.py` and choose a mode from the start menu.
+- pure Java `game-core` module independent of Android
+- deterministic match seed and explicit phase state
+- authoritative 4×3 board with ordered stacks
+- stable card-definition and card-instance identifiers
+- 40-card deck validation (maximum four copies, minimum ten distinct definitions)
+- GP progression capped at 10
+- legal-action validation for playing lands and ending turns
+- automated JUnit rule tests
+- GitHub Actions build and test workflow
 
-This project is an early prototype and will expand to include additional characters, cards, and game modes.
-The dungeon mode uses simple placeholder sprites generated at runtime with
-`Pillow`. These sprites are created dynamically in memory, so no image assets
-are stored in the repository.
+This is an engine foundation, not yet a complete playable game.
 
+## Build and test
 
-## Data Modules
+Requires JDK 17 and Gradle 8+.
 
-The repository now includes two data modules used by the engine:
+```bash
+gradle test
+```
 
-- `bestiary.py` – definitions and lore for common dungeon enemies.
-- `character_cards.py` – card libraries and lore for each playable character along with the universal card set.
+## Direction
 
-These datasets are derived from the design codex and can be imported by other parts of the game for future content.
-
-## Card Types and Leveling
-
-Cards come in several rarity categories. **Common**, **Uncommon** and **Rare** cards can be found as loot or purchased from shops. **Unique** cards are tied to a particular character and are earned when that character levels up. The **Universal** card set is always available and can be used in any deck.
-
-Characters gain experience after battles and level up when they reach their XP threshold. Leveling up increases their maximum stats and grants unspent stat points. Each level also unlocks unique ability cards. At level 1 you can choose three unique cards that cost 1 or less, and by level 20 a total of 35 unique cards will be unlocked. These unlocked cards appear in the deck builder alongside the universal card set.
+The engine remains UI-independent so it can later power Android, desktop tools, AI simulations, replays, and potential multiplayer. See `docs/roadmap.md` and `docs/game-rules-digital-spec.md`.
