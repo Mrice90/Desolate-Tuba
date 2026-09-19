@@ -70,6 +70,8 @@ class CapitalPassiveRulesTest {
         CardInstance bronzeHeart = add(state, 0, capital("hephaestus_capital_bronze_heart"),
                 Zone.BATTLEFIELD, new BoardPosition(1, 0));
         bronzeHeart.addDamage(5);
+        CardInstance nextDraw = add(state, 0, character("next_draw", 1, 1, 1), Zone.DECK, null);
+        state.player(0).loadDeck(List.of(nextDraw.instanceId()));
 
         new GameEngine().apply(state, new GameAction.EndTurn(0));
         new GameEngine().apply(state, new GameAction.EndTurn(1));
