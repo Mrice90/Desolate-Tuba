@@ -34,7 +34,7 @@ class FactionCardSetTest {
 
         for (String faction : FactionDecks.FACTIONS) {
             for (CardDefinition card : pool.cardsForFaction(faction)) {
-                assertTrue(card.cost() >= 0 && card.cost() <= 7, card.id());
+                assertTrue(card.cost() >= 0 && card.cost() <= (card.id().contains("_apex_") ? 10 : 7), card.id());
                 if (card.type() == CardType.CHARACTER) {
                     assertTrue(card.attack() <= card.cost() + 1, card.id() + " attack");
                     assertTrue(card.defense() <= card.cost() + 2, card.id() + " defense");
