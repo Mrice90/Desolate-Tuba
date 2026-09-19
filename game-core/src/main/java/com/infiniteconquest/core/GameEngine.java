@@ -35,6 +35,7 @@ public final class GameEngine {
         player.removeFromHand(card.instanceId());
         card.moveTo(Zone.BATTLEFIELD);
         state.board().push(action.destination(), card.instanceId());
+        state.recordCardPlayed(card);
         return ActionResult.accepted("Land played");
     }
 }
