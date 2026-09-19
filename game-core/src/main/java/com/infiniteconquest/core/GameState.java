@@ -93,6 +93,7 @@ public final class GameState {
     }
     void destroy(CardInstance card) {
         boolean permanent = card.definition().isPermanent();
+        BoardPosition formerPosition = board.positionOf(card.instanceId()).orElse(null);
         board.remove(card.instanceId());
         card.moveTo(Zone.DISCARD);
         player(card.owner()).addToDiscard(card.instanceId());
@@ -105,6 +106,12 @@ public final class GameState {
                 phase = Phase.GAME_OVER;
                 emit(GameEvent.Type.GAME_OVER, result, "Player " + result + " wins");
             }
+        }
+        if (phase != Phase.GAME_OVER && formerPosition != null) {
+            board.topAt(formerPosition).flatMap(this::card)
+                    .filter(revealed -> revealed.definition().isPermanent())
+                    .filter(revealed -> revealed.damage() >= revealed.definition().hitPoints())
+                    .ifPresent(this::destroy);
         }
     }
 
@@ -137,7 +144,9 @@ public final class GameState {
             for (CardInstance card : cards.values()) if (card.owner() == playerId && card.zone() == Zone.BATTLEFIELD && card.definition().isPermanent()) {
                 card.addDamage(1);
                 emit(GameEvent.Type.EXHAUSTION_DAMAGE, playerId, card.instanceId().toString());
-                if (card.damage() >= card.definition().hitPoints()) destroy(card);
+                if (card.damage() >= card.definition().hitPoints()
+                        && board.positionOf(card.instanceId()).flatMap(board::topAt)
+                        .filter(card.instanceId()::equals).isPresent()) destroy(card);
                 if (phase == Phase.GAME_OVER) break;
             }
             return;
