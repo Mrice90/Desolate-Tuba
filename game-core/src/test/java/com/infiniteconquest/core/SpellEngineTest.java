@@ -48,7 +48,7 @@ class SpellEngineTest {
         assertTrue(result.accepted());
         assertEquals(5, defender.effectiveDefense());
         assertEquals(Zone.DISCARD, reaction.zone());
-        assertEquals(2, state.player(1).currentGp());
+        assertEquals(3, state.player(1).currentGp());
 
         engine.apply(state, new GameAction.EndTurn(0));
         assertEquals(2, defender.effectiveDefense(), "buff expires at start of controller's next turn");

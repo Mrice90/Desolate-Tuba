@@ -13,7 +13,7 @@ This document records implemented rules. Prototype card balance remains editable
 
 - Start Phase refreshes controlled cards, grants GP, and draws one card.
 - Normal maximum GP follows 1, 3, 5, 7, 9, 10 across personal turns so mid/high-cost cards enter play sooner.
-- Player 1 receives 4 GP on each of their first two personal turns and one extra opening card as prototype second-player advantages, then follows normal GP growth.
+- Player 1 receives 5 GP on each of their first two personal turns and one extra opening card as prototype second-player advantages, then follows normal GP growth.
 - Empty-deck draws deal one exhaustion damage to each controlled Permanent.
 - Conquest Pressure deals 3 damage to each active player's Permanent at the start of turns 9–14, then 4 damage from turn 15 onward. From turns 9–22, each player receives exactly seven pressure pulses.
 
