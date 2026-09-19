@@ -1,8 +1,7 @@
 name: Balance simulation
 
 on:
-  push:
-    branches: ["feature/first-balance-pass"]
+  pull_request:
   workflow_dispatch:
     inputs:
       repetitions:
