@@ -33,6 +33,7 @@
 
 ## M4 — Human vs AI
 
-- [ ] Legal-action AI
+- [x] Deterministic legal-action bot for turns and reactions
 - [ ] Headless simulations
-- [ ] Complete match flow
+- [x] Complete Player 1 vs Bot CLI match flow
+- [ ] Difficulty levels and stronger tactical evaluation

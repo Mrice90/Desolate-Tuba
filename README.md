@@ -28,10 +28,10 @@ gradle :game-cli:run --args="deck"
 
 Use `factions`, `pool <faction>`, or `reset <faction>` to explore a starter. Use `swap <remove-id> <add-id>`, then `save my-deck.json`. A deck saves only when it contains exactly 40 cards and no card has more than four copies.
 
-Play using two saved decks:
+Play using a saved human deck against a saved bot deck:
 
 ```bash
-gradle :game-cli:run --args="play player-one.json player-two.json 42"
+gradle :game-cli:run --args="play human.json bot.json 42"
 ```
 
 All imported and development cards remain editable prototype content rather than locked production balance.
@@ -44,6 +44,7 @@ gradle test
 
 ## Current capabilities
 
+- deterministic Player 1 vs Bot matches with automated bot turns and reactions
 - deterministic setup, hands, draws, GP, phases, and events
 - 4×6 battlefield with two 4×3 player plots and ordered stacks
 - movement, range, Capitals, deployment, combat, HP, destruction, and victory
