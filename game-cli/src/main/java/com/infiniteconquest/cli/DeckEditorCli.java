@@ -12,10 +12,12 @@ import java.util.Map;
 public final class DeckEditorCli {
     private final PrototypeCardPool pool;
     private final DeckFileStore files;
+    private final FactionDecks factionDecks;
 
     public DeckEditorCli(PrototypeCardPool pool, DeckFileStore files) {
         this.pool = pool;
         this.files = files;
+        this.factionDecks = new FactionDecks(pool);
     }
 
     public void run(BufferedReader input, PrintStream output, List<CardDefinition> startingDeck) throws IOException {
@@ -31,8 +33,17 @@ public final class DeckEditorCli {
             try {
                 switch (parts[0].toLowerCase()) {
                     case "help" -> output.println(help());
-                    case "pool" -> output.println(renderPool());
+                    case "factions" -> output.println(String.join(", ", FactionDecks.FACTIONS));
+                    case "pool" -> {
+                        if (parts.length > 2) throw new IllegalArgumentException("Use pool or pool <faction>");
+                        output.println(renderPool(parts.length == 2 ? parts[1] : null));
+                    }
                     case "deck" -> output.println(renderDeck(editor));
+                    case "reset" -> {
+                        require(parts, 2);
+                        editor.reset(factionDecks.starter(parts[1]));
+                        output.println("Loaded the " + parts[1].toUpperCase() + " 40-card starter deck.");
+                    }
                     case "add" -> { require(parts, 2); editor.add(parts[1]); output.println("Added " + parts[1]); }
                     case "remove" -> { require(parts, 2); editor.remove(parts[1]); output.println("Removed " + parts[1]); }
                     case "swap" -> {
@@ -57,11 +68,14 @@ public final class DeckEditorCli {
         }
     }
 
-    String renderPool() {
+    String renderPool(String faction) {
+        List<CardDefinition> visible = faction == null ? pool.cards() : pool.cardsForFaction(faction);
+        if (visible.isEmpty()) throw new IllegalArgumentException("No cards found for faction: " + faction);
         StringBuilder out = new StringBuilder();
-        for (CardDefinition card : pool.cards()) {
+        for (CardDefinition card : visible) {
             out.append(card.id()).append(" | ").append(card.name()).append(" | ")
-                    .append(card.type()).append(" | ").append(card.cost()).append(" GP");
+                    .append(card.faction()).append(" | ").append(card.type())
+                    .append(" | ").append(card.cost()).append(" GP");
             if (!card.keywords().isEmpty()) out.append(" | ").append(card.keywords());
             out.append(System.lineSeparator());
         }
@@ -84,14 +98,16 @@ public final class DeckEditorCli {
 
     private String help() {
         return """
-                pool                         list every available prototype card
+                factions                     list the six launch factions
+                pool [faction]               list all cards or one faction's cards
+                reset <faction>              load that faction's 40-card starter
                 deck                         show the current deck and copy counts
                 swap <remove-id> <add-id>    replace one card while staying at 40
                 remove <card-id>             remove one copy
                 add <card-id>                add one copy (maximum four)
-                validate                     check the 40-card and copy-limit rules
-                save <file.json>              save only if the deck is valid
-                quit                          leave the editor
+                validate                     check exact 40-card and copy-limit rules
+                save <file.json>             save only if the deck is valid
+                quit                         leave the editor
                 """.strip();
     }
 }

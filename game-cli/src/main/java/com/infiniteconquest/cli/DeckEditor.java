@@ -16,6 +16,11 @@ public final class DeckEditor {
 
     public List<CardDefinition> cards() { return Collections.unmodifiableList(cards); }
 
+    public void reset(List<CardDefinition> replacement) {
+        cards.clear();
+        cards.addAll(Objects.requireNonNull(replacement));
+    }
+
     public Map<String, Long> counts() {
         Map<String, Long> result = new TreeMap<>();
         for (CardDefinition card : cards) result.merge(card.id(), 1L, Long::sum);

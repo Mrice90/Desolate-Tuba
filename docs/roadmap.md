@@ -15,10 +15,11 @@
 
 - [x] Versioned JSON loader and stable IDs
 - [x] Import current Drive Characters as editable prototype content
-- [x] Expand to 24 playable prototype card definitions
+- [x] Six lore-driven 20-card faction pools plus neutral/development prototypes
 - [x] Validated 40-card deck files with a four-copy maximum
 - [ ] Import future populated Drive rows
-- [ ] Final faction pools, balance, and starter decks
+- [x] Validated 40-card faction starters
+- [ ] Playtest telemetry and final balance pass
 
 ## M3 — Playable interface
 
