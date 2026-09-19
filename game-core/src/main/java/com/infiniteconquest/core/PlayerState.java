@@ -26,34 +26,26 @@ public final class PlayerState {
         if (!deck.isEmpty() || !hand.isEmpty()) throw new IllegalStateException("Deck already loaded");
         deck.addAll(List.copyOf(cardIds));
     }
-
     Optional<UUID> drawOne() {
         if (deck.isEmpty()) return Optional.empty();
         UUID card = deck.remove(0);
         hand.add(card);
         return Optional.of(card);
     }
-
     public void addToHand(UUID id) { hand.add(Objects.requireNonNull(id)); }
     public boolean hasInHand(UUID id) { return hand.contains(id); }
-
     public void removeFromHand(UUID id) {
         if (!hand.remove(id)) throw new IllegalStateException("Card is not in hand");
     }
-
+    void addToDiscard(UUID id) { discard.add(Objects.requireNonNull(id)); }
     public void spendGp(int amount) {
         if (amount < 0 || amount > currentGp) throw new IllegalArgumentException("Insufficient GP");
         currentGp -= amount;
     }
-
     void startTurnWithGp(int availableGp) {
         if (availableGp < 0) throw new IllegalArgumentException("Available GP cannot be negative");
         maximumGp = availableGp;
         currentGp = availableGp;
     }
-
-    /** Compatibility helper for small engine fixtures. */
-    public void beginTurn() {
-        startTurnWithGp(Math.min(10, maximumGp + 1));
-    }
+    public void beginTurn() { startTurnWithGp(Math.min(10, maximumGp + 1)); }
 }
