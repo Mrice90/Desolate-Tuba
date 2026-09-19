@@ -2,30 +2,27 @@
 
 ## M0 — Repository and build foundation
 
-- [x] Replace prototype tree on feature branch
-- [x] Pure Java core module
-- [x] CI build/test workflow
-- [x] Architecture and rules-question records
+- [x] Pure Java core module and CI
+- [x] Architecture and rules traceability
 
 ## M1 — Deterministic core rules engine
 
-- [x] Board coordinates and ordered stacks
-- [x] Definitions vs instances
-- [x] Deck validation
-- [x] Turn/phase and GP skeleton
-- [x] Seeded match setup and initial draws
-- [x] Explicit Start/Play/End turn loop
-- [x] Sequenced event/action foundation
-- [ ] Movement and reachability
-- [ ] Combat, damage and destruction
-- [ ] Victory and exhaustion damage
+- [x] 4×6 board with two 4×3 plots and ordered stacks
+- [x] Definitions, instances and deck validation
+- [x] Seeded setup, draws, phases, GP and event history
+- [x] Eight-direction movement and reachable-space calculation
+- [x] Split movement accounting across multiple actions
+- [x] Secret simultaneous Capital commitment/reveal
+- [x] All-Permanents defeat evaluator
+- [ ] Character summoning and full stacking rules
+- [ ] Combat, damage, destruction and automatic victory transition
+- [ ] Permanent HP and exhaustion destruction
 
 ## M2 — Cards, decks and data pipeline
 
-- [ ] Versioned JSON schema
+- [ ] Import Drive card spreadsheets into versioned JSON
 - [ ] Typed effect registry
-- [ ] Approved Neo-Olympus cards
-- [ ] Production-valid starter decks
+- [ ] Approved Neo-Olympus starter decks
 
 ## M3 — Battlefield and Android UI
 
@@ -38,7 +35,3 @@
 - [ ] AI through legal-action API
 - [ ] Headless simulations
 - [ ] Complete match flow
-
-## Later
-
-Neo-Olympus content, save/resume, tutorial, accessibility polish, alpha packaging.

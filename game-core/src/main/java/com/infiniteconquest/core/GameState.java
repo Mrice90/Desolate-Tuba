@@ -55,7 +55,6 @@ public final class GameState {
     }
 
     void advanceTurn() {
-        requireStarted();
         phase = Phase.END;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "END");
         emit(GameEvent.Type.TURN_ENDED, activePlayer, "Turn ended");
@@ -69,11 +68,16 @@ public final class GameState {
         emit(GameEvent.Type.CARD_PLAYED, card.owner(), card.instanceId().toString());
     }
 
+    void recordCharacterMoved(CardInstance card, BoardPosition from, BoardPosition to, int distance) {
+        emit(GameEvent.Type.CHARACTER_MOVED, card.owner(),
+                card.instanceId() + " " + from + " -> " + to + " cost " + distance);
+    }
+
     private void startTurn() {
         phase = Phase.START;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "START");
         player(activePlayer).startTurnWithGp(rules.gpForTurn(activePlayer, personalTurns[activePlayer]));
-        untapControlledCards(activePlayer);
+        resetControlledCards(activePlayer);
         for (int i = 0; i < rules.cardsDrawnAtTurnStart(); i++) drawCard(activePlayer);
         emit(GameEvent.Type.TURN_STARTED, activePlayer,
                 "Personal turn " + personalTurns[activePlayer] + ", GP " + player(activePlayer).currentGp());
@@ -81,12 +85,12 @@ public final class GameState {
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "PLAY");
     }
 
-    private void untapControlledCards(int playerId) {
+    private void resetControlledCards(int playerId) {
         int untapped = 0;
         for (CardInstance card : cards.values()) {
-            if (card.owner() == playerId && card.zone() == Zone.BATTLEFIELD && card.tapped()) {
-                card.setTapped(false);
-                untapped++;
+            if (card.owner() == playerId && card.zone() == Zone.BATTLEFIELD) {
+                if (card.tapped()) untapped++;
+                card.resetTurnActions();
             }
         }
         emit(GameEvent.Type.CARDS_UNTAPPED, playerId, Integer.toString(untapped));
@@ -120,8 +124,5 @@ public final class GameState {
 
     private void emit(GameEvent.Type type, int playerId, String detail) {
         events.add(new GameEvent(nextEventSequence++, turnNumber, playerId, type, detail));
-    }
-    private void requireStarted() {
-        if (!started) throw new IllegalStateException("Match has not started");
     }
 }

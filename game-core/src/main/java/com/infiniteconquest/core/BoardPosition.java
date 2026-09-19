@@ -11,12 +11,13 @@ public record BoardPosition(int x, int y) {
         }
     }
 
-    public int manhattanDistance(BoardPosition other) {
-        return Math.abs(x - other.x) + Math.abs(y - other.y);
+    /** Diagonal and orthogonal steps each cost one space. */
+    public int distanceTo(BoardPosition other) {
+        return Math.max(Math.abs(x - other.x), Math.abs(y - other.y));
     }
 
     public boolean adjacentTo(BoardPosition other) {
-        return manhattanDistance(other) == 1;
+        return distanceTo(other) == 1;
     }
 
     public boolean isOnPlayerSide(int playerId) {
