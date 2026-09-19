@@ -11,6 +11,7 @@ public final class GameEngine {
     public ActionResult apply(GameState state, GameAction action) {
         Objects.requireNonNull(state); Objects.requireNonNull(action);
         if (state.phase() != Phase.PLAY) return ActionResult.rejected("Actions require Play phase");
+        if (action instanceof GameAction.CastSpell a) return castSpell(state, a);
         if (action.playerId() != state.activePlayer()) return ActionResult.rejected("Not active player");
         if (action instanceof GameAction.EndTurn) { state.advanceTurn(); return ActionResult.accepted("Turn ended"); }
         if (action instanceof GameAction.PlayLand a) return playLand(state, a);
@@ -50,6 +51,73 @@ public final class GameEngine {
             }
         }
         return Collections.unmodifiableSet(legal);
+    }
+
+    private ActionResult castSpell(GameState state, GameAction.CastSpell action) {
+        CardInstance spell = playableFromHand(state, action.playerId(), action.cardId(), CardType.SPELL);
+        if (spell == null) return ActionResult.rejected("Spell must be owned, affordable, and in hand");
+
+        CardInstance target = action.targetId() == null ? null : state.card(action.targetId()).orElse(null);
+        for (SpellEffect effect : spell.definition().effects()) {
+            String error = validateSpellEffect(state, action.playerId(), effect, target, action.destination());
+            if (error != null) return ActionResult.rejected(error);
+        }
+
+        payAndRemoveFromHand(state, spell);
+        spell.moveTo(Zone.DISCARD);
+        state.player(action.playerId()).addToDiscard(spell.instanceId());
+        state.recordCardPlayed(spell);
+        for (SpellEffect effect : spell.definition().effects()) {
+            applySpellEffect(state, effect, target, action.destination());
+            if (state.phase() == Phase.GAME_OVER) break;
+        }
+        return ActionResult.accepted(action.playerId() == state.activePlayer()
+                ? "Spell resolved" : "Reaction spell resolved");
+    }
+
+    private String validateSpellEffect(GameState state, int caster, SpellEffect effect,
+                                       CardInstance target, BoardPosition destination) {
+        boolean targetRequired = true;
+        if (target == null) return "Spell requires a target";
+        {
+            BoardPosition position = state.board().positionOf(target.instanceId()).orElse(null);
+            if (position == null || !state.board().topAt(position).orElseThrow().equals(target.instanceId())) {
+                return "Spell can target only the top battlefield card";
+            }
+            if (effect.target() == SpellTarget.FRIENDLY && target.owner() != caster) return "Spell requires a friendly target";
+            if (effect.target() == SpellTarget.ENEMY && target.owner() == caster) return "Spell requires an enemy target";
+        }
+        return switch (effect.type()) {
+            case STRIKE_CHARACTER, RETURN_CHARACTER, BUFF_ATTACK, BUFF_DEFENSE, TELEPORT_CHARACTER ->
+                    target.definition().type() != CardType.CHARACTER ? "Spell requires a Character target"
+                            : effect.type() == SpellEffectType.TELEPORT_CHARACTER
+                            && (destination == null || !state.board().isEmpty(destination))
+                            ? "Teleport requires an empty destination" : null;
+            case DAMAGE_PERMANENT, HEAL_PERMANENT ->
+                    !target.definition().isPermanent() ? "Spell requires a Permanent target" : null;
+        };
+    }
+
+    private void applySpellEffect(GameState state, SpellEffect effect,
+                                  CardInstance target, BoardPosition destination) {
+        switch (effect.type()) {
+            case STRIKE_CHARACTER -> {
+                if (effect.amount() > target.effectiveDefense()) state.destroy(target);
+            }
+            case DAMAGE_PERMANENT -> {
+                target.addDamage(effect.amount());
+                if (target.damage() >= target.definition().hitPoints()) state.destroy(target);
+            }
+            case HEAL_PERMANENT -> target.healDamage(effect.amount());
+            case TELEPORT_CHARACTER -> {
+                BoardPosition origin = state.board().positionOf(target.instanceId()).orElseThrow();
+                state.board().moveTop(origin, destination, target.instanceId());
+                state.recordCharacterMoved(target, origin, destination, 0);
+            }
+            case RETURN_CHARACTER -> state.returnCharacterToHand(target);
+            case BUFF_ATTACK -> target.addAttackBonus(effect.amount());
+            case BUFF_DEFENSE -> target.addDefenseBonus(effect.amount());
+        }
     }
 
     private ActionResult summonCharacter(GameState state, GameAction.SummonCharacter action) {
@@ -145,9 +213,9 @@ public final class GameEngine {
         attacker.markAttacked();
         state.recordAttack(attacker, target);
         if (target.definition().type() == CardType.CHARACTER) {
-            if (attacker.definition().attack() > target.definition().defense()) state.destroy(target);
+            if (attacker.effectiveAttack() > target.effectiveDefense()) state.destroy(target);
         } else if (target.definition().isPermanent()) {
-            target.addDamage(attacker.definition().attack());
+            target.addDamage(attacker.effectiveAttack());
             if (target.damage() >= target.definition().hitPoints()) state.destroy(target);
         } else return ActionResult.rejected("Target cannot be attacked");
         return ActionResult.accepted("Attack resolved");

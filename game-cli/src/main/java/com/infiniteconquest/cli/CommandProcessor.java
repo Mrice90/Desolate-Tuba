@@ -43,6 +43,15 @@ public final class CommandProcessor {
                 case "move" -> apply(boardAction(parts, "move"));
                 case "blink" -> apply(boardAction(parts, "blink"));
                 case "attack" -> apply(boardAction(parts, "attack"));
+                case "cast" -> apply(spell(parts, state.activePlayer(), 1));
+                case "react" -> {
+                    if (parts.length < 2) throw new IllegalArgumentException("Reaction requires a player number");
+                    int player = number(parts[1]);
+                    if (player < 0 || player > 1 || player == state.activePlayer()) {
+                        throw new IllegalArgumentException("Reaction player must be the inactive player");
+                    }
+                    yield apply(spell(parts, player, 2));
+                }
                 case "end" -> apply(new GameAction.EndTurn(state.activePlayer()));
                 case "quit", "exit" -> { quit = true; yield "Match closed."; }
                 default -> "Unknown command. Type help.";
@@ -72,6 +81,21 @@ public final class CommandProcessor {
             case CHARACTER -> new GameAction.SummonCharacter(state.activePlayer(), cardId, destination);
             default -> throw new IllegalArgumentException("That card type is not playable yet");
         };
+    }
+
+    private GameAction spell(String[] parts, int player, int handOffset) {
+        int remaining = parts.length - handOffset;
+        if (remaining != 3 && remaining != 5) {
+            throw new IllegalArgumentException("Use target coordinates and optional teleport destination");
+        }
+        int handIndex = number(parts[handOffset]);
+        UUID spellId = state.player(player).hand().get(handIndex);
+        BoardPosition targetPosition = position(parts[handOffset + 1], parts[handOffset + 2]);
+        UUID targetId = state.board().topAt(targetPosition)
+                .orElseThrow(() -> new IllegalArgumentException("No spell target at coordinates"));
+        BoardPosition destination = remaining == 5
+                ? position(parts[handOffset + 3], parts[handOffset + 4]) : null;
+        return new GameAction.CastSpell(player, spellId, targetId, destination);
     }
 
     private GameAction boardAction(String[] parts, String command) {
@@ -122,6 +146,9 @@ public final class CommandProcessor {
                   move <fromX> <fromY> <x> <y>  move the top Character
                   blink <fromX> <fromY> <x> <y> teleport a Blink Character
                   attack <fromX> <fromY> <x> <y> attack the top enemy card
+                  cast <hand#> <x> <y> [toX toY] cast during your turn
+                  react <player#> <hand#> <x> <y> [toX toY]
+                                                cast using saved GP on the enemy turn
                   end                           end the active player's turn
                   help                          show commands
                   quit                          close the match

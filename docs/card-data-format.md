@@ -8,6 +8,7 @@ Infinite Conquest card balance is externalized as versioned JSON. The current sc
 - `contentStatus` is `PROTOTYPE`, `PLAYTEST`, or `APPROVED`.
 - `keywords` contains typed engine identifiers. Schema v1 recognizes `MOLE`, `VANGUARD`, and `BLINK`.
 - `rulesText` preserves human-readable ability wording. It does not execute code.
+- `effects` contains typed Spell operations (`type`, positive `amount`, and `target`). JSON never contains executable code.
 - `faction` may be `UNASSIGNED` while a prototype has no confirmed faction.
 - Lands, Structures, and Capitals must have positive `hitPoints`; other card types use zero unless a later schema changes that rule.
 - Catalog loading rejects unknown schema versions, duplicate IDs, malformed IDs, negative stats, and invalid enum values.

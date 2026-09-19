@@ -32,6 +32,7 @@ public final class ActionHints {
                 }
             }
         }
+        hints.addAll(spellActionsForPlayer(state, player));
 
         for (BoardPosition from : state.board().positions()) {
             var top = state.board().topAt(from);
@@ -52,6 +53,43 @@ public final class ActionHints {
         }
         hints.add("end");
         return List.copyOf(hints);
+    }
+
+    public List<String> spellActionsForPlayer(GameState state, int player) {
+        List<String> result = new ArrayList<>();
+        List<UUID> hand = state.player(player).hand();
+        String prefix = player == state.activePlayer() ? "cast " : "react " + player + " ";
+        for (int index = 0; index < hand.size(); index++) {
+            CardInstance spell = state.card(hand.get(index)).orElseThrow();
+            if (spell.definition().type() != CardType.SPELL
+                    || spell.definition().cost() > state.player(player).currentGp()) continue;
+            SpellEffect effect = spell.definition().effects().get(0);
+            for (BoardPosition targetPosition : state.board().positions()) {
+                var targetId = state.board().topAt(targetPosition);
+                if (targetId.isEmpty()) continue;
+                CardInstance target = state.card(targetId.orElseThrow()).orElseThrow();
+                if (!validSpellTarget(effect, player, target)) continue;
+                String base = prefix + index + " " + targetPosition.x() + " " + targetPosition.y();
+                if (effect.type() == SpellEffectType.TELEPORT_CHARACTER) {
+                    for (BoardPosition destination : state.board().positions()) {
+                        if (state.board().isEmpty(destination)) {
+                            result.add(base + " " + destination.x() + " " + destination.y());
+                        }
+                    }
+                } else result.add(base);
+            }
+        }
+        return result;
+    }
+
+    private boolean validSpellTarget(SpellEffect effect, int player, CardInstance target) {
+        if (effect.target() == SpellTarget.FRIENDLY && target.owner() != player) return false;
+        if (effect.target() == SpellTarget.ENEMY && target.owner() == player) return false;
+        return switch (effect.type()) {
+            case STRIKE_CHARACTER, TELEPORT_CHARACTER, RETURN_CHARACTER, BUFF_ATTACK, BUFF_DEFENSE ->
+                    target.definition().type() == CardType.CHARACTER;
+            case DAMAGE_PERMANENT, HEAL_PERMANENT -> target.definition().isPermanent();
+        };
     }
 
     private boolean isControlledTopLand(GameState state, int player, BoardPosition position) {

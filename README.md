@@ -20,7 +20,7 @@ gradle :game-cli:run --args="42"
 
 ## Build a custom deck
 
-The editor starts with the demo deck. It supports 144 editable prototypes: 120 faction cards plus 24 neutral/development cards.
+The editor starts with the demo deck. It supports 174 editable prototypes: 120 faction permanents/Characters, 30 executable faction Spells, and 24 neutral/development cards.
 
 ```bash
 gradle :game-cli:run --args="deck"
@@ -47,8 +47,9 @@ gradle test
 - deterministic setup, hands, draws, GP, phases, and events
 - 4×6 battlefield with two 4×3 player plots and ordered stacks
 - movement, range, Capitals, deployment, combat, HP, destruction, and victory
-- Mole, Blink, Vanguard, and line of sight
+- Mole, Blink, Vanguard, line of sight, and typed Spell effects
 - private local-player handoff, inspection, and legal-action hints
-- six 20-card faction pools plus 24 neutral/development prototypes
+- six 25-card faction pools plus 24 neutral/development prototypes
+- executable active-turn and enemy-turn reaction Spells
 - validated JSON deck files and interactive deck editor
 - automated JUnit rules and interface tests

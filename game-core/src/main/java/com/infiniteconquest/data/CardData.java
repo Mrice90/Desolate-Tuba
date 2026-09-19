@@ -2,6 +2,7 @@ package com.infiniteconquest.data;
 
 import com.infiniteconquest.core.CardDefinition;
 import com.infiniteconquest.core.CardType;
+import com.infiniteconquest.core.SpellEffect;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +20,7 @@ public record CardData(
         int movement,
         int hitPoints,
         List<Keyword> keywords,
+        List<SpellEffect> effects,
         String rulesText,
         String description,
         int rarity,
@@ -35,8 +37,9 @@ public record CardData(
             throw new IllegalArgumentException("Card numbers cannot be negative");
         }
         keywords = keywords == null ? List.of() : List.copyOf(keywords);
-        if (keywords.stream().anyMatch(Objects::isNull)) {
-            throw new IllegalArgumentException("Keywords cannot contain null");
+        effects = effects == null ? List.of() : List.copyOf(effects);
+        if (keywords.stream().anyMatch(Objects::isNull) || effects.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException("Keywords and effects cannot contain null");
         }
         rulesText = rulesText == null ? "" : rulesText;
         description = description == null ? "" : description;
@@ -45,6 +48,6 @@ public record CardData(
 
     public CardDefinition toDefinition() {
         return new CardDefinition(id, name, type, faction, cost, attack, defense, movement, range,
-                hitPoints, Set.copyOf(keywords));
+                hitPoints, Set.copyOf(keywords), effects);
     }
 }

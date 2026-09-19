@@ -2,13 +2,14 @@ package com.infiniteconquest.core;
 
 import com.infiniteconquest.data.Keyword;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 public record CardDefinition(
         String id, String name, CardType type, String faction, int cost,
         int attack, int defense, int movement, int range, int hitPoints,
-        Set<Keyword> keywords
+        Set<Keyword> keywords, List<SpellEffect> effects
 ) {
     public CardDefinition {
         if (id == null || id.isBlank()) throw new IllegalArgumentException("Stable card ID is required");
@@ -21,18 +22,30 @@ public record CardDefinition(
             throw new IllegalArgumentException("Lands, Structures and Capitals require positive HP");
         }
         keywords = keywords == null ? Set.of() : Set.copyOf(keywords);
+        effects = effects == null ? List.of() : List.copyOf(effects);
+        if (type == CardType.SPELL && effects.isEmpty()) {
+            throw new IllegalArgumentException("Spells require at least one typed effect");
+        }
+        if (type != CardType.SPELL && !effects.isEmpty()) {
+            throw new IllegalArgumentException("Only Spells may define spell effects");
+        }
+    }
+
+    public CardDefinition(String id, String name, CardType type, String faction, int cost,
+                          int attack, int defense, int movement, int range, int hitPoints,
+                          Set<Keyword> keywords) {
+        this(id, name, type, faction, cost, attack, defense, movement, range, hitPoints, keywords, List.of());
     }
 
     public CardDefinition(String id, String name, CardType type, String faction, int cost,
                           int attack, int defense, int movement, int range, int hitPoints) {
-        this(id, name, type, faction, cost, attack, defense, movement, range, hitPoints, Set.of());
+        this(id, name, type, faction, cost, attack, defense, movement, range, hitPoints, Set.of(), List.of());
     }
 
-    /** Compatibility constructor for Characters, Spells, and older development fixtures. */
     public CardDefinition(String id, String name, CardType type, String faction, int cost,
                           int attack, int defense, int movement, int range) {
         this(id, name, type, faction, cost, attack, defense, movement, range,
-                isPermanent(type) ? 1 : 0, Set.of());
+                isPermanent(type) ? 1 : 0, Set.of(), List.of());
     }
 
     public boolean hasKeyword(Keyword keyword) { return keywords.contains(keyword); }
