@@ -1,6 +1,7 @@
 package com.infiniteconquest.cli;
 
 import com.infiniteconquest.core.CardDefinition;
+import com.infiniteconquest.core.CapitalPassiveRules;
 import com.infiniteconquest.core.GameState;
 import com.infiniteconquest.core.Phase;
 
