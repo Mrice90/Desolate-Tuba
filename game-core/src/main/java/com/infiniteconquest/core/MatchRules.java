@@ -16,8 +16,8 @@ public record MatchRules(int initialHandSize, int maximumGp, int gpGrowthPerPers
         return initialHandSize + (playerId == 1 ? 1 : 0);
     }
     public int conquestPressureDamage(int globalTurnNumber) {
-        if (globalTurnNumber < 16) return 0;
-        return globalTurnNumber < 20 ? 2 : 3;
+        if (globalTurnNumber < 11) return 0;
+        return globalTurnNumber < 17 ? 2 : 3;
     }
     public int conquestDeadlineTurn() { return 22; }
     public int gpForTurn(int playerId, int personalTurnNumber) {
