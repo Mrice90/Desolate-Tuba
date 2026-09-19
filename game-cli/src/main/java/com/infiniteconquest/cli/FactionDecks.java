@@ -3,6 +3,7 @@ package com.infiniteconquest.cli;
 import com.infiniteconquest.core.CardDefinition;
 import com.infiniteconquest.core.CardType;
 import com.infiniteconquest.core.DeckValidator;
+import com.infiniteconquest.data.Keyword;
 
 import java.util.*;
 
@@ -26,6 +27,22 @@ public final class FactionDecks {
             "ATHENA", CardType.STRUCTURE,
             "HEPHAESTUS", CardType.LAND);
 
+    public static final Map<String, Keyword> PRIMARY_KEYWORDS = Map.of(
+            "ZEUS", Keyword.BLINK,
+            "POSEIDON", Keyword.MOLE,
+            "HADES", Keyword.MOLE,
+            "ARES", Keyword.VANGUARD,
+            "ATHENA", Keyword.VANGUARD,
+            "HEPHAESTUS", Keyword.VANGUARD);
+
+    public static final Map<String, Keyword> SECONDARY_KEYWORDS = Map.of(
+            "ZEUS", Keyword.VANGUARD,
+            "POSEIDON", Keyword.VANGUARD,
+            "HADES", Keyword.BLINK,
+            "ARES", Keyword.BLINK,
+            "ATHENA", Keyword.MOLE,
+            "HEPHAESTUS", Keyword.MOLE);
+
     private final PrototypeCardPool pool;
 
     public FactionDecks(PrototypeCardPool pool) {
@@ -36,17 +53,11 @@ public final class FactionDecks {
         String faction = factionName.toUpperCase(Locale.ROOT);
         if (!FACTIONS.contains(faction)) throw new IllegalArgumentException("Unknown faction: " + factionName);
         List<CardDefinition> factionCards = pool.cardsForFaction(faction);
-        if (factionCards.size() != 35) {
-            throw new IllegalStateException(faction + " must contain exactly 35 prototype cards");
+        if (factionCards.size() != DeckValidator.REQUIRED_SIZE) {
+            throw new IllegalStateException(faction + " must contain exactly 40 prototype cards");
         }
 
         List<CardDefinition> deck = new ArrayList<>(factionCards);
-        List<CardDefinition> primaryApex = factionCards.stream()
-                .filter(card -> card.id().contains("_apex_"))
-                .filter(card -> card.type() == PRIMARY_TYPES.get(faction))
-                .toList();
-        if (primaryApex.size() != 5) throw new IllegalStateException(faction + " requires five primary apex cards");
-        deck.addAll(primaryApex);
 
         List<String> errors = new DeckValidator().validate(deck);
         if (!errors.isEmpty()) throw new IllegalStateException(String.join("; ", errors));

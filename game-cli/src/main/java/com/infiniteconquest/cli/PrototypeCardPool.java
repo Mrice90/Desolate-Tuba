@@ -16,6 +16,7 @@ public final class PrototypeCardPool {
         loaded.addAll(CardCatalog.loadResource("/cards/faction-cards.json").definitions());
         loaded.addAll(CardCatalog.loadResource("/cards/faction-spells.json").definitions());
         loaded.addAll(CardCatalog.loadResource("/cards/faction-apex-cards.json").definitions());
+        loaded.addAll(CardCatalog.loadResource("/cards/faction-keyword-cards.json").definitions());
         Map<String, CardDefinition> indexed = new LinkedHashMap<>();
         for (CardDefinition card : loaded) {
             if (indexed.putIfAbsent(card.id(), card) != null) {

@@ -48,7 +48,7 @@ class FactionApexCardTest {
     }
 
     @Test
-    void startersContainAllThirtyFiveCardsAndSecondCopiesOfPrimaryApexCards() {
+    void startersContainFortyUniqueFactionCards() {
         PrototypeCardPool pool = new PrototypeCardPool();
         FactionDecks decks = new FactionDecks(pool);
         for (String faction : FactionDecks.FACTIONS) {
@@ -57,11 +57,8 @@ class FactionApexCardTest {
             assertTrue(new DeckValidator().isValid(deck));
             Map<String, Long> copies = deck.stream()
                     .collect(Collectors.groupingBy(CardDefinition::id, Collectors.counting()));
-            for (CardDefinition card : pool.cardsForFaction(faction)) {
-                long expected = card.id().contains("_apex_")
-                        && card.type() == FactionDecks.PRIMARY_TYPES.get(faction) ? 2 : 1;
-                assertEquals(expected, copies.get(card.id()), card.id());
-            }
+            assertEquals(40, copies.size(), faction);
+            for (CardDefinition card : pool.cardsForFaction(faction)) assertEquals(1L, copies.get(card.id()), card.id());
         }
     }
 }

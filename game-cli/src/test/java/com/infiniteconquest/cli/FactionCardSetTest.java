@@ -13,18 +13,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FactionCardSetTest {
     @Test
-    void everyFactionHasExactlyTwentyUniquePlayableCards() {
+    void everyFactionHasExactlyFortyUniquePlayableCards() {
         PrototypeCardPool pool = new PrototypeCardPool();
 
-        assertEquals(234, pool.cards().size());
+        assertEquals(264, pool.cards().size());
         for (String faction : FactionDecks.FACTIONS) {
             List<CardDefinition> cards = pool.cardsForFaction(faction);
-            assertEquals(35, cards.size(), faction);
-            assertEquals(35, cards.stream().map(CardDefinition::id).distinct().count(), faction);
+            assertEquals(40, cards.size(), faction);
+            assertEquals(40, cards.stream().map(CardDefinition::id).distinct().count(), faction);
 
             Map<CardType, Long> types = cards.stream()
                     .collect(Collectors.groupingBy(CardDefinition::type, Collectors.counting()));
-            assertEquals(35L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
+            assertEquals(40L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
         }
     }
 
@@ -34,7 +34,8 @@ class FactionCardSetTest {
 
         for (String faction : FactionDecks.FACTIONS) {
             for (CardDefinition card : pool.cardsForFaction(faction)) {
-                assertTrue(card.cost() >= 0 && card.cost() <= (card.id().contains("_apex_") ? 10 : 7), card.id());
+                int maximumCost = card.id().contains("_apex_") ? 10 : card.id().contains("_keyword_") ? 8 : 7;
+                assertTrue(card.cost() >= 0 && card.cost() <= maximumCost, card.id());
                 if (card.type() == CardType.CHARACTER) {
                     assertTrue(card.attack() <= card.cost() + 1, card.id() + " attack");
                     assertTrue(card.defense() <= card.cost() + 2, card.id() + " defense");
@@ -50,7 +51,7 @@ class FactionCardSetTest {
     }
 
     @Test
-    void everyFactionStarterUsesTwentyFiveCardsForFortyTotal() {
+    void everyFactionStarterUsesFortyUniqueCards() {
         PrototypeCardPool pool = new PrototypeCardPool();
         FactionDecks decks = new FactionDecks(pool);
         DeckValidator validator = new DeckValidator();
@@ -61,9 +62,8 @@ class FactionCardSetTest {
             assertTrue(validator.isValid(deck), faction);
             Map<String, Long> copies = deck.stream()
                     .collect(Collectors.groupingBy(CardDefinition::id, Collectors.counting()));
-            assertEquals(35, copies.size(), faction);
-            assertEquals(5, copies.values().stream().filter(count -> count == 2).count());
-            assertTrue(copies.values().stream().allMatch(count -> count >= 1 && count <= 2));
+            assertEquals(40, copies.size(), faction);
+            assertTrue(copies.values().stream().allMatch(count -> count == 1));
         }
     }
 
