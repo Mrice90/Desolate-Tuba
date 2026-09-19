@@ -2,11 +2,12 @@ package com.infiniteconquest.core;
 
 public record BoardPosition(int x, int y) {
     public static final int WIDTH = 4;
-    public static final int HEIGHT = 3;
+    public static final int HEIGHT = 6;
+    public static final int PLOT_HEIGHT = 3;
 
     public BoardPosition {
         if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
-            throw new IllegalArgumentException("Position outside 4x3 battlefield: " + x + "," + y);
+            throw new IllegalArgumentException("Position outside 4x6 battlefield: " + x + "," + y);
         }
     }
 
@@ -16,5 +17,11 @@ public record BoardPosition(int x, int y) {
 
     public boolean adjacentTo(BoardPosition other) {
         return manhattanDistance(other) == 1;
+    }
+
+    public boolean isOnPlayerSide(int playerId) {
+        if (playerId == 0) return y < PLOT_HEIGHT;
+        if (playerId == 1) return y >= PLOT_HEIGHT;
+        throw new IllegalArgumentException("Player ID must be 0 or 1");
     }
 }

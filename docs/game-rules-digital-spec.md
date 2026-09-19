@@ -4,10 +4,13 @@ Status: implementation draft derived from the Google Drive document **Infinite C
 
 ## Battlefield and setup
 
-- Each player chooses a Capital position on their side of the 4×3 battlefield and places it face-down.
-- Capital choices may be changed until both players are ready.
-- First player is then chosen by coin flip.
-- Board-side coordinate ownership and digital simultaneous placement still require clarification.
+- Each player controls a 4×3 deployment plot.
+- The two plots join into one 4×6 battlefield.
+- Canonical coordinates use columns x=0–3. Player 1 controls y=0–2; Player 2 controls y=3–5.
+- A client may rotate the view without changing canonical coordinates.
+- Lands may initially be placed only within their owner's plot.
+- Each player chooses a Capital position on their plot and places it face-down.
+- Capital choices may be changed until both players are ready, then first player is chosen by coin flip.
 - Every cell owns an ordered stack; only the top card is normally targetable.
 
 ## Decks and deterministic setup
