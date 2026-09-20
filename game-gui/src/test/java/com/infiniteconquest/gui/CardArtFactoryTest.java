@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CardArtFactoryTest {
     @Test void packagesFactionWorldsAndRendersDistinctCardIllustrations() {
         assertNotNull(CardArtFactory.class.getResource("/art/faction-environments.png"));
+        assertTrue(VisualEffects.available(), "CC0 particle textures should be packaged");
         CardDefinition storm = new CardDefinition("test_storm_seer", "Storm Seer",
                 CardType.CHARACTER, "ZEUS", 3, 3, 3, 2, 2);
         CardDefinition reef = new CardDefinition("test_reef_bastion", "Reef Bastion",

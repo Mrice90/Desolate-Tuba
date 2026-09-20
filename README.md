@@ -60,6 +60,8 @@ The renderer keeps board thumbnails fast by caching each completed image for reu
 
 Board actions use distinct animated effects for movement, Blink, melee, ranged projectiles, Spells, deployment, and rules damage. Completed matches open an animated result screen with the winning Capital, match summary, and direct choices to rematch with the same settings, change match settings, or review the final battlefield.
 
+Professional transparent VFX sprites from Kenney's CC0 Particle Pack are composited into animations and card art with dynamic faction tinting. See [third-party asset notices](THIRD_PARTY_ASSETS.md) for source and license records.
+
 ```bash
 gradle :game-cli:run --args="deck"
 ```
