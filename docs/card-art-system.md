@@ -2,7 +2,7 @@
 
 `CardArtFactory` uses a hybrid art pipeline. Every Capital loads its own painterly environment illustration, while other cards are illustrated by the deterministic runtime compositor. The same stable card ID always produces the same visual at every supported display size.
 
-The Character art rollout has begun with a six-card Zeus benchmark set covering mobility, defense, spellcasting, ranged combat, creatures, and apex scale. Characters without bespoke art continue to use the procedural compositor, allowing faction batches to ship safely without incomplete or invisible cards.
+The Character art rollout now covers 18 of Zeus's 24 Characters. The first six-card benchmark established mobility, defense, spellcasting, ranged combat, creatures, and apex scale; the second 12-card batch completes Zeus's low- and mid-cost roster through Stormgate Adept. The six remaining high-cost Zeus Characters continue to use the procedural compositor until the next Character batch ships.
 
 ## Painted Capitals
 
@@ -10,7 +10,7 @@ All 18 Capitals have individual 3:2 landscape illustrations in `game-gui/src/mai
 
 The six faction families deliberately use different visual languages: Zeus is celestial and storm-crowned; Poseidon is oceanic and monumental; Hades is underworld architecture; Ares is aggressive military geometry; Athena is luminous strategic classicism; and Hephaestus is volcanic machinery.
 
-Painted Characters live in `game-gui/src/main/resources/art/characters` and use the same stable card-ID filenames as the Capital system.
+Painted Characters live in `game-gui/src/main/resources/art/characters` and use the same stable card-ID filenames as the Capital system. Rollout order is systematic: finish every Character for a faction, then that faction's Spells, Lands, and Structures before moving to the next faction.
 
 ## Visual layers
 

@@ -21,7 +21,13 @@ class CardArtFactoryTest {
     private static final List<String> PAINTED_ZEUS_CHARACTERS = List.of(
             "zeus_cloudline_courier", "zeus_aegis_airguard", "zeus_tempest_oracle",
             "zeus_ability_skyline_seer", "zeus_eagle_of_the_high_grid",
-            "zeus_apex_olympian_storm_titan");
+            "zeus_apex_olympian_storm_titan", "zeus_arc_relay_scout",
+            "zeus_thunderhead_skirmisher", "zeus_iris_signal_runner",
+            "zeus_cyclone_marksman", "zeus_boltwing_cavalier",
+            "zeus_hera_protocol_warden", "zeus_keyword_sparkstep_runner",
+            "zeus_fast_tempest_duelist", "zeus_keyword_stormgate_sentinel",
+            "zeus_keyword_cloudline_raider", "zeus_sharp_aether_spotter",
+            "zeus_stormgate_adept");
 
     @Test void packagesFactionWorldsAndRendersDistinctCardIllustrations() {
         assertNotNull(CardArtFactory.class.getResource("/art/faction-environments.png"));
@@ -57,14 +63,14 @@ class CardArtFactoryTest {
         assertEquals(56, compact.getIconHeight());
     }
 
-    @Test void packagesThePaintedZeusCharacterBenchmarkSet() {
+    @Test void packagesThePaintedZeusCharacterRollout() {
         for (String id : PAINTED_ZEUS_CHARACTERS) {
             assertNotNull(CardArtFactory.class.getResource("/art/characters/" + id + ".jpg"), id);
         }
         CardDefinition courier = new CardDefinition("zeus_cloudline_courier", "Cloudline Courier",
                 CardType.CHARACTER, "ZEUS", 1, 1, 1, 4, 1);
-        CardDefinition awaitingArt = new CardDefinition("zeus_arc_relay_scout", "Arc Relay Scout",
-                CardType.CHARACTER, "ZEUS", 1, 2, 1, 3, 2);
+        CardDefinition awaitingArt = new CardDefinition("zeus_keyword_thunderhead_guardian", "Thunderhead Guardian",
+                CardType.CHARACTER, "ZEUS", 6, 5, 6, 2, 2);
         assertTrue(CardArtFactory.hasPaintedArt(courier));
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
         assertEquals(190, CardArtFactory.iconFor(courier, 190, 78).getIconWidth());
