@@ -54,7 +54,8 @@ public final class FactionDecks {
         if (!FACTIONS.contains(faction)) throw new IllegalArgumentException("Unknown faction: " + factionName);
         List<CardDefinition> factionCards = pool.cardsForFaction(faction);
         List<CardDefinition> developments = factionCards.stream()
-                .filter(card -> card.type() == CardType.LAND || card.type() == CardType.STRUCTURE).toList();
+                .filter(card -> card.type() == CardType.LAND || card.type() == CardType.STRUCTURE)
+                .limit(14).toList();
         List<CardDefinition> actions = factionCards.stream()
                 .filter(card -> card.type() != CardType.LAND && card.type() != CardType.STRUCTURE).toList();
         if (developments.size() >= DeckValidator.REQUIRED_SIZE || developments.size() + actions.size() < DeckValidator.REQUIRED_SIZE) {
