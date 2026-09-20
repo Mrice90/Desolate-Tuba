@@ -55,7 +55,10 @@ public final class FactionDecks {
         List<CardDefinition> factionCards = pool.cardsForFaction(faction);
         List<CardDefinition> developments = factionCards.stream()
                 .filter(card -> card.type() == CardType.LAND || card.type() == CardType.STRUCTURE)
-                .limit(14).toList();
+                .sorted(Comparator.comparingInt(CardDefinition::cost)
+                        .thenComparing(card -> card.type().ordinal())
+                        .thenComparing(CardDefinition::name))
+                .limit(18).toList();
         List<CardDefinition> actions = factionCards.stream()
                 .filter(card -> card.type() != CardType.LAND && card.type() != CardType.STRUCTURE).toList();
         if (developments.size() >= DeckValidator.REQUIRED_SIZE || developments.size() + actions.size() < DeckValidator.REQUIRED_SIZE) {

@@ -157,7 +157,7 @@ public final class InfiniteConquestGui extends JFrame {
                 cell.setVerticalAlignment(SwingConstants.TOP);
                 cell.setHorizontalAlignment(SwingConstants.LEFT);
                 cell.setFocusPainted(false);
-                cell.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
+                cell.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
                 cell.setMargin(new Insets(2, 2, 2, 2));
                 cell.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 cell.addMouseListener(dragListener(new DragSource(null, position)));
@@ -186,9 +186,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void fitBoardToViewport(Dimension available) {
         int usableWidth = Math.max(320, available.width - 18);
-        int usableHeight = Math.max(480, available.height - 18);
-        int tile = Math.max(76, Math.min(118,
-                Math.min(usableWidth / BoardPosition.WIDTH, usableHeight / BoardPosition.HEIGHT)));
+        int tile = Math.max(138, Math.min(175, usableWidth / BoardPosition.WIDTH));
         Dimension boardSize = new Dimension(tile * BoardPosition.WIDTH, tile * BoardPosition.HEIGHT);
         boardPanel.setPreferredSize(boardSize);
         boardPanel.setMinimumSize(boardSize);

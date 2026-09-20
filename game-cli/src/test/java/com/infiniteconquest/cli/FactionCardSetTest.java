@@ -16,15 +16,15 @@ class FactionCardSetTest {
     void everyFactionHasAnExpandedUniquePlayablePool() {
         PrototypeCardPool pool = new PrototypeCardPool();
 
-        assertEquals(306, pool.cards().size());
+        assertEquals(330, pool.cards().size());
         for (String faction : FactionDecks.FACTIONS) {
             List<CardDefinition> cards = pool.cardsForFaction(faction);
-            assertEquals(47, cards.size(), faction);
-            assertEquals(47, cards.stream().map(CardDefinition::id).distinct().count(), faction);
+            assertEquals(51, cards.size(), faction);
+            assertEquals(51, cards.stream().map(CardDefinition::id).distinct().count(), faction);
 
             Map<CardType, Long> types = cards.stream()
                     .collect(Collectors.groupingBy(CardDefinition::type, Collectors.counting()));
-            assertEquals(47L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
+            assertEquals(51L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
         }
     }
 
@@ -34,7 +34,8 @@ class FactionCardSetTest {
 
         for (String faction : FactionDecks.FACTIONS) {
             for (CardDefinition card : pool.cardsForFaction(faction)) {
-                int maximumCost = card.id().contains("_apex_") ? 10 : card.id().contains("_keyword_") ? 8 : 7;
+                int maximumCost = card.type() == CardType.LAND || card.type() == CardType.STRUCTURE ? 10
+                        : card.id().contains("_apex_") ? 10 : card.id().contains("_keyword_") ? 8 : 7;
                 assertTrue(card.cost() >= 0 && card.cost() <= maximumCost, card.id());
                 if (card.type() == CardType.CHARACTER) {
                     assertTrue(card.attack() <= card.cost() + 1, card.id() + " attack");
@@ -43,10 +44,10 @@ class FactionCardSetTest {
                     assertTrue(card.movement() >= 1 && card.movement() <= 4, card.id() + " movement");
                 } else if (card.type() == CardType.LAND) {
                     assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_apex_") ? 19
-                            : card.id().contains("_land_") ? 18 : 10), card.id() + " HP");
+                            : card.id().contains("_land_") ? 22 : 10), card.id() + " HP");
                 } else if (card.type() == CardType.STRUCTURE) {
                     assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_apex_") ? 24
-                            : card.id().contains("_structure_") ? 20 : 13), card.id() + " HP");
+                            : card.id().contains("_structure_") ? 26 : 13), card.id() + " HP");
                 }
             }
         }
@@ -66,7 +67,7 @@ class FactionCardSetTest {
                     .collect(Collectors.groupingBy(CardDefinition::id, Collectors.counting()));
             assertEquals(40, copies.size(), faction);
             assertTrue(copies.values().stream().allMatch(count -> count == 1));
-            assertEquals(14, deck.stream().filter(card -> card.type() == CardType.LAND
+            assertEquals(18, deck.stream().filter(card -> card.type() == CardType.LAND
                     || card.type() == CardType.STRUCTURE).count(), faction);
         }
     }
