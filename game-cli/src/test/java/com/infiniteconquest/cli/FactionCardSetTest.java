@@ -69,6 +69,9 @@ class FactionCardSetTest {
             assertTrue(copies.values().stream().allMatch(count -> count == 1));
             assertEquals(18, deck.stream().filter(card -> card.type() == CardType.LAND
                     || card.type() == CardType.STRUCTURE).count(), faction);
+            assertEquals(1, deck.stream().filter(card -> card.hasKeyword(com.infiniteconquest.data.Keyword.FAST_STRIKE)).count(), faction);
+            assertEquals(1, deck.stream().filter(card -> card.hasKeyword(com.infiniteconquest.data.Keyword.SIEGE)).count(), faction);
+            assertEquals(1, deck.stream().filter(card -> card.hasKeyword(com.infiniteconquest.data.Keyword.SHARP_SHOT)).count(), faction);
         }
     }
 

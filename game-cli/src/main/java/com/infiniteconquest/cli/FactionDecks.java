@@ -64,11 +64,21 @@ public final class FactionDecks {
         if (developments.size() >= DeckValidator.REQUIRED_SIZE || developments.size() + actions.size() < DeckValidator.REQUIRED_SIZE) {
             throw new IllegalStateException(faction + " does not have a valid 40-card starter pool");
         }
+        int actionSlots = DeckValidator.REQUIRED_SIZE - developments.size();
+        List<CardDefinition> tactical = actions.stream().filter(this::hasNewTacticalKeyword).toList();
+        if (tactical.size() > actionSlots) throw new IllegalStateException(faction + " has too many required tactical cards");
         List<CardDefinition> deck = new ArrayList<>(developments);
-        deck.addAll(actions.subList(0, DeckValidator.REQUIRED_SIZE - developments.size()));
+        deck.addAll(tactical);
+        actions.stream().filter(card -> !hasNewTacticalKeyword(card))
+                .limit(actionSlots - tactical.size()).forEach(deck::add);
 
         List<String> errors = new DeckValidator().validate(deck);
         if (!errors.isEmpty()) throw new IllegalStateException(String.join("; ", errors));
         return List.copyOf(deck);
+    }
+
+    private boolean hasNewTacticalKeyword(CardDefinition card) {
+        return card.hasKeyword(Keyword.FAST_STRIKE) || card.hasKeyword(Keyword.SIEGE)
+                || card.hasKeyword(Keyword.SHARP_SHOT);
     }
 }
