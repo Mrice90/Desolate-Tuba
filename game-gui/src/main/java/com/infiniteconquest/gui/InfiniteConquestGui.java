@@ -1921,6 +1921,9 @@ public final class InfiniteConquestGui extends JFrame {
             int halo = 280 + Math.round(22 * (float)Math.sin(phase * Math.PI * 2));
             Color glow = victory ? new Color(255, 207, 91, 42) : new Color(255, 88, 108, 36);
             g.setColor(glow); g.fillOval(getWidth()/2-halo/2, 45-halo/4, halo, halo);
+            VisualEffects.draw(g, victory ? VisualEffects.Sprite.LIGHT : VisualEffects.Sprite.SMOKE,
+                    getWidth()/2, 150, halo, victory ? new Color(255,220,124) : new Color(146,110,180),
+                    .22f, phase / 3.0);
             for (int i = 0; i < sparks.size(); i++) {
                 Point spark = sparks.get(i);
                 int y = Math.floorMod(spark.y - Math.round(phase * (18 + i % 24)), Math.max(1, getHeight()));
@@ -2029,6 +2032,17 @@ public final class InfiniteConquestGui extends JFrame {
             float travel = ease(Math.min(1f, progress / .72f));
             int orbX = Math.round(source.x + (target.x - source.x) * travel);
             int orbY = Math.round(source.y + (target.y - source.y) * travel);
+            VisualEffects.Sprite traveling = switch (animation.style()) {
+                case MOVE -> VisualEffects.Sprite.TRACE;
+                case BLINK, SPELL -> VisualEffects.Sprite.MAGIC;
+                case MELEE -> VisualEffects.Sprite.SLASH;
+                case RANGED -> VisualEffects.Sprite.SPARK;
+                case DEPLOY -> VisualEffects.Sprite.LIGHT;
+                case RULES -> VisualEffects.Sprite.FLAME;
+            };
+            VisualEffects.draw(g, traveling, orbX, orbY,
+                    animation.style()==AnimationStyle.SPELL ? 72 : 48,
+                    animation.color(), .72f*fade, Math.atan2(target.y-source.y,target.x-source.x));
 
             if (animation.style() == AnimationStyle.MOVE || animation.style() == AnimationStyle.BLINK) {
                 int arc = Math.max(28, Math.abs(target.x-source.x)/5 + 18);
@@ -2068,10 +2082,19 @@ public final class InfiniteConquestGui extends JFrame {
             g.drawOval(target.x - pulse / 2, target.y - pulse / 2, pulse, pulse);
             if(animation.style()==AnimationStyle.SPELL){
                 for(int i=0;i<3;i++){int ring=pulse+i*18;g.drawOval(target.x-ring/2,target.y-ring/2,ring,ring);double a=progress*10+i*2.1;g.fillOval(target.x+(int)(Math.cos(a)*ring/2)-4,target.y+(int)(Math.sin(a)*ring/2)-4,8,8);}
+                VisualEffects.draw(g,VisualEffects.Sprite.ORBIT,target.x,target.y,
+                        90+Math.round(progress*44),animation.color(),.68f*fade,progress*2.5);
             }
             if(animation.style()==AnimationStyle.DEPLOY){
                 g.setComposite(AlphaComposite.SrcOver.derive(.3f*fade));g.fillRoundRect(target.x-34,target.y-70,68,140,24,24);
+                VisualEffects.draw(g,VisualEffects.Sprite.LIGHT,target.x,target.y,
+                        100+Math.round(progress*30),animation.color(),.72f*fade,0);
             }
+            if(animation.style()==AnimationStyle.MELEE&&progress>.28f)
+                VisualEffects.draw(g,VisualEffects.Sprite.SLASH,target.x,target.y,112,
+                        Color.WHITE,.8f*fade,angle);
+            VisualEffects.draw(g,VisualEffects.Sprite.SPARK,target.x,target.y,
+                    62+Math.round(progress*70),animation.color(),.62f*fade,progress*1.8);
             for(int i=0;i<8;i++){double a=i*Math.PI/4+progress*2;int distance=Math.round(progress*48);int px=target.x+(int)(Math.cos(a)*distance),py=target.y+(int)(Math.sin(a)*distance);g.fillOval(px-3,py-3,6,6);}
             g.dispose();
         }

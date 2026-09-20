@@ -34,7 +34,7 @@ final class CardArtFactory {
         Graphics2D g=image.createGraphics(); quality(g);
         Random random=new Random(((long)card.id().hashCode()<<32)^card.name().hashCode());
         world(g,card,w,h,random); atmosphere(g,card,w,h,random);
-        subject(g,card,w,h,random); motifs(g,card,w,h,random); finish(g,card,w,h);
+        subject(g,card,w,h,random); motifs(g,card,w,h,random); particleFinish(g,card,w,h); finish(g,card,w,h);
         g.dispose(); return new ImageIcon(image);
     }
 
@@ -107,6 +107,17 @@ final class CardArtFactory {
     private static void motifs(Graphics2D g,CardDefinition card,int w,int h,Random random){
         String text=(card.name()+" "+card.id()).toLowerCase(Locale.ROOT).replace('_',' ');List<Motif> found=find(text,card.type());
         for(int i=0;i<Math.min(3,found.size());i++){int s=Math.max(8,Math.min(w,h)/(i==0?4:5));int x=i==0?w*22/100:w*(78-(i-1)*55)/100;drawMotif(g,found.get(i),x,h*25/100,s,highlight(card.faction()));}
+    }
+
+    private static void particleFinish(Graphics2D g,CardDefinition card,int w,int h){
+        int size=Math.max(28,Math.min(w,h)*4/5);Color glow=highlight(card.faction());
+        VisualEffects.Sprite sprite=switch(card.faction().toUpperCase(Locale.ROOT)){
+            case"ARES"->VisualEffects.Sprite.FLAME;case"HEPHAESTUS"->VisualEffects.Sprite.SPARK;
+            case"HADES"->VisualEffects.Sprite.SMOKE;case"POSEIDON"->VisualEffects.Sprite.RING;
+            case"ATHENA"->VisualEffects.Sprite.ORBIT;default->VisualEffects.Sprite.MAGIC;};
+        VisualEffects.draw(g,sprite,w/2,h/2,size,glow,.20f,0);
+        if(card.type()==CardType.SPELL)VisualEffects.draw(g,VisualEffects.Sprite.LIGHT,w/2,h/2,
+                Math.max(22,size*3/4),Color.WHITE,.34f,0);
     }
 
     private static List<Motif> find(String t,CardType type){
