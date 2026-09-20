@@ -33,6 +33,7 @@ public final class InfiniteConquestGui extends JFrame {
     private final JLabel botLabel = new JLabel();
     private final JLabel messageLabel = new JLabel("Select a card or unit, then choose a legal action.");
     private final JPanel boardPanel = new JPanel(new GridLayout(BoardPosition.HEIGHT, BoardPosition.WIDTH, 6, 6));
+    private final JPanel boardStage = new JPanel(new GridBagLayout());
     private final JPanel handPanel = new JPanel();
     private final DefaultListModel<ActionOption> actionModel = new DefaultListModel<>();
     private final JList<ActionOption> actionList = new JList<>(actionModel);
@@ -76,6 +77,7 @@ public final class InfiniteConquestGui extends JFrame {
         setSize(1500, 980);
         setLocationRelativeTo(null);
         installTheme();
+        setJMenuBar(buildMenuBar());
         setContentPane(buildScreen());
         setGlassPane(combatOverlay);
         combatOverlay.setVisible(true);
@@ -129,6 +131,19 @@ public final class InfiniteConquestGui extends JFrame {
         return header;
     }
 
+    private JMenuBar buildMenuBar() {
+        JMenuBar bar = new JMenuBar();
+        JMenu game = new JMenu("Game");
+        JMenuItem decks = new JMenuItem("Deck Builder...");
+        decks.setAccelerator(KeyStroke.getKeyStroke("control D"));
+        decks.addActionListener(event -> openDeckEditor());
+        JMenuItem newGame = new JMenuItem("New Match...");
+        newGame.setAccelerator(KeyStroke.getKeyStroke("control N"));
+        newGame.addActionListener(event -> newMatch());
+        game.add(decks); game.addSeparator(); game.add(newGame); bar.add(game);
+        return bar;
+    }
+
     private JComponent buildBoard() {
         JPanel surround = panel(new BorderLayout(0, 8));
         JLabel enemy = section("PLAYER 2 — BOT TERRITORY", new Color(239, 106, 122));
@@ -142,6 +157,8 @@ public final class InfiniteConquestGui extends JFrame {
                 cell.setVerticalAlignment(SwingConstants.TOP);
                 cell.setHorizontalAlignment(SwingConstants.LEFT);
                 cell.setFocusPainted(false);
+                cell.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
+                cell.setMargin(new Insets(2, 2, 2, 2));
                 cell.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 cell.addMouseListener(dragListener(new DragSource(null, position)));
                 boardButtons.put(position, cell);
@@ -149,13 +166,34 @@ public final class InfiniteConquestGui extends JFrame {
             }
         }
         surround.add(enemy, BorderLayout.NORTH);
-        boardPanel.setPreferredSize(new Dimension(660, 660));
-        JPanel boardStage = new JPanel(new GridBagLayout());
         boardStage.setOpaque(false);
         boardStage.add(boardPanel);
-        surround.add(boardStage, BorderLayout.CENTER);
+        JScrollPane boardScroll = new JScrollPane(boardStage,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        boardScroll.setBorder(null);
+        boardScroll.getVerticalScrollBar().setUnitIncrement(24);
+        boardScroll.getHorizontalScrollBar().setUnitIncrement(24);
+        boardScroll.getViewport().addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override public void componentResized(java.awt.event.ComponentEvent event) {
+                fitBoardToViewport(boardScroll.getViewport().getExtentSize());
+            }
+        });
+        surround.add(boardScroll, BorderLayout.CENTER);
         surround.add(human, BorderLayout.SOUTH);
         return surround;
+    }
+
+    private void fitBoardToViewport(Dimension available) {
+        int usableWidth = Math.max(320, available.width - 18);
+        int usableHeight = Math.max(480, available.height - 18);
+        int tile = Math.max(76, Math.min(118,
+                Math.min(usableWidth / BoardPosition.WIDTH, usableHeight / BoardPosition.HEIGHT)));
+        Dimension boardSize = new Dimension(tile * BoardPosition.WIDTH, tile * BoardPosition.HEIGHT);
+        boardPanel.setPreferredSize(boardSize);
+        boardPanel.setMinimumSize(boardSize);
+        boardPanel.setMaximumSize(boardSize);
+        boardStage.revalidate();
     }
 
     private JComponent buildActions() {
@@ -379,8 +417,11 @@ public final class InfiniteConquestGui extends JFrame {
             @Override public void mouseClicked(MouseEvent e) { if (e.getClickCount() == 2) remove.doClick(); }
         });
 
-        JPanel centerButtons = new JPanel(new GridLayout(3, 1, 5, 5));
+        JLabel help = new JLabel("<html>Remove a card before adding when the deck is full.<br>Double-click cards or use the buttons.</html>");
+        help.setForeground(new Color(205, 215, 229));
+        JPanel centerButtons = new JPanel(new GridLayout(4, 1, 5, 5));
         centerButtons.setOpaque(false); centerButtons.add(add); centerButtons.add(remove); centerButtons.add(reset);
+        centerButtons.add(help);
         JPanel editor = panel(new BorderLayout(8, 8));
         JPanel lists = new JPanel(new GridLayout(1, 3, 8, 0)); lists.setOpaque(false);
         lists.add(titledScroll("AVAILABLE " + available.size(), collection));
@@ -474,28 +515,66 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void showCoinFlip(int winner) {
-        JLabel coin = new JLabel("COIN FLIP", SwingConstants.CENTER);
-        coin.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 30));
-        coin.setForeground(GOLD);
-        coin.setPreferredSize(new Dimension(380, 150));
+        CoinFlipPanel coin = new CoinFlipPanel(winner);
+        coin.setPreferredSize(new Dimension(430, 310));
         JDialog dialog = new JDialog(this, "Determine First Player", true);
         dialog.getContentPane().setBackground(PANEL);
         dialog.add(coin);
         dialog.pack();
         dialog.setLocationRelativeTo(this);
         final int[] frame = {0};
-        javax.swing.Timer animation = new javax.swing.Timer(120, e -> {
+        javax.swing.Timer animation = new javax.swing.Timer(75, e -> {
             frame[0]++;
-            coin.setText(frame[0] < 10 ? (frame[0] % 2 == 0 ? "PLAYER 1" : "PLAYER 2")
-                    : "PLAYER " + (winner + 1) + " STARTS");
-            coin.setForeground(frame[0] % 2 == 0 ? GOLD : new Color(87, 203, 234));
-            if (frame[0] >= 14) {
+            coin.setFrame(frame[0]);
+            if (frame[0] >= 28) {
                 ((javax.swing.Timer) e.getSource()).stop();
-                dialog.dispose();
+                javax.swing.Timer hold = new javax.swing.Timer(850, ignored -> dialog.dispose());
+                hold.setRepeats(false); hold.start();
             }
         });
         animation.start();
         dialog.setVisible(true);
+    }
+
+    private final class CoinFlipPanel extends JPanel {
+        private final int winner;
+        private int frame;
+
+        CoinFlipPanel(int winner) { this.winner = winner; setOpaque(false); }
+        void setFrame(int value) { frame = value; repaint(); }
+
+        @Override protected void paintComponent(Graphics graphics) {
+            super.paintComponent(graphics);
+            Graphics2D g = (Graphics2D) graphics.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            boolean settled = frame >= 24;
+            int face = settled ? winner : (frame / 3) % 2;
+            double squash = settled ? 1.0 : Math.max(.10, Math.abs(Math.cos(frame * Math.PI / 6.0)));
+            int diameter = 150;
+            int coinWidth = Math.max(15, (int) (diameter * squash));
+            int x = (getWidth() - coinWidth) / 2;
+            int y = 38 + (settled ? 0 : (int) (18 * Math.abs(Math.sin(frame * Math.PI / 6.0))));
+            g.setPaint(new GradientPaint(x, y, new Color(255, 230, 132), x + coinWidth, y + diameter,
+                    new Color(170, 105, 27)));
+            g.fillOval(x, y, coinWidth, diameter);
+            g.setColor(new Color(255, 244, 184));
+            g.setStroke(new BasicStroke(5f));
+            g.drawOval(x + 4, y + 4, Math.max(7, coinWidth - 8), diameter - 8);
+            if (coinWidth > 70) {
+                g.setFont(new Font(Font.SERIF, Font.BOLD, 58));
+                String symbol = face == 0 ? "I" : "II";
+                FontMetrics metrics = g.getFontMetrics();
+                g.setColor(new Color(92, 55, 18));
+                g.drawString(symbol, getWidth() / 2 - metrics.stringWidth(symbol) / 2,
+                        y + diameter / 2 + metrics.getAscent() / 3);
+            }
+            g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, settled ? 25 : 20));
+            String caption = settled ? "PLAYER " + (winner + 1) + " STARTS" : "FLIPPING FOR INITIATIVE";
+            FontMetrics captionMetrics = g.getFontMetrics();
+            g.setColor(settled ? GOLD : Color.WHITE);
+            g.drawString(caption, (getWidth() - captionMetrics.stringWidth(caption)) / 2, 245);
+            g.dispose();
+        }
     }
 
     private void addSetupRow(JPanel panel, GridBagConstraints c, int row,
@@ -690,16 +769,15 @@ public final class InfiniteConquestGui extends JFrame {
                     ? "ATK " + new GameEngine().effectiveAttack(state, card) + "  DEF " + card.effectiveDefense()
                     : "HP " + Math.max(0, def.hitPoints() - card.damage()) + "/" + def.hitPoints()
                     + (card.damage() > 0 ? "  DMG " + card.damage() : "");
-            String economy = developmentText(def);
             EffectBadge badge = effectBadges.get(position);
             cell.setText("<html><font color='#aebdd0'>" + position.x() + "," + position.y()
                     + " • " + def.type() + (stack > 1 ? " • STACK " + stack : "") + "</font><br>"
-                    + "<b>" + html(def.name()) + "</b><br><br>" + stats
-                    + (economy.isBlank() ? "" : "<br><b><font color='#67d890'>" + html(economy) + "</font></b>")
-                    + "<br><font color='#d9b95f'>" + html(keywordLine(def)) + "</font>"
+                    + "<b>" + html(def.name()) + "</b><br>" + stats
                     + (badge == null ? "" : "<br><b><font color='" + badge.color() + "'>" + html(badge.text()) + "</font></b>")
                     + (intent == null ? "" : "<br><b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
-            cell.setToolTipText(def.name() + " — drag to a highlighted cell; right-click to inspect stack");
+            cell.setToolTipText("<html><b>" + html(def.name()) + "</b><br>" + html(keywordLine(def))
+                    + (developmentText(def).isBlank() ? "" : "<br>" + html(developmentText(def)))
+                    + "<br>Drag to a highlighted cell; right-click to inspect stack.</html>");
         }
     }
 
