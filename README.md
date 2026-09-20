@@ -18,6 +18,8 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 - Hover over any card for a large, readable preview.
 - Right-click an occupied battlefield cell to inspect every card in its stack, shown top-first.
 - Open the **Action Log** tab to review the match in chronological order.
+- Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
+- Choose **Bot (watch match)** for Player 1 during setup to run a bot-versus-bot match.
 
 The client includes the full 4×6 battlefield, unique generated prototype art for every card, real faction starter decks, GP and deck meters, automatic bot turns, reaction windows, and match results.
 
