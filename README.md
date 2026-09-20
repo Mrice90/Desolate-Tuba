@@ -12,7 +12,14 @@ Requires JDK 17, Gradle 8+, and a desktop environment.
 gradle :game-gui:run
 ```
 
-The graphical client uses the same tested engine as the CLI. Choose both factions and one of three Capitals per side before the match, with strategy and passive summaries shown in setup. Select a hand card or battlefield cell to filter its legal actions, then double-click an action or press **Execute Selected**. It includes the full 4×6 battlefield, real faction starter decks, card faces, stacks, GP and deck meters, automatic bot turns, reaction windows, match results, and faction-colored placeholder styling ready for later artwork.
+The graphical client uses the same tested engine as the CLI. Choose both factions and one of three Capitals per side before the match, with strategy and passive summaries shown in setup.
+
+- Drag a hand card or battlefield unit onto a gold-highlighted legal destination. Click selection plus the **Legal Moves** tab remains available as a keyboard-friendly fallback.
+- Hover over any card for a large, readable preview.
+- Right-click an occupied battlefield cell to inspect every card in its stack, shown top-first.
+- Open the **Action Log** tab to review the match in chronological order.
+
+The client includes the full 4×6 battlefield, unique generated prototype art for every card, real faction starter decks, GP and deck meters, automatic bot turns, reaction windows, and match results.
 
 ## Play the command-line prototype
 
