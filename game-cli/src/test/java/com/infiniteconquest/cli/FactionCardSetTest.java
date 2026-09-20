@@ -13,18 +13,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FactionCardSetTest {
     @Test
-    void everyFactionHasExactlyFortyUniquePlayableCards() {
+    void everyFactionHasAnExpandedUniquePlayablePool() {
         PrototypeCardPool pool = new PrototypeCardPool();
 
-        assertEquals(264, pool.cards().size());
+        assertEquals(306, pool.cards().size());
         for (String faction : FactionDecks.FACTIONS) {
             List<CardDefinition> cards = pool.cardsForFaction(faction);
-            assertEquals(40, cards.size(), faction);
-            assertEquals(40, cards.stream().map(CardDefinition::id).distinct().count(), faction);
+            assertEquals(47, cards.size(), faction);
+            assertEquals(47, cards.stream().map(CardDefinition::id).distinct().count(), faction);
 
             Map<CardType, Long> types = cards.stream()
                     .collect(Collectors.groupingBy(CardDefinition::type, Collectors.counting()));
-            assertEquals(40L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
+            assertEquals(47L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
         }
     }
 
@@ -42,9 +42,11 @@ class FactionCardSetTest {
                     assertTrue(card.range() >= 1 && card.range() <= 3, card.id() + " range");
                     assertTrue(card.movement() >= 1 && card.movement() <= 4, card.id() + " movement");
                 } else if (card.type() == CardType.LAND) {
-                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_apex_") ? 19 : 10), card.id() + " HP");
+                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_apex_") ? 19
+                            : card.id().contains("_land_") ? 18 : 10), card.id() + " HP");
                 } else if (card.type() == CardType.STRUCTURE) {
-                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_apex_") ? 24 : 13), card.id() + " HP");
+                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_apex_") ? 24
+                            : card.id().contains("_structure_") ? 20 : 13), card.id() + " HP");
                 }
             }
         }
@@ -64,6 +66,8 @@ class FactionCardSetTest {
                     .collect(Collectors.groupingBy(CardDefinition::id, Collectors.counting()));
             assertEquals(40, copies.size(), faction);
             assertTrue(copies.values().stream().allMatch(count -> count == 1));
+            assertEquals(14, deck.stream().filter(card -> card.type() == CardType.LAND
+                    || card.type() == CardType.STRUCTURE).count(), faction);
         }
     }
 

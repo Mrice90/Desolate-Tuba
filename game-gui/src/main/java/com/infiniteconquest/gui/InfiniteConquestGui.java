@@ -9,6 +9,8 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 
@@ -51,6 +53,9 @@ public final class InfiniteConquestGui extends JFrame {
     private final DemoMatchFactory matchFactory = new DemoMatchFactory();
     private final FactionDecks factionDecks = new FactionDecks(matchFactory.pool());
     private final CapitalPassiveRules passiveRules = new CapitalPassiveRules();
+    private final DeckFileStore deckFiles = new DeckFileStore();
+    private final Map<String, List<CardDefinition>> savedDecks = new HashMap<>();
+    private final Path deckDirectory = Path.of(System.getProperty("user.home"), ".infinite-conquest", "decks");
     private Integer selectedHand;
     private BoardPosition selectedCell;
     private boolean botRunning;
@@ -67,13 +72,14 @@ public final class InfiniteConquestGui extends JFrame {
     public InfiniteConquestGui() {
         super("Infinite Conquest");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(1180, 760));
-        setSize(1380, 900);
+        setMinimumSize(new Dimension(1280, 860));
+        setSize(1500, 980);
         setLocationRelativeTo(null);
         installTheme();
         setContentPane(buildScreen());
         setGlassPane(combatOverlay);
         combatOverlay.setVisible(true);
+        loadSavedDecks();
         newMatch();
     }
 
@@ -107,6 +113,7 @@ public final class InfiniteConquestGui extends JFrame {
         meters.add(humanLabel);
         meters.add(botLabel);
 
+        JButton deckBuilder = button("Deck Builder", e -> openDeckEditor());
         JButton newMatch = button("New Match", e -> newMatch());
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 0));
         left.setOpaque(false);
@@ -114,7 +121,11 @@ public final class InfiniteConquestGui extends JFrame {
         left.add(turnLabel);
         header.add(left, BorderLayout.WEST);
         header.add(meters, BorderLayout.CENTER);
-        header.add(newMatch, BorderLayout.EAST);
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        controls.setOpaque(false);
+        controls.add(deckBuilder);
+        controls.add(newMatch);
+        header.add(controls, BorderLayout.EAST);
         return header;
     }
 
@@ -138,7 +149,11 @@ public final class InfiniteConquestGui extends JFrame {
             }
         }
         surround.add(enemy, BorderLayout.NORTH);
-        surround.add(boardPanel, BorderLayout.CENTER);
+        boardPanel.setPreferredSize(new Dimension(660, 660));
+        JPanel boardStage = new JPanel(new GridBagLayout());
+        boardStage.setOpaque(false);
+        boardStage.add(boardPanel);
+        surround.add(boardStage, BorderLayout.CENTER);
         surround.add(human, BorderLayout.SOUTH);
         return surround;
     }
@@ -226,7 +241,7 @@ public final class InfiniteConquestGui extends JFrame {
         botCapital = choice.botCapital();
         BoardPosition botCapitalPosition = randomCapitalPosition(seed, 1);
         state = matchFactory.create(seed,
-                factionDecks.starter(humanFaction), factionDecks.starter(botFaction),
+                deckForFaction(humanFaction), factionDecks.starter(botFaction),
                 humanCapital, botCapital, choice.humanCapitalPosition(), botCapitalPosition);
         commands = new CommandProcessor(state);
         selectedHand = null;
@@ -256,22 +271,7 @@ public final class InfiniteConquestGui extends JFrame {
     private void showHumanMulligan() {
         List<MulliganChoice> choices = state.player(0).hand().stream()
                 .map(id -> new MulliganChoice(id, state.card(id).orElseThrow().definition())).toList();
-        JList<MulliganChoice> list = new JList<>(choices.toArray(MulliganChoice[]::new));
-        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        list.setVisibleRowCount(Math.min(7, choices.size()));
-        if (!choices.isEmpty()) list.setSelectionInterval(0, Math.min(2, choices.size() - 1));
-        while (true) {
-            int result = JOptionPane.showConfirmDialog(this,
-                    new Object[]{"Select up to 3 cards to KEEP. Every unselected card is discarded and replaced.",
-                            new JScrollPane(list)},
-                    "Opening Mulligan", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-            if (result != JOptionPane.OK_OPTION) list.setSelectionInterval(0, Math.min(2, choices.size() - 1));
-            if (list.getSelectedIndices().length <= 3) break;
-            JOptionPane.showMessageDialog(this, "You may keep no more than 3 cards.",
-                    "Too Many Cards", JOptionPane.WARNING_MESSAGE);
-        }
-        Set<UUID> kept = list.getSelectedValuesList().stream()
-                .map(MulliganChoice::id).collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        Set<UUID> kept = new VisualMulliganDialog(choices).choose();
         state.mulligan(0, kept);
         addHistory("You", "Mulligan — kept " + kept.size() + ", replaced " + (choices.size() - kept.size()));
     }
@@ -299,6 +299,114 @@ public final class InfiniteConquestGui extends JFrame {
         return new MatchChoice("ZEUS", matchFactory.capitals().forFaction("ZEUS").get(0),
                 "ARES", matchFactory.capitals().forFaction("ARES").get(0), false,
                 new BoardPosition(1, 0));
+    }
+
+    private List<CardDefinition> deckForFaction(String faction) {
+        return savedDecks.getOrDefault(faction, factionDecks.starter(faction));
+    }
+
+    private void loadSavedDecks() {
+        try {
+            Files.createDirectories(deckDirectory);
+            for (String faction : FactionDecks.FACTIONS) {
+                Path file = deckDirectory.resolve(faction.toLowerCase(Locale.ROOT) + ".json");
+                if (Files.exists(file)) savedDecks.put(faction, deckFiles.load(file, matchFactory.pool()));
+            }
+        } catch (RuntimeException | java.io.IOException exception) {
+            JOptionPane.showMessageDialog(this, "Saved decks could not be loaded: " + exception.getMessage(),
+                    "Deck Loading", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void openDeckEditor() {
+        String faction = (String) JOptionPane.showInputDialog(this, "Choose the faction deck to edit:",
+                "Deck Builder", JOptionPane.PLAIN_MESSAGE, null,
+                FactionDecks.FACTIONS.stream().sorted().toArray(), humanFaction);
+        if (faction == null) return;
+        List<CardDefinition> working = new ArrayList<>(deckForFaction(faction));
+        List<CardDefinition> available = matchFactory.pool().cardsForFaction(faction).stream()
+                .sorted(Comparator.comparing((CardDefinition card) -> card.type().ordinal())
+                        .thenComparingInt(CardDefinition::cost).thenComparing(CardDefinition::name)).toList();
+        DefaultListModel<CardDefinition> collectionModel = new DefaultListModel<>();
+        available.forEach(collectionModel::addElement);
+        DefaultListModel<DeckRow> deckModel = new DefaultListModel<>();
+        JList<CardDefinition> collection = new JList<>(collectionModel);
+        JList<DeckRow> deck = new JList<>(deckModel);
+        collection.setCellRenderer(new CardDefinitionRenderer());
+        deck.setCellRenderer(new DeckRowRenderer());
+        collection.setFixedCellHeight(86);
+        deck.setFixedCellHeight(86);
+        JLabel status = new JLabel();
+        status.setForeground(Color.WHITE);
+
+        Runnable rebuild = () -> {
+            deckModel.clear();
+            working.stream().collect(java.util.stream.Collectors.groupingBy(CardDefinition::id,
+                            LinkedHashMap::new, java.util.stream.Collectors.toList()))
+                    .values().stream().map(group -> new DeckRow(group.get(0), group.size()))
+                    .sorted(Comparator.comparing((DeckRow row) -> row.card().type().ordinal())
+                            .thenComparing(row -> row.card().name()))
+                    .forEach(deckModel::addElement);
+            List<String> errors = new DeckValidator().validate(working);
+            long development = working.stream().filter(card -> card.type() == CardType.LAND
+                    || card.type() == CardType.STRUCTURE).count();
+            status.setText("<html><b>" + working.size() + "/40 cards</b> • " + development
+                    + " Lands/Structures" + (errors.isEmpty() ? " • READY TO SAVE"
+                    : "<br><font color='#ff9b9b'>" + html(String.join("; ", errors)) + "</font>") + "</html>");
+        };
+        rebuild.run();
+
+        JButton add = button("Add Copy →", e -> {
+            CardDefinition card = collection.getSelectedValue();
+            if (card == null) return;
+            long copies = working.stream().filter(value -> value.id().equals(card.id())).count();
+            if (working.size() >= DeckValidator.REQUIRED_SIZE || copies >= DeckValidator.MAX_COPIES) {
+                Toolkit.getDefaultToolkit().beep(); return;
+            }
+            working.add(card); rebuild.run();
+        });
+        JButton remove = button("← Remove Copy", e -> {
+            DeckRow row = deck.getSelectedValue();
+            if (row == null) return;
+            working.stream().filter(card -> card.id().equals(row.card().id())).findFirst().ifPresent(working::remove);
+            rebuild.run();
+        });
+        JButton reset = button("Reset Starter", e -> { working.clear(); working.addAll(factionDecks.starter(faction)); rebuild.run(); });
+        collection.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) { if (e.getClickCount() == 2) add.doClick(); }
+        });
+        deck.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) { if (e.getClickCount() == 2) remove.doClick(); }
+        });
+
+        JPanel centerButtons = new JPanel(new GridLayout(3, 1, 5, 5));
+        centerButtons.setOpaque(false); centerButtons.add(add); centerButtons.add(remove); centerButtons.add(reset);
+        JPanel editor = panel(new BorderLayout(8, 8));
+        JPanel lists = new JPanel(new GridLayout(1, 3, 8, 0)); lists.setOpaque(false);
+        lists.add(titledScroll("AVAILABLE " + available.size(), collection));
+        lists.add(centerButtons);
+        lists.add(titledScroll("CURRENT DECK", deck));
+        editor.add(lists, BorderLayout.CENTER); editor.add(status, BorderLayout.SOUTH);
+        editor.setPreferredSize(new Dimension(1050, 650));
+        int result = JOptionPane.showConfirmDialog(this, editor, "Deck Builder — " + title(faction),
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result != JOptionPane.OK_OPTION) return;
+        List<String> errors = new DeckValidator().validate(working);
+        if (!errors.isEmpty()) {
+            JOptionPane.showMessageDialog(this, String.join("\n", errors), "Deck Not Saved", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        Path file = deckDirectory.resolve(faction.toLowerCase(Locale.ROOT) + ".json");
+        deckFiles.save(file, title(faction) + " Custom", working);
+        savedDecks.put(faction, List.copyOf(working));
+        JOptionPane.showMessageDialog(this, "Saved " + title(faction) + " deck to:\n" + file,
+                "Deck Saved", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private JPanel titledScroll(String title, JList<?> list) {
+        JPanel panel = new JPanel(new BorderLayout(4, 4)); panel.setOpaque(false);
+        panel.add(section(title, GOLD), BorderLayout.NORTH); panel.add(new JScrollPane(list), BorderLayout.CENTER);
+        return panel;
     }
 
     private MatchChoice chooseMatch() {
@@ -522,14 +630,12 @@ public final class InfiniteConquestGui extends JFrame {
         List<ActionOption> options = new ArrayList<>();
         options.add(new ActionOption("Pass reaction", ""));
         reactions.forEach(command -> options.add(new ActionOption(describe(command), command)));
-        Object choice = JOptionPane.showInputDialog(this,
-                "Player 2 acted. Spend saved GP on a reaction?", "Reaction Window",
-                JOptionPane.QUESTION_MESSAGE, null, options.toArray(), options.get(0));
-        if (choice instanceof ActionOption option && !option.command().isBlank()) {
+        String chosen = new VisualReactionDialog(reacting, reactions).choose();
+        if (chosen != null && !chosen.isBlank()) {
             Map<UUID, BoardSnapshot> before = captureBoard();
-            message(commands.execute(option.command()));
-            showResolution(option.command(), before);
-            addHistory("You", describe(option.command()));
+            message(commands.execute(chosen));
+            showResolution(chosen, before);
+            addHistory("You", describe(chosen));
             refresh();
         }
     }
@@ -575,10 +681,13 @@ public final class InfiniteConquestGui extends JFrame {
             CardDefinition def = card.definition();
             cell.setBackground(blend(base, factionColor(def.faction()), .42f));
             cell.setIcon(CardArtFactory.boardIconFor(def));
-            cell.setHorizontalTextPosition(SwingConstants.RIGHT);
+            cell.setHorizontalTextPosition(SwingConstants.CENTER);
+            cell.setVerticalTextPosition(SwingConstants.BOTTOM);
+            cell.setHorizontalAlignment(SwingConstants.CENTER);
+            cell.setVerticalAlignment(SwingConstants.CENTER);
             int stack = state.board().stackAt(position).size();
             String stats = def.type() == CardType.CHARACTER
-                    ? "ATK " + card.effectiveAttack() + "  DEF " + card.effectiveDefense()
+                    ? "ATK " + new GameEngine().effectiveAttack(state, card) + "  DEF " + card.effectiveDefense()
                     : "HP " + Math.max(0, def.hitPoints() - card.damage()) + "/" + def.hitPoints()
                     + (card.damage() > 0 ? "  DMG " + card.damage() : "");
             String economy = developmentText(def);
@@ -601,10 +710,10 @@ public final class InfiniteConquestGui extends JFrame {
         for (int index = 0; index < hand.size(); index++) {
             CardInstance card = state.card(hand.get(index)).orElseThrow();
             CardDefinition def = card.definition();
-            JButton tile = new JButton(cardHtml(def), CardArtFactory.iconFor(def, 168, 68));
-            tile.setPreferredSize(new Dimension(185, 155));
-            tile.setMaximumSize(new Dimension(185, 155));
-            tile.setMinimumSize(new Dimension(185, 155));
+            JButton tile = new JButton(cardHtml(def), CardArtFactory.iconFor(def, 190, 78));
+            tile.setPreferredSize(new Dimension(208, 170));
+            tile.setMaximumSize(new Dimension(208, 170));
+            tile.setMinimumSize(new Dimension(208, 170));
             tile.setVerticalAlignment(SwingConstants.TOP);
             tile.setHorizontalAlignment(SwingConstants.CENTER);
             tile.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -980,8 +1089,8 @@ public final class InfiniteConquestGui extends JFrame {
         CardDefinition def = card.definition();
         previewArt.setIcon(CardArtFactory.iconFor(def, 300, 88));
         String stats = def.type() == CardType.CHARACTER
-                ? "ATK " + card.effectiveAttack() + "  DEF " + card.effectiveDefense()
-                + "  MOVE " + def.movement() + "  RANGE " + def.range()
+                ? "ATK " + new GameEngine().effectiveAttack(state, card) + "  DEF " + card.effectiveDefense()
+                + "  MOVE " + def.movement() + "  RANGE " + new GameEngine().effectiveRange(state, card)
                 : def.isPermanent() ? "HP " + Math.max(0, def.hitPoints() - card.damage()) + "/" + def.hitPoints()
                 : effectLine(def);
         previewText.setText("<html><b>" + html(def.name()) + "</b> — " + html(playRequirement(def)) + " " + title(def.type().name())
@@ -1090,7 +1199,10 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private String keywordLine(CardDefinition def) {
-        return def.keywords().isEmpty() ? def.faction() : def.faction() + " • " + def.keywords();
+        if (def.keywords().isEmpty()) return def.faction();
+        return def.faction() + " • " + def.keywords().stream()
+                .map(keyword -> title(keyword.name().replace('_', ' ')))
+                .collect(java.util.stream.Collectors.joining(" • "));
     }
 
     private String effectLine(CardDefinition def) {
@@ -1180,6 +1292,233 @@ public final class InfiniteConquestGui extends JFrame {
                     ? "Turn " + Math.max(1, card.cost()) + ", +" + card.gpGeneration() + " GP/turn"
                     : card.cost() + " GP";
             return card.name() + " — " + card.type() + " — " + requirement;
+        }
+    }
+
+    private record DeckRow(CardDefinition card, int copies) { }
+
+    private final class CardDefinitionRenderer extends JLabel implements ListCellRenderer<CardDefinition> {
+        CardDefinitionRenderer() { setOpaque(true); setBorder(new EmptyBorder(5, 7, 5, 7)); }
+        @Override public Component getListCellRendererComponent(JList<? extends CardDefinition> list,
+                CardDefinition card, int index, boolean selected, boolean focused) {
+            setIcon(CardArtFactory.iconFor(card, 126, 68));
+            setText("<html><b>" + html(card.name()) + "</b><br>" + card.type() + " • "
+                    + html(playRequirement(card)) + (developmentText(card).isBlank() ? "" : "<br>" + html(developmentText(card))) + "</html>");
+            setBackground(selected ? new Color(48, 112, 137) : blend(PANEL_LIGHT, factionColor(card.faction()), .25f));
+            setForeground(Color.WHITE); return this;
+        }
+    }
+
+    private final class DeckRowRenderer extends JLabel implements ListCellRenderer<DeckRow> {
+        DeckRowRenderer() { setOpaque(true); setBorder(new EmptyBorder(5, 7, 5, 7)); }
+        @Override public Component getListCellRendererComponent(JList<? extends DeckRow> list,
+                DeckRow row, int index, boolean selected, boolean focused) {
+            CardDefinition card = row.card();
+            setIcon(CardArtFactory.iconFor(card, 126, 68));
+            setText("<html><b>×" + row.copies() + " &nbsp; " + html(card.name()) + "</b><br>"
+                    + card.type() + " • " + html(playRequirement(card)) + "</html>");
+            setBackground(selected ? new Color(48, 112, 137) : blend(PANEL_LIGHT, factionColor(card.faction()), .25f));
+            setForeground(Color.WHITE); return this;
+        }
+    }
+
+    private JButton visualChoiceCard(CardDefinition card, int width, int height) {
+        JButton result = new JButton(cardHtml(card), CardArtFactory.iconFor(card, width - 16, 78));
+        Dimension size = new Dimension(width, height);
+        result.setPreferredSize(size); result.setMinimumSize(size); result.setMaximumSize(size);
+        result.setVerticalAlignment(SwingConstants.TOP);
+        result.setHorizontalAlignment(SwingConstants.CENTER);
+        result.setHorizontalTextPosition(SwingConstants.CENTER);
+        result.setVerticalTextPosition(SwingConstants.BOTTOM);
+        result.setForeground(Color.WHITE);
+        result.setBackground(blend(PANEL_LIGHT, factionColor(card.faction()), .40f));
+        result.setBorder(new CompoundBorder(new LineBorder(factionColor(card.faction()), 2, true),
+                new EmptyBorder(6, 6, 6, 6)));
+        result.setFocusPainted(false);
+        return result;
+    }
+
+    private final class VisualReactionDialog extends JDialog {
+        private final int reacting;
+        private final List<String> commands;
+        private final JPanel spellTray = new JPanel();
+        private final Map<BoardPosition, JButton> targets = new LinkedHashMap<>();
+        private final JLabel instruction = new JLabel("Choose a spell, then click or drag it to a glowing target.");
+        private Integer selectedHandIndex;
+        private String result;
+
+        VisualReactionDialog(int reacting, List<String> commands) {
+            super(InfiniteConquestGui.this, "Reaction Window", true);
+            this.reacting = reacting;
+            this.commands = commands;
+            spellTray.setLayout(new BoxLayout(spellTray, BoxLayout.X_AXIS));
+            spellTray.setBackground(PANEL);
+            JPanel board = new JPanel(new GridLayout(BoardPosition.HEIGHT, BoardPosition.WIDTH, 5, 5));
+            board.setOpaque(false);
+            for (int y = BoardPosition.HEIGHT - 1; y >= 0; y--) for (int x = 0; x < BoardPosition.WIDTH; x++) {
+                BoardPosition position = new BoardPosition(x, y);
+                JButton cell = new JButton(reactionCellText(position));
+                cell.setPreferredSize(new Dimension(135, 82));
+                cell.setForeground(Color.WHITE); cell.setBackground(position.isOnPlayerSide(0) ? HUMAN_PLOT : BOT_PLOT);
+                cell.addActionListener(e -> chooseTarget(position));
+                cell.addMouseListener(new MouseAdapter() {
+                    @Override public void mouseReleased(MouseEvent e) { if (selectedHandIndex != null) chooseTarget(position); }
+                });
+                targets.put(position, cell); board.add(cell);
+            }
+            commands.stream().map(this::handIndex).distinct().forEach(index -> {
+                CardDefinition spell = state.card(state.player(reacting).hand().get(index)).orElseThrow().definition();
+                JButton card = visualChoiceCard(spell, 190, 170);
+                card.addActionListener(e -> selectSpell(index));
+                card.addMouseListener(new MouseAdapter() {
+                    @Override public void mousePressed(MouseEvent e) { selectSpell(index); }
+                    @Override public void mouseReleased(MouseEvent e) {
+                        Point point = SwingUtilities.convertPoint(card, e.getPoint(), board);
+                        targets.entrySet().stream().filter(entry -> entry.getValue().getBounds().contains(point))
+                                .map(Map.Entry::getKey).findFirst().ifPresent(VisualReactionDialog.this::chooseTarget);
+                    }
+                });
+                spellTray.add(card); spellTray.add(Box.createHorizontalStrut(8));
+            });
+            JButton pass = button("Pass Reaction", e -> dispose());
+            instruction.setForeground(Color.WHITE);
+            JPanel header = new JPanel(new BorderLayout()); header.setOpaque(false);
+            header.add(instruction, BorderLayout.CENTER); header.add(pass, BorderLayout.EAST);
+            JPanel content = panel(new BorderLayout(8, 8)); content.setBorder(new EmptyBorder(12, 12, 12, 12));
+            content.add(header, BorderLayout.NORTH);
+            content.add(board, BorderLayout.CENTER);
+            JScrollPane spells = new JScrollPane(spellTray, ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            spells.setBorder(new TitledBorder(new LineBorder(CAST, 2), "REACTION SPELLS", TitledBorder.LEFT,
+                    TitledBorder.TOP, getFont(), CAST));
+            spells.setPreferredSize(new Dimension(800, 220)); content.add(spells, BorderLayout.SOUTH);
+            setContentPane(content); setSize(900, 790); setLocationRelativeTo(InfiniteConquestGui.this);
+            setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); refreshTargets();
+        }
+
+        String choose() { setVisible(true); return result; }
+
+        private int handIndex(String command) { return Integer.parseInt(command.split("\\s+")[2]); }
+        private BoardPosition target(String command) {
+            String[] p = command.split("\\s+"); return new BoardPosition(Integer.parseInt(p[3]), Integer.parseInt(p[4]));
+        }
+        private void selectSpell(int index) {
+            selectedHandIndex = index;
+            CardDefinition spell = state.card(state.player(reacting).hand().get(index)).orElseThrow().definition();
+            instruction.setText("<html><b>" + html(spell.name()) + " selected.</b> Drop or click a gold target.</html>");
+            refreshTargets();
+        }
+        private void refreshTargets() {
+            targets.forEach((position, button) -> {
+                boolean legal = selectedHandIndex != null && commands.stream()
+                        .anyMatch(command -> handIndex(command) == selectedHandIndex && target(command).equals(position));
+                button.setBorder(new LineBorder(legal ? CAST : PANEL_LIGHT, legal ? 4 : 1, true));
+                button.setEnabled(selectedHandIndex == null || legal);
+            });
+        }
+        private void chooseTarget(BoardPosition position) {
+            if (selectedHandIndex == null) return;
+            List<String> matches = commands.stream().filter(command -> handIndex(command) == selectedHandIndex
+                    && target(command).equals(position)).toList();
+            if (matches.isEmpty()) return;
+            if (matches.size() == 1) result = matches.get(0);
+            else result = chooseTeleportDestination(matches);
+            if (result != null) dispose();
+        }
+        private String chooseTeleportDestination(List<String> matches) {
+            JPanel grid = new JPanel(new GridLayout(BoardPosition.HEIGHT, BoardPosition.WIDTH, 4, 4));
+            grid.setBackground(PANEL);
+            final String[] selected = {null};
+            JDialog picker = new JDialog(this, "Choose teleport destination", true);
+            for (int y = BoardPosition.HEIGHT - 1; y >= 0; y--) for (int x = 0; x < BoardPosition.WIDTH; x++) {
+                BoardPosition position = new BoardPosition(x, y);
+                String match = matches.stream().filter(command -> {
+                    String[] p = command.split("\\s+");
+                    return Integer.parseInt(p[5]) == position.x() && Integer.parseInt(p[6]) == position.y();
+                }).findFirst().orElse(null);
+                JButton cell = new JButton(state.board().isEmpty(position) ? position.x() + "," + position.y() : "OCCUPIED");
+                cell.setEnabled(match != null); cell.setBackground(match == null ? PANEL_LIGHT : MOVE); cell.setForeground(Color.WHITE);
+                cell.addActionListener(e -> { selected[0] = match; picker.dispose(); }); grid.add(cell);
+            }
+            picker.setContentPane(grid); picker.setSize(620, 520); picker.setLocationRelativeTo(this); picker.setVisible(true);
+            return selected[0];
+        }
+        private String reactionCellText(BoardPosition position) {
+            Optional<UUID> top = state.board().topAt(position);
+            if (top.isEmpty()) return "<html>" + position.x() + "," + position.y() + "<br>EMPTY</html>";
+            CardDefinition card = state.card(top.get()).orElseThrow().definition();
+            return "<html>" + position.x() + "," + position.y() + " • " + card.type() + "<br><b>" + html(card.name()) + "</b></html>";
+        }
+    }
+
+    private final class VisualMulliganDialog extends JDialog {
+        private final List<MulliganChoice> choices;
+        private final Set<UUID> kept = new LinkedHashSet<>();
+        private final JPanel keepTray = new JPanel();
+        private final JPanel replaceTray = new JPanel();
+        private final JLabel count = new JLabel();
+        private UUID dragging;
+
+        VisualMulliganDialog(List<MulliganChoice> choices) {
+            super(InfiniteConquestGui.this, "Opening Mulligan", true);
+            this.choices = choices;
+            keepTray.setLayout(new BoxLayout(keepTray, BoxLayout.X_AXIS));
+            replaceTray.setLayout(new BoxLayout(replaceTray, BoxLayout.X_AXIS));
+            keepTray.setBackground(new Color(24, 72, 58));
+            replaceTray.setBackground(new Color(78, 42, 50));
+            count.setForeground(Color.WHITE);
+            JButton confirm = button("Confirm Mulligan", e -> dispose());
+            JPanel content = panel(new BorderLayout(8, 8));
+            content.setBorder(new EmptyBorder(12, 12, 12, 12));
+            JLabel directions = new JLabel("<html><b>Drag cards between trays or click to toggle.</b> Keep up to 3; every card below is discarded and redrawn.</html>");
+            directions.setForeground(Color.WHITE);
+            JPanel trays = new JPanel(new GridLayout(2, 1, 0, 10)); trays.setOpaque(false);
+            trays.add(tray("KEEP", keepTray, new Color(104, 211, 139)));
+            trays.add(tray("REPLACE", replaceTray, new Color(239, 106, 122)));
+            JPanel footer = new JPanel(new BorderLayout()); footer.setOpaque(false);
+            footer.add(count, BorderLayout.WEST); footer.add(confirm, BorderLayout.EAST);
+            content.add(directions, BorderLayout.NORTH); content.add(trays, BorderLayout.CENTER); content.add(footer, BorderLayout.SOUTH);
+            setContentPane(content); setSize(1150, 610); setLocationRelativeTo(InfiniteConquestGui.this);
+            setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            rebuild();
+        }
+
+        Set<UUID> choose() { setVisible(true); return Set.copyOf(kept); }
+
+        private JPanel tray(String title, JPanel cards, Color color) {
+            JPanel result = new JPanel(new BorderLayout(5, 5)); result.setOpaque(false);
+            result.add(section(title, color), BorderLayout.NORTH);
+            JScrollPane scroll = new JScrollPane(cards, ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scroll.setBorder(new LineBorder(color, 2, true)); result.add(scroll, BorderLayout.CENTER); return result;
+        }
+
+        private void rebuild() {
+            keepTray.removeAll(); replaceTray.removeAll();
+            for (MulliganChoice choice : choices) {
+                JPanel destination = kept.contains(choice.id()) ? keepTray : replaceTray;
+                JButton card = visualChoiceCard(choice.card(), 180, 185);
+                card.addMouseListener(new MouseAdapter() {
+                    @Override public void mousePressed(MouseEvent e) { dragging = choice.id(); }
+                    @Override public void mouseReleased(MouseEvent e) {
+                        Point keepPoint = SwingUtilities.convertPoint(card, e.getPoint(), keepTray);
+                        Point replacePoint = SwingUtilities.convertPoint(card, e.getPoint(), replaceTray);
+                        if (keepTray.contains(keepPoint)) moveToKeep(choice.id());
+                        else if (replaceTray.contains(replacePoint)) kept.remove(choice.id());
+                        else toggle(choice.id());
+                        dragging = null; rebuild();
+                    }
+                });
+                destination.add(card); destination.add(Box.createHorizontalStrut(7));
+            }
+            count.setText("KEEPING " + kept.size() + "/3 • REPLACING " + (choices.size() - kept.size()));
+            keepTray.revalidate(); replaceTray.revalidate(); keepTray.repaint(); replaceTray.repaint();
+        }
+
+        private void toggle(UUID id) { if (!kept.remove(id)) moveToKeep(id); }
+        private void moveToKeep(UUID id) {
+            if (kept.size() >= 3 && !kept.contains(id)) { Toolkit.getDefaultToolkit().beep(); return; }
+            kept.add(id);
         }
     }
 

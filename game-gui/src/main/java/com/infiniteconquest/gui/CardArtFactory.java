@@ -23,19 +23,7 @@ final class CardArtFactory {
 
     static ImageIcon boardIconFor(CardDefinition card) {
         String key = card.id() + ":board";
-        return CACHE.computeIfAbsent(key, unused -> {
-            int size = 38;
-            BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = image.createGraphics();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setColor(new Color(7, 15, 25, 225));
-            g.fillRoundRect(1, 1, size - 2, size - 2, 10, 10);
-            g.setColor(faction(card.faction()).brighter());
-            g.setStroke(new BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            drawType(g, card.type(), size / 2, size / 2, 11);
-            g.dispose();
-            return new ImageIcon(image);
-        });
+        return CACHE.computeIfAbsent(key, unused -> render(card, 94, 48));
     }
 
     private static ImageIcon render(CardDefinition card, int width, int height) {

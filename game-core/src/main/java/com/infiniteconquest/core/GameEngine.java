@@ -45,7 +45,7 @@ public final class GameEngine {
             CardInstance target = state.card(targetId.orElseThrow()).orElseThrow();
             if (target.owner() != attacker.owner()
                     && (target.definition().type() == CardType.CHARACTER || target.definition().isPermanent())
-                    && from.distanceTo(to) <= attacker.definition().range()
+                    && from.distanceTo(to) <= effectiveRange(state, attacker)
                     && lineOfSightRules.hasLineOfSight(state, from, to)) {
                 legal.add(to);
             }
@@ -212,18 +212,22 @@ public final class GameEngine {
         if (from == null || to == null) return ActionResult.rejected("Attacker and target must be on battlefield");
         if (!state.board().topAt(from).orElseThrow().equals(attacker.instanceId())
                 || !state.board().topAt(to).orElseThrow().equals(target.instanceId())) return ActionResult.rejected("Only top cards interact");
-        if (from.distanceTo(to) > attacker.definition().range()) return ActionResult.rejected("Target out of range");
+        if (from.distanceTo(to) > effectiveRange(state, attacker)) return ActionResult.rejected("Target out of range");
         if (!lineOfSightRules.hasLineOfSight(state, from, to)) return ActionResult.rejected("Line of sight blocked");
 
         new CapitalPassiveRules().beforeAttack(state, attacker, target);
         attacker.markAttacked();
         state.recordAttack(attacker, target);
         if (target.definition().type() == CardType.CHARACTER) {
-            boolean targetDies = attacker.effectiveAttack() >= target.effectiveDefense();
-            boolean canRetaliate = target.effectiveAttack() > 0
-                    && to.distanceTo(from) <= target.definition().range()
+            int attackerPower = effectiveAttack(state, attacker);
+            int defenderPower = effectiveAttack(state, target);
+            boolean targetDies = attackerPower >= target.effectiveDefense();
+            boolean fastStrikeStopsRetaliation = attacker.definition().hasKeyword(Keyword.FAST_STRIKE)
+                    && attackerPower > target.effectiveDefense();
+            boolean canRetaliate = !fastStrikeStopsRetaliation && defenderPower > 0
+                    && to.distanceTo(from) <= effectiveRange(state, target)
                     && lineOfSightRules.hasLineOfSight(state, to, from);
-            boolean attackerDies = canRetaliate && target.effectiveAttack() >= attacker.effectiveDefense();
+            boolean attackerDies = canRetaliate && defenderPower >= attacker.effectiveDefense();
             if (targetDies) state.destroy(target);
             if (attackerDies) state.destroy(attacker);
             if (targetDies && attackerDies) return ActionResult.accepted("Both Characters destroyed in simultaneous combat");
@@ -231,7 +235,9 @@ public final class GameEngine {
             if (attackerDies) return ActionResult.accepted("Attacker destroyed by retaliation");
             return ActionResult.accepted(canRetaliate ? "Both attacks blocked" : "Attack blocked; defender could not retaliate at this range");
         } else if (target.definition().isPermanent()) {
-            target.addDamage(attacker.effectiveAttack());
+            int damage = effectiveAttack(state, attacker);
+            if (attacker.definition().hasKeyword(Keyword.SIEGE)) damage *= 2;
+            target.addDamage(damage);
             if (target.damage() >= target.definition().hitPoints()) state.destroy(target);
         } else return ActionResult.rejected("Target cannot be attacked");
         return ActionResult.accepted("Attack resolved");
@@ -253,7 +259,7 @@ public final class GameEngine {
             reacted.add(enemy.instanceId());
             opportunityAttacks++;
             state.recordOpportunityAttack(enemy, card, origin);
-            if (enemy.effectiveAttack() >= card.effectiveDefense()) {
+            if (effectiveAttack(state, enemy) >= card.effectiveDefense()) {
                 state.destroy(card);
                 break;
             }
@@ -268,7 +274,7 @@ public final class GameEngine {
                 reacted.add(enemy.instanceId());
                 opportunityAttacks++;
                 state.recordOpportunityAttack(enemy, card, step);
-                if (enemy.effectiveAttack() >= card.effectiveDefense()) {
+                if (effectiveAttack(state, enemy) >= card.effectiveDefense()) {
                     state.destroy(card);
                     break;
                 }
@@ -313,10 +319,10 @@ public final class GameEngine {
             if (top.isEmpty() || excluded.contains(top.get()) || top.get().equals(mover.instanceId())) continue;
             CardInstance enemy = state.card(top.get()).orElseThrow();
             if (enemy.owner() == mover.owner() || enemy.definition().type() != CardType.CHARACTER
-                    || enemy.effectiveAttack() <= 0 || enemyPosition.distanceTo(step) > enemy.definition().range()) continue;
+                    || effectiveAttack(state, enemy) <= 0 || enemyPosition.distanceTo(step) > effectiveRange(state, enemy)) continue;
             if (lineOfSightRules.hasLineOfSight(state, enemyPosition, step)) {
                 threats.add(new OpportunityThreat(enemy.instanceId(), enemyPosition, step,
-                        enemy.definition().name(), enemy.effectiveAttack(), mover.effectiveDefense()));
+                        enemy.definition().name(), effectiveAttack(state, enemy), mover.effectiveDefense()));
             }
         }
         return threats;
@@ -325,6 +331,26 @@ public final class GameEngine {
     public record OpportunityThreat(UUID attackerId, BoardPosition attackerPosition, BoardPosition triggerPosition,
                                     String attackerName, int attack, int moverDefense) {
         public boolean lethal() { return attack >= moverDefense; }
+    }
+
+    public int effectiveAttack(GameState state, CardInstance card) {
+        return card.effectiveAttack() + (sharpShotActive(state, card) ? 1 : 0);
+    }
+
+    public int effectiveRange(GameState state, CardInstance card) {
+        return card.definition().range() + (sharpShotActive(state, card) ? 1 : 0);
+    }
+
+    private boolean sharpShotActive(GameState state, CardInstance card) {
+        if (!card.definition().hasKeyword(Keyword.SHARP_SHOT)) return false;
+        BoardPosition position = state.board().positionOf(card.instanceId()).orElse(null);
+        if (position == null || !state.board().topAt(position).orElse(null).equals(card.instanceId())) return false;
+        return state.board().stackAt(position).stream()
+                .takeWhile(id -> !id.equals(card.instanceId()))
+                .map(id -> state.card(id).orElseThrow())
+                .anyMatch(under -> under.owner() == card.owner()
+                        && (under.definition().type() == CardType.STRUCTURE
+                        || under.definition().type() == CardType.CAPITAL));
     }
 
     private ActionResult playLand(GameState state, GameAction.PlayLand action) {

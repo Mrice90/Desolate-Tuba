@@ -3,5 +3,8 @@ package com.infiniteconquest.data;
 public enum Keyword {
     MOLE,
     VANGUARD,
-    BLINK
+    BLINK,
+    FAST_STRIKE,
+    SIEGE,
+    SHARP_SHOT
 }

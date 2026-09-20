@@ -53,11 +53,15 @@ public final class FactionDecks {
         String faction = factionName.toUpperCase(Locale.ROOT);
         if (!FACTIONS.contains(faction)) throw new IllegalArgumentException("Unknown faction: " + factionName);
         List<CardDefinition> factionCards = pool.cardsForFaction(faction);
-        if (factionCards.size() != DeckValidator.REQUIRED_SIZE) {
-            throw new IllegalStateException(faction + " must contain exactly 40 prototype cards");
+        List<CardDefinition> developments = factionCards.stream()
+                .filter(card -> card.type() == CardType.LAND || card.type() == CardType.STRUCTURE).toList();
+        List<CardDefinition> actions = factionCards.stream()
+                .filter(card -> card.type() != CardType.LAND && card.type() != CardType.STRUCTURE).toList();
+        if (developments.size() >= DeckValidator.REQUIRED_SIZE || developments.size() + actions.size() < DeckValidator.REQUIRED_SIZE) {
+            throw new IllegalStateException(faction + " does not have a valid 40-card starter pool");
         }
-
-        List<CardDefinition> deck = new ArrayList<>(factionCards);
+        List<CardDefinition> deck = new ArrayList<>(developments);
+        deck.addAll(actions.subList(0, DeckValidator.REQUIRED_SIZE - developments.size()));
 
         List<String> errors = new DeckValidator().validate(deck);
         if (!errors.isEmpty()) throw new IllegalStateException(String.join("; ", errors));
