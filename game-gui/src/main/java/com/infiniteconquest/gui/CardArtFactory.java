@@ -13,10 +13,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.*;
 
-/** Painted Capital art with a deterministic procedural renderer for every other card and fallback. */
+/** Painted card art with a deterministic procedural renderer for cards awaiting bespoke art. */
 final class CardArtFactory {
     private static final Map<String, ImageIcon> CACHE = new HashMap<>();
-    private static final Map<String, BufferedImage> PAINTED_CAPITALS = new HashMap<>();
+    private static final Map<String, BufferedImage> PAINTED_ART = new HashMap<>();
     private static final BufferedImage WORLDS = loadWorlds();
     private static final Map<String,Integer> WORLD = Map.of(
             "ZEUS",0,"POSEIDON",1,"HADES",2,"ARES",3,"ATHENA",4,"HEPHAESTUS",5);
@@ -32,7 +32,7 @@ final class CardArtFactory {
     }
 
     private static ImageIcon render(CardDefinition card, int w, int h) {
-        BufferedImage painted = paintedCapital(card);
+        BufferedImage painted = paintedArt(card);
         if (painted != null) return cover(painted, w, h);
         BufferedImage image = new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
         Graphics2D g=image.createGraphics(); quality(g);
@@ -43,18 +43,23 @@ final class CardArtFactory {
     }
 
     static boolean hasPaintedArt(CardDefinition card) {
-        return paintedCapital(card) != null;
+        return paintedArt(card) != null;
     }
 
-    private static BufferedImage paintedCapital(CardDefinition card) {
-        if (card.type() != CardType.CAPITAL) return null;
-        BufferedImage cached = PAINTED_CAPITALS.get(card.id());
+    private static BufferedImage paintedArt(CardDefinition card) {
+        String folder = switch (card.type()) {
+            case CAPITAL -> "capitals";
+            case CHARACTER -> "characters";
+            default -> null;
+        };
+        if (folder == null) return null;
+        BufferedImage cached = PAINTED_ART.get(card.id());
         if (cached != null) return cached;
-        String path = "/art/capitals/" + card.id() + ".jpg";
+        String path = "/art/" + folder + "/" + card.id() + ".jpg";
         try (InputStream stream = CardArtFactory.class.getResourceAsStream(path)) {
             if (stream == null) return null;
             BufferedImage loaded = ImageIO.read(stream);
-            if (loaded != null) PAINTED_CAPITALS.put(card.id(), loaded);
+            if (loaded != null) PAINTED_ART.put(card.id(), loaded);
             return loaded;
         } catch (IOException ignored) {
             return null;

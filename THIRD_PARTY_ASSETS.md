@@ -15,7 +15,7 @@ These transparent sprites are dynamically scaled, tinted, rotated, and composite
 
 ## Original project artwork
 
-The six-faction environment atlas, 18 painterly Capital illustrations, and Java-drawn card subjects are original Infinite Conquest project assets. The Capital art was generated specifically for the project with OpenAI image generation and contains no downloaded third-party material. See `docs/card-art-system.md` for details.
+The six-faction environment atlas, 18 painterly Capital illustrations, painted Character illustrations, and Java-drawn card subjects are original Infinite Conquest project assets. The painted art was generated specifically for the project with OpenAI image generation and contains no downloaded third-party material. See `docs/card-art-system.md` for details.
 
 ## Sources evaluated but not imported
 

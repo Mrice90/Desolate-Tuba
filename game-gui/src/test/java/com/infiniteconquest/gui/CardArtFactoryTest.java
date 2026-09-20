@@ -18,6 +18,10 @@ class CardArtFactoryTest {
             "ares_capital_red_citadel", "ares_capital_iron_war_camp", "ares_capital_spearpoint_keep",
             "athena_capital_acropolis_command", "athena_capital_aegis_archive", "athena_capital_owlwatch_fortress",
             "hephaestus_capital_great_forge", "hephaestus_capital_volcanic_foundry", "hephaestus_capital_bronze_heart");
+    private static final List<String> PAINTED_ZEUS_CHARACTERS = List.of(
+            "zeus_cloudline_courier", "zeus_aegis_airguard", "zeus_tempest_oracle",
+            "zeus_ability_skyline_seer", "zeus_eagle_of_the_high_grid",
+            "zeus_apex_olympian_storm_titan");
 
     @Test void packagesFactionWorldsAndRendersDistinctCardIllustrations() {
         assertNotNull(CardArtFactory.class.getResource("/art/faction-environments.png"));
@@ -51,6 +55,20 @@ class CardArtFactoryTest {
         assertEquals(120, wide.getIconHeight());
         assertEquals(78, compact.getIconWidth());
         assertEquals(56, compact.getIconHeight());
+    }
+
+    @Test void packagesThePaintedZeusCharacterBenchmarkSet() {
+        for (String id : PAINTED_ZEUS_CHARACTERS) {
+            assertNotNull(CardArtFactory.class.getResource("/art/characters/" + id + ".jpg"), id);
+        }
+        CardDefinition courier = new CardDefinition("zeus_cloudline_courier", "Cloudline Courier",
+                CardType.CHARACTER, "ZEUS", 1, 1, 1, 4, 1);
+        CardDefinition awaitingArt = new CardDefinition("zeus_arc_relay_scout", "Arc Relay Scout",
+                CardType.CHARACTER, "ZEUS", 1, 2, 1, 3, 2);
+        assertTrue(CardArtFactory.hasPaintedArt(courier));
+        assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
+        assertEquals(190, CardArtFactory.iconFor(courier, 190, 78).getIconWidth());
+        assertEquals(56, CardArtFactory.boardIconFor(courier).getIconHeight());
     }
 
     private int pixelHash(ImageIcon icon) {
