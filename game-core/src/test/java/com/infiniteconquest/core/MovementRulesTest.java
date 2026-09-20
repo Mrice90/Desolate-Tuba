@@ -1,6 +1,7 @@
 package com.infiniteconquest.core;
 
 import org.junit.jupiter.api.Test;
+import java.util.List;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,6 +37,18 @@ class MovementRulesTest {
         state.board().push(new BoardPosition(1, 1), blocker.instanceId());
 
         assertFalse(new GameEngine().legalMovementDestinations(state, runner.instanceId()).contains(new BoardPosition(1, 1)));
+    }
+
+    @Test void characterCanMoveOntoAnotherFriendlyCharacter() {
+        GameState state = new GameState(3L);
+        CardInstance runner = character(state, 1, new BoardPosition(0, 0));
+        CardInstance ally = character(state, 1, new BoardPosition(1, 1));
+        GameEngine engine = new GameEngine();
+
+        assertTrue(engine.legalMovementDestinations(state, runner.instanceId()).contains(new BoardPosition(1, 1)));
+        assertTrue(engine.apply(state,
+                new GameAction.MoveCharacter(0, runner.instanceId(), new BoardPosition(1, 1))).accepted());
+        assertEquals(List.of(ally.instanceId(), runner.instanceId()), state.board().stackAt(new BoardPosition(1, 1)));
     }
 
     @Test void movementThroughEnemyRangeTriggersOneFreeAttackAndStopsWhenLethal() {

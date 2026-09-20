@@ -19,7 +19,7 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 - Right-click an occupied battlefield cell to inspect every card in its stack, shown top-first.
 - Open the **Action Log** tab to review the match in chronological order.
 - Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
-- Opening mulligans use two visual card trays, and enemy-turn reactions use a visual spell tray plus battlefield targeting instead of a text menu.
+- Opening mulligans let you visually select up to three cards to discard and redraw, and enemy-turn reactions use a matching visual spell tray plus battlefield targeting instead of a text menu.
 - Choose **Deck Builder** to edit and save one local 40-card deck per faction; saved decks are loaded automatically for new matches.
 - The Deck Builder is always available from **Game → Deck Builder** (`Ctrl+D`), even when compact window sizing hides header controls.
 - Choose **Bot (watch match)** for Player 1 during setup to run a bot-versus-bot match.
@@ -27,7 +27,9 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 
 The client includes the full 4×6 battlefield, responsive square board tiles with scrolling fallback, pregame Capital placement, an animated graphical initiative coin, unique generated prototype art for every card, real faction starter decks, persistent GP and deck meters, automatic bot turns, reaction windows, and match results.
 
-Player 1 begins with 0 GP and Player 2 begins with 1 GP. The initiative winner opens with five cards; the other player opens with six. Every surviving Capital generates 1 GP at the start of its owner's turn. Each player may keep up to three opening cards and replace the rest through the mulligan. Lands and Structures are free once their printed development turn has been reached and show their GP-per-turn output directly. Standard income rises from 1 GP on early development cards to 5 GP on turn-9/10 cards; cards with utility passives generally generate less. There is no automatic GP beyond controlled permanents, and no late-game pressure or turn deadline.
+Player 1 begins with 0 GP and Player 2 begins with 1 GP. The initiative winner opens with five cards; the other player opens with six. Every surviving Capital generates 1 GP at the start of its owner's turn. Each player may discard and redraw up to three opening cards. Lands and Structures are free once their printed development turn has been reached and show their GP-per-turn output directly. Standard income rises from 1 GP on early development cards to 5 GP on turn-9/10 cards; cards with utility passives generally generate less. There is no automatic GP beyond controlled permanents, and no late-game pressure or turn deadline.
+
+Character combat damage accumulates against Defense during the active turn, allowing several attackers or opportunity attacks to bring down one defender; all marked Character damage clears when the turn changes. Friendly Characters may share a stack, and only its top card can move, attack, or be targeted. Select a card or top unit and click any highlighted destination; drag-and-drop remains available. The desktop client starts maximized, and F11 toggles full screen.
 
 Combat is simultaneous: attack equal to defense destroys a Character, and an in-range defending Character retaliates at the same time. A defender outside its own range cannot retaliate. Moving through an enemy Character's attack range grants that enemy one free opportunity attack per move; human players receive a route warning showing each threat and whether its attack is lethal.
 

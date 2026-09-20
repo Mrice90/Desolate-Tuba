@@ -127,16 +127,17 @@ public final class GameEngine {
         CardInstance card = playableFromHand(state, action.playerId(), action.cardId(), CardType.CHARACTER);
         if (card == null) return ActionResult.rejected("Character must be owned, affordable, and in hand");
         BoardPosition destination = action.destination();
-        boolean onFriendlyPermanent = state.board().stackAt(destination).stream()
+        boolean onFriendlyCard = state.board().stackAt(destination).stream()
                 .map(id -> state.card(id).orElseThrow())
-                .anyMatch(c -> c.owner() == action.playerId() && c.definition().isPermanent());
+                .allMatch(c -> c.owner() == action.playerId());
         boolean adjacentToFriendlyPermanent = state.board().positions().stream()
                 .filter(destination::adjacentTo)
                 .flatMap(p -> state.board().stackAt(p).stream())
                 .map(id -> state.card(id).orElseThrow())
                 .anyMatch(c -> c.owner() == action.playerId() && c.definition().isPermanent());
-        if (!onFriendlyPermanent && !(state.board().isEmpty(destination) && adjacentToFriendlyPermanent)) {
-            return ActionResult.rejected("Character must be on or within one space of a friendly Permanent");
+        if ((!state.board().isEmpty(destination) && !onFriendlyCard)
+                || (state.board().isEmpty(destination) && !adjacentToFriendlyPermanent)) {
+            return ActionResult.rejected("Character must join a friendly stack or deploy within one space of a friendly Permanent");
         }
         payAndRemoveFromHand(state, card);
         card.moveTo(Zone.BATTLEFIELD);
@@ -221,19 +222,23 @@ public final class GameEngine {
         if (target.definition().type() == CardType.CHARACTER) {
             int attackerPower = effectiveAttack(state, attacker);
             int defenderPower = effectiveAttack(state, target);
-            boolean targetDies = attackerPower >= target.effectiveDefense();
+            target.addCombatDamage(attackerPower);
+            boolean targetDies = target.combatDamage() >= target.effectiveDefense();
             boolean fastStrikeStopsRetaliation = attacker.definition().hasKeyword(Keyword.FAST_STRIKE)
                     && attackerPower > target.effectiveDefense();
             boolean canRetaliate = !fastStrikeStopsRetaliation && defenderPower > 0
                     && to.distanceTo(from) <= effectiveRange(state, target)
                     && lineOfSightRules.hasLineOfSight(state, to, from);
-            boolean attackerDies = canRetaliate && defenderPower >= attacker.effectiveDefense();
+            if (canRetaliate) attacker.addCombatDamage(defenderPower);
+            boolean attackerDies = canRetaliate && attacker.combatDamage() >= attacker.effectiveDefense();
             if (targetDies) state.destroy(target);
             if (attackerDies) state.destroy(attacker);
             if (targetDies && attackerDies) return ActionResult.accepted("Both Characters destroyed in simultaneous combat");
             if (targetDies) return ActionResult.accepted("Defender destroyed");
             if (attackerDies) return ActionResult.accepted("Attacker destroyed by retaliation");
-            return ActionResult.accepted(canRetaliate ? "Both attacks blocked" : "Attack blocked; defender could not retaliate at this range");
+            return ActionResult.accepted(canRetaliate
+                    ? "Combat damage marked until end of turn"
+                    : "Combat damage marked; defender could not retaliate at this range");
         } else if (target.definition().isPermanent()) {
             int damage = effectiveAttack(state, attacker);
             if (attacker.definition().hasKeyword(Keyword.SIEGE)) damage *= 2;
@@ -259,7 +264,8 @@ public final class GameEngine {
             reacted.add(enemy.instanceId());
             opportunityAttacks++;
             state.recordOpportunityAttack(enemy, card, origin);
-            if (effectiveAttack(state, enemy) >= card.effectiveDefense()) {
+            card.addCombatDamage(effectiveAttack(state, enemy));
+            if (card.combatDamage() >= card.effectiveDefense()) {
                 state.destroy(card);
                 break;
             }
@@ -274,7 +280,8 @@ public final class GameEngine {
                 reacted.add(enemy.instanceId());
                 opportunityAttacks++;
                 state.recordOpportunityAttack(enemy, card, step);
-                if (effectiveAttack(state, enemy) >= card.effectiveDefense()) {
+                card.addCombatDamage(effectiveAttack(state, enemy));
+                if (card.combatDamage() >= card.effectiveDefense()) {
                     state.destroy(card);
                     break;
                 }
@@ -322,7 +329,7 @@ public final class GameEngine {
                     || effectiveAttack(state, enemy) <= 0 || enemyPosition.distanceTo(step) > effectiveRange(state, enemy)) continue;
             if (lineOfSightRules.hasLineOfSight(state, enemyPosition, step)) {
                 threats.add(new OpportunityThreat(enemy.instanceId(), enemyPosition, step,
-                        enemy.definition().name(), effectiveAttack(state, enemy), mover.effectiveDefense()));
+                        enemy.definition().name(), effectiveAttack(state, enemy), mover.defenseRemaining()));
             }
         }
         return threats;

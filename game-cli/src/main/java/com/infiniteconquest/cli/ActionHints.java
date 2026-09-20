@@ -103,14 +103,14 @@ public final class ActionHints {
     }
 
     private boolean legalSummonCell(GameState state, int player, BoardPosition destination) {
-        boolean onPermanent = state.board().stackAt(destination).stream()
+        boolean onFriendlyStack = !state.board().isEmpty(destination) && state.board().stackAt(destination).stream()
                 .map(id -> state.card(id).orElseThrow())
-                .anyMatch(card -> card.owner() == player && card.definition().isPermanent());
+                .allMatch(card -> card.owner() == player);
         boolean besidePermanent = state.board().isEmpty(destination) && state.board().positions().stream()
                 .filter(destination::adjacentTo)
                 .flatMap(position -> state.board().stackAt(position).stream())
                 .map(id -> state.card(id).orElseThrow())
                 .anyMatch(card -> card.owner() == player && card.definition().isPermanent());
-        return onPermanent || besidePermanent;
+        return onFriendlyStack || besidePermanent;
     }
 }

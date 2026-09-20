@@ -18,20 +18,20 @@ class MulliganEconomyTest {
         return cards;
     }
 
-    @Test void mulliganKeepsAtMostThreeAndReplacesEveryOtherOpeningCard() {
+    @Test void mulliganDiscardsAndRedrawsAtMostThreeOpeningCards() {
         GameState state = new MatchFactory().create(42L, MatchRules.current(), validDeck("a"), validDeck("b"));
         List<UUID> opening = new ArrayList<>(state.player(0).hand());
-        Set<UUID> kept = new LinkedHashSet<>(opening.subList(0, 2));
+        Set<UUID> discarded = new LinkedHashSet<>(opening.subList(0, 2));
 
-        state.mulligan(0, kept);
+        state.mulligan(0, discarded);
 
         assertEquals(opening.size(), state.player(0).hand().size());
-        assertTrue(state.player(0).hand().containsAll(kept));
-        assertEquals(opening.size() - kept.size(), state.player(0).discard().size());
-        assertThrows(IllegalStateException.class, () -> state.mulligan(0, kept));
+        assertTrue(state.player(0).hand().stream().noneMatch(discarded::contains));
+        assertEquals(discarded.size(), state.player(0).discard().size());
+        assertThrows(IllegalStateException.class, () -> state.mulligan(0, discarded));
     }
 
-    @Test void mulliganRejectsKeepingMoreThanThreeCards() {
+    @Test void mulliganRejectsDiscardingMoreThanThreeCards() {
         GameState state = new MatchFactory().create(43L, MatchRules.current(), validDeck("a"), validDeck("b"));
         assertThrows(IllegalArgumentException.class,
                 () -> state.mulligan(0, state.player(0).hand().subList(0, 4)));
