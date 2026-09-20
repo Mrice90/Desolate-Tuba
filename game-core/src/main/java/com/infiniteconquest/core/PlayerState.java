@@ -47,16 +47,17 @@ public final class PlayerState {
     }
     public void restoreGp(int amount) {
         if (amount < 0) throw new IllegalArgumentException("GP restoration cannot be negative");
-        currentGp = Math.min(maximumGp, currentGp + amount);
+        currentGp += amount;
+        maximumGp = Math.max(maximumGp, currentGp);
     }
     public void spendGp(int amount) {
         if (amount < 0 || amount > currentGp) throw new IllegalArgumentException("Insufficient GP");
         currentGp -= amount;
     }
-    void startTurnWithGp(int availableGp) {
+    void initializeGp(int availableGp) {
         if (availableGp < 0) throw new IllegalArgumentException("Available GP cannot be negative");
         maximumGp = availableGp;
         currentGp = availableGp;
     }
-    public void beginTurn() { startTurnWithGp(Math.min(10, maximumGp + 1)); }
+    public void beginTurn() { restoreGp(1); }
 }

@@ -13,6 +13,7 @@ public final class GameState {
     private final Set<String> capitalPassivesUsedThisTurn = new HashSet<>();
     private final CapitalPassiveRules capitalPassiveRules = new CapitalPassiveRules();
     private int activePlayer;
+    private int startingPlayer;
     private int turnNumber;
     private Phase phase = Phase.START;
     private long nextEventSequence;
@@ -32,6 +33,7 @@ public final class GameState {
     public BoardState board() { return board; }
     public PlayerState player(int id) { return players.get(id); }
     public int activePlayer() { return activePlayer; }
+    public int startingPlayer() { return startingPlayer; }
     public int turnNumber() { return turnNumber; }
     public int personalTurnNumber(int id) { return personalTurns[id]; }
     public Phase phase() { return phase; }
@@ -50,30 +52,37 @@ public final class GameState {
     public void register(CardInstance card) {
         if (cards.putIfAbsent(card.instanceId(), card) != null) throw new IllegalArgumentException("Duplicate card instance ID");
     }
+    void setStartingPlayer(int playerId) {
+        if (started) throw new IllegalStateException("Starting player is already locked");
+        if (playerId < 0 || playerId > 1) throw new IllegalArgumentException("Player must be 0 or 1");
+        startingPlayer = playerId;
+    }
     void initializeMatch() {
         if (started) throw new IllegalStateException("Match already started");
-        started = true; activePlayer = 0; turnNumber = 1; personalTurns[0] = 1;
-        emit(GameEvent.Type.MATCH_STARTED, 0, "Match seed " + seed);
+        started = true;
+        activePlayer = startingPlayer;
+        turnNumber = 1;
+        personalTurns[activePlayer] = 1;
+        for (PlayerState player : players) player.initializeGp(
+                player.id() == startingPlayer ? rules.startingGp() : rules.secondPlayerStartingGp());
+        emit(GameEvent.Type.MATCH_STARTED, activePlayer,
+                "Match seed " + seed + "; coin flip: Player " + (activePlayer + 1) + " starts");
         startTurn();
     }
     public void activateInitialCapitalPassive() {
-        if (!started || turnNumber != 1 || activePlayer != 0) throw new IllegalStateException("Initial Capital passive timing has passed");
+        if (!started || turnNumber != 1) throw new IllegalStateException("Initial Capital passive timing has passed");
         if (initialCapitalPassiveActivated) throw new IllegalStateException("Initial Capital passive already activated");
         initialCapitalPassiveActivated = true;
         capitalPassiveRules.onTurnStarted(this, activePlayer);
     }
     void drawInitialHands() {
         for (int playerId = 0; playerId < 2; playerId++)
-            for (int i = 0; i < rules.initialHandSizeFor(playerId); i++) drawCard(playerId);
+            for (int i = 0; i < rules.initialHandSizeFor(playerId != startingPlayer); i++) drawCard(playerId);
     }
     void advanceTurn() {
         phase = Phase.END;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "END");
         emit(GameEvent.Type.TURN_ENDED, activePlayer, "Turn ended");
-        if (turnNumber >= rules.conquestDeadlineTurn()) {
-            resolveConquestDeadline();
-            return;
-        }
         activePlayer = 1 - activePlayer; turnNumber++; personalTurns[activePlayer]++;
         startTurn();
     }
@@ -125,13 +134,11 @@ public final class GameState {
         capitalPassivesUsedThisTurn.clear();
         phase = Phase.START;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "START");
-        player(activePlayer).startTurnWithGp(rules.gpForTurn(activePlayer, personalTurns[activePlayer]));
+        generatePermanentGp(activePlayer);
         resetControlledCards(activePlayer);
         for (int i = 0; i < rules.cardsDrawnAtTurnStart(); i++) drawCard(activePlayer);
         if (phase == Phase.GAME_OVER) return;
         capitalPassiveRules.onTurnStarted(this, activePlayer);
-        if (phase == Phase.GAME_OVER) return;
-        applyConquestPressure();
         if (phase == Phase.GAME_OVER) return;
         emit(GameEvent.Type.TURN_STARTED, activePlayer, "Personal turn " + personalTurns[activePlayer]);
         phase = Phase.PLAY;
@@ -182,45 +189,13 @@ public final class GameState {
     void recordCapitalPassive(int playerId, CapitalPassive passive, String detail) {
         emit(GameEvent.Type.CAPITAL_PASSIVE_TRIGGERED, playerId, passive.name() + ": " + detail);
     }
-    private void applyConquestPressure() {
-        int damage = rules.conquestPressureDamage(turnNumber);
-        if (damage == 0) return;
-        List<CardInstance> controlledPermanents = new ArrayList<>(battlefieldCards(activePlayer).stream()
-                .filter(card -> card.definition().isPermanent()).toList());
-        for (CardInstance card : controlledPermanents) {
-            if (card.zone() != Zone.BATTLEFIELD) continue;
-            card.addDamage(damage);
-            emit(GameEvent.Type.CONQUEST_PRESSURE, activePlayer,
-                    card.instanceId() + " takes " + damage + " damage");
-            if (card.damage() >= card.definition().hitPoints()
-                    && board.positionOf(card.instanceId()).flatMap(board::topAt)
-                    .filter(card.instanceId()::equals).isPresent()) destroy(card);
-            if (phase == Phase.GAME_OVER) return;
-        }
-    }
-    private void resolveConquestDeadline() {
-        int firstCount = permanentCount(0);
-        int secondCount = permanentCount(1);
-        if (firstCount != secondCount) {
-            int result = firstCount > secondCount ? 0 : 1;
-            finishGame(result, "Conquest deadline: " + firstCount + " permanents to " + secondCount);
-            return;
-        }
-        int firstHealth = remainingPermanentHealth(0);
-        int secondHealth = remainingPermanentHealth(1);
-        if (firstHealth != secondHealth) {
-            int result = firstHealth > secondHealth ? 0 : 1;
-            finishGame(result, "Conquest deadline: " + firstHealth + " health to " + secondHealth);
-            return;
-        }
-        finishGame(null, "Conquest deadline draw");
-    }
-    private int permanentCount(int playerId) {
-        return (int) battlefieldCards(playerId).stream().filter(card -> card.definition().isPermanent()).count();
-    }
-    private int remainingPermanentHealth(int playerId) {
-        return battlefieldCards(playerId).stream().filter(card -> card.definition().isPermanent())
-                .mapToInt(card -> Math.max(0, card.definition().hitPoints() - card.damage())).sum();
+    private void generatePermanentGp(int playerId) {
+        int generated = (int) battlefieldCards(playerId).stream()
+                .filter(card -> card.definition().type() == CardType.LAND
+                        || card.definition().type() == CardType.STRUCTURE)
+                .count();
+        if (generated > 0) player(playerId).restoreGp(generated);
+        emit(GameEvent.Type.GP_GENERATED, playerId, generated + " GP from Lands and Structures");
     }
     private void finishGame(Integer winningPlayer, String detail) {
         winner = winningPlayer;

@@ -17,37 +17,35 @@ class ConquestPressureTest {
     }
 
     @Test
-    void conquestPressureBeginsOnTurnNineAndEscalatesOnTurnFifteen() {
-        MatchRules rules = new MatchRules(0, 10, 2, 3, 1, 0);
+    void landsAndStructuresGenerateOneGpOnOwnersTurn() {
+        MatchRules rules = new MatchRules(0, 10, 12, 0);
         GameState state = new GameState(1L, rules, false);
-        CardInstance first = permanent(state, 0, "first", 50, new BoardPosition(0, 0));
-        CardInstance second = permanent(state, 1, "second", 50, new BoardPosition(0, 5));
+        CardDefinition landDefinition = new CardDefinition("land", "Land", CardType.LAND, "TEST", 1,
+                0, 0, 0, 0, 10);
+        CardDefinition structureDefinition = new CardDefinition("structure", "Structure", CardType.STRUCTURE, "TEST", 1,
+                0, 0, 0, 0, 10);
+        CardInstance land = new CardInstance(UUID.randomUUID(), landDefinition, 0, Zone.BATTLEFIELD);
+        CardInstance structure = new CardInstance(UUID.randomUUID(), structureDefinition, 0, Zone.BATTLEFIELD);
+        state.register(land); state.register(structure);
+        state.board().push(new BoardPosition(0, 0), land.instanceId());
+        state.board().push(new BoardPosition(1, 0), structure.instanceId());
         state.initializeMatch();
-
-        while (state.turnNumber() < 9) state.advanceTurn();
-        assertEquals(3, first.damage());
-        assertEquals(0, second.damage());
-
-        while (state.turnNumber() < 15) state.advanceTurn();
-        assertEquals(13, first.damage());
-        assertEquals(9, second.damage());
-        assertTrue(state.events().stream().anyMatch(event -> event.type() == GameEvent.Type.CONQUEST_PRESSURE));
+        assertEquals(12, state.player(0).currentGp());
+        assertTrue(state.events().stream().anyMatch(event -> event.type() == GameEvent.Type.GP_GENERATED));
     }
 
     @Test
-    void turnTwentyTwoDeadlineUsesPermanentCountThenHealth() {
-        MatchRules rules = new MatchRules(0, 10, 2, 3, 1, 0);
+    void matchHasNoLateGameDeadlineOrPressureDamage() {
+        MatchRules rules = new MatchRules(0, 10, 12, 0);
         GameState state = new GameState(2L, rules, false);
         permanent(state, 0, "first", 100, new BoardPosition(0, 0));
         permanent(state, 0, "first_extra", 100, new BoardPosition(1, 0));
         permanent(state, 1, "second", 100, new BoardPosition(0, 5));
         state.initializeMatch();
 
-        while (state.turnNumber() < 22) state.advanceTurn();
-        state.advanceTurn();
-
-        assertEquals(Phase.GAME_OVER, state.phase());
-        assertEquals(0, state.winner().orElseThrow());
-        assertTrue(state.events().get(state.events().size() - 1).detail().contains("deadline"));
+        while (state.turnNumber() < 30) state.advanceTurn();
+        assertEquals(Phase.PLAY, state.phase());
+        assertTrue(state.winner().isEmpty());
+        assertEquals(0, state.battlefieldCards(0).get(0).damage());
     }
 }

@@ -1,6 +1,7 @@
 package com.infiniteconquest.cli;
 
 import com.infiniteconquest.core.CardDefinition;
+import com.infiniteconquest.core.CardType;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -75,7 +76,8 @@ public final class DeckEditorCli {
         for (CardDefinition card : visible) {
             out.append(card.id()).append(" | ").append(card.name()).append(" | ")
                     .append(card.faction()).append(" | ").append(card.type())
-                    .append(" | ").append(card.cost()).append(" GP");
+                    .append(" | ").append(card.type() == CardType.LAND || card.type() == CardType.STRUCTURE
+                            ? "Turn " + Math.max(1, card.cost()) + " (free)" : card.cost() + " GP");
             if (!card.keywords().isEmpty()) out.append(" | ").append(card.keywords());
             out.append(System.lineSeparator());
         }

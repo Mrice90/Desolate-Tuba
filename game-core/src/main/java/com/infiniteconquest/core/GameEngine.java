@@ -165,15 +165,15 @@ public final class GameEngine {
     }
 
     private ActionResult playStructure(GameState state, GameAction.PlayStructure action) {
-        CardInstance card = playableFromHand(state, action.playerId(), action.cardId(), CardType.STRUCTURE);
-        if (card == null) return ActionResult.rejected("Structure must be owned, affordable, and in hand");
+        CardInstance card = developableFromHand(state, action.playerId(), action.cardId(), CardType.STRUCTURE);
+        if (card == null) return ActionResult.rejected("Structure must be in hand and its turn value must be reached");
         Optional<UUID> top = state.board().topAt(action.destination());
         if (top.isEmpty()) return ActionResult.rejected("Structure requires a controlled Land");
         CardInstance foundation = state.card(top.get()).orElseThrow();
         if (foundation.owner() != action.playerId() || foundation.definition().type() != CardType.LAND) {
             return ActionResult.rejected("Structure requires a controlled Land on top of the stack");
         }
-        payAndRemoveFromHand(state, card);
+        removeDevelopmentFromHand(state, card);
         card.moveTo(Zone.BATTLEFIELD);
         state.board().push(action.destination(), card.instanceId());
         state.recordCardPlayed(card);
@@ -328,11 +328,11 @@ public final class GameEngine {
     }
 
     private ActionResult playLand(GameState state, GameAction.PlayLand action) {
-        CardInstance card = playableFromHand(state, action.playerId(), action.cardId(), CardType.LAND);
-        if (card == null) return ActionResult.rejected("Land must be owned, affordable, and in hand");
+        CardInstance card = developableFromHand(state, action.playerId(), action.cardId(), CardType.LAND);
+        if (card == null) return ActionResult.rejected("Land must be in hand and its turn value must be reached");
         if (!action.destination().isOnPlayerSide(action.playerId()) || !state.board().isEmpty(action.destination()))
             return ActionResult.rejected("Land requires an empty space on owner's plot");
-        payAndRemoveFromHand(state, card);
+        removeDevelopmentFromHand(state, card);
         card.moveTo(Zone.BATTLEFIELD);
         state.board().push(action.destination(), card.instanceId());
         state.recordCardPlayed(card);
@@ -345,6 +345,16 @@ public final class GameEngine {
                 || card.zone() != Zone.HAND || !state.player(playerId).hasInHand(id)
                 || card.definition().cost() > state.player(playerId).currentGp()) return null;
         return card;
+    }
+    private CardInstance developableFromHand(GameState state, int playerId, UUID id, CardType type) {
+        CardInstance card = state.card(id).orElse(null);
+        if (card == null || card.owner() != playerId || card.definition().type() != type
+                || card.zone() != Zone.HAND || !state.player(playerId).hasInHand(id)
+                || state.personalTurnNumber(playerId) < card.definition().cost()) return null;
+        return card;
+    }
+    private void removeDevelopmentFromHand(GameState state, CardInstance card) {
+        state.player(card.owner()).removeFromHand(card.instanceId());
     }
     private void payAndRemoveFromHand(GameState state, CardInstance card) {
         state.player(card.owner()).spendGp(card.definition().cost());

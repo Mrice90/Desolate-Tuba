@@ -22,10 +22,23 @@ class MatchFactoryTest {
 
         assertEquals(first.player(0).hand(), second.player(0).hand());
         assertEquals(first.player(1).hand(), second.player(1).hand());
+        assertEquals(first.startingPlayer(), second.startingPlayer());
         assertEquals(6, first.player(0).hand().size(), "Five-card provisional hand plus first Start Phase draw");
         assertEquals(34, first.player(0).deck().size());
         assertEquals(6, first.player(1).hand().size(), "Second player receives a sixth opening card");
         assertEquals(34, first.player(1).deck().size());
+    }
+
+    @Test void coinFlipVariesAndSecondPlayerGetsEconomyBonus() {
+        MatchFactory factory = new MatchFactory();
+        Set<Integer> winners = new HashSet<>();
+        for (long seed = 1; seed <= 20; seed++) {
+            GameState state = factory.create(seed, MatchRules.current(), validDeck("a"), validDeck("b"));
+            winners.add(state.startingPlayer());
+            assertEquals(10, state.player(state.startingPlayer()).currentGp());
+            assertEquals(12, state.player(1 - state.startingPlayer()).currentGp());
+        }
+        assertEquals(Set.of(0, 1), winners);
     }
 
     @Test void differentSeedChangesOpeningOrder() {

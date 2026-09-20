@@ -24,7 +24,7 @@ class InterfaceCompletionTest {
 
         String output = bytes.toString(StandardCharsets.UTF_8);
         assertTrue(output.startsWith(TurnHandoff.CLEAR_SCREEN));
-        assertTrue(output.contains("Pass the device to Player 0"));
+        assertTrue(output.contains("Pass the device to Player " + state.activePlayer()));
         assertTrue(output.endsWith(TurnHandoff.CLEAR_SCREEN));
         assertFalse(output.contains("Hand:"));
     }
@@ -34,10 +34,16 @@ class InterfaceCompletionTest {
         GameState state = new DemoMatchFactory().create(22L);
         CommandProcessor processor = new CommandProcessor(state);
 
-        assertTrue(processor.execute("inspect 0").contains(" — Player 1 (You) — "));
-        String capital = processor.execute("inspect 1 0");
+        String activeLabel = state.activePlayer() == 0 ? "Player 1 (You)" : "Player 2 (Bot)";
+        assertTrue(processor.execute("inspect 0").contains(" — " + activeLabel + " — "));
+        BoardPosition capitalPosition = state.board().positions().stream()
+                .filter(position -> state.board().stackAt(position).stream()
+                        .map(id -> state.card(id).orElseThrow())
+                        .anyMatch(card -> card.definition().type() == CardType.CAPITAL))
+                .findFirst().orElseThrow();
+        String capital = processor.execute("inspect " + capitalPosition.x() + " " + capitalPosition.y());
         assertTrue(capital.contains("stack (bottom to top)"));
-        assertTrue(capital.contains("Player 1 Capital"));
+        assertTrue(capital.contains("Capital"));
         assertTrue(capital.contains("damage 0/20"));
     }
 

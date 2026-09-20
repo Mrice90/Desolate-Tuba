@@ -15,7 +15,7 @@ class BotPlayerTest {
         GameState state = new DemoMatchFactory().create(101L);
         CommandProcessor commands = new CommandProcessor(state);
         BotPlayer bot = new BotPlayer();
-        commands.execute("end");
+        if (state.activePlayer() == 0) commands.execute("end");
         List<String> decisions = new ArrayList<>();
 
         for (int safety = 0; safety < 100 && state.activePlayer() == BotPlayer.BOT_ID
@@ -40,16 +40,17 @@ class BotPlayerTest {
         GameState state = new DemoMatchFactory().create(303L);
         String output = new BattlefieldRenderer().render(state);
 
-        assertTrue(output.contains("Player 1 (You)"));
+        assertTrue(output.contains(state.activePlayer() == 0 ? "Player 1 (You)" : "Player 2 (Bot)"));
         assertTrue(output.contains("BOT K:Player 2"));
-        assertFalse(output.contains("Player 2 (Bot) hand:"));
+        String inactiveLabel = state.activePlayer() == 0 ? "Player 2 (Bot)" : "Player 1 (You)";
+        assertFalse(output.contains(inactiveLabel + " hand:"));
     }
 
     private List<String> openingDecisions(long seed) {
         GameState state = new DemoMatchFactory().create(seed);
         CommandProcessor commands = new CommandProcessor(state);
         BotPlayer bot = new BotPlayer();
-        commands.execute("end");
+        if (state.activePlayer() == 0) commands.execute("end");
         List<String> result = new ArrayList<>();
         for (int safety = 0; safety < 30 && state.activePlayer() == BotPlayer.BOT_ID; safety++) {
             BotPlayer.Decision decision = bot.takeNextAction(state, commands);

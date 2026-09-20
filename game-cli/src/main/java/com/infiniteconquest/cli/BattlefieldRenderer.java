@@ -11,7 +11,6 @@ public final class BattlefieldRenderer {
         out.append("Turn ").append(state.turnNumber())
                 .append(" | ").append(playerLabel(state.activePlayer()))
                 .append(" | GP ").append(state.player(state.activePlayer()).currentGp())
-                .append('/').append(state.player(state.activePlayer()).maximumGp())
                 .append(System.lineSeparator());
         out.append("       x0                 x1                 x2                 x3")
                 .append(System.lineSeparator());
@@ -66,7 +65,9 @@ public final class BattlefieldRenderer {
         CardDefinition d = card.definition();
         StringBuilder out = new StringBuilder(d.name())
                 .append(" — ").append(playerLabel(card.owner()))
-                .append(" — ").append(d.type()).append(" — ").append(d.cost()).append(" GP");
+                .append(" — ").append(d.type()).append(" — ")
+                .append(d.type() == CardType.LAND || d.type() == CardType.STRUCTURE
+                        ? "Turn " + Math.max(1, d.cost()) + " (free)" : d.cost() + " GP");
         if (d.type() == CardType.CHARACTER) {
             out.append(" — A").append(card.effectiveAttack()).append("/D").append(card.effectiveDefense())
                     .append("/R").append(d.range()).append("/M").append(d.movement());

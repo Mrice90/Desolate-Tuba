@@ -15,7 +15,10 @@ public final class ActionHints {
 
         for (int index = 0; index < hand.size(); index++) {
             CardInstance card = state.card(hand.get(index)).orElseThrow();
-            if (card.definition().cost() > state.player(player).currentGp()) continue;
+            boolean development = card.definition().type() == CardType.LAND
+                    || card.definition().type() == CardType.STRUCTURE;
+            if (development ? card.definition().cost() > state.personalTurnNumber(player)
+                    : card.definition().cost() > state.player(player).currentGp()) continue;
             for (BoardPosition position : state.board().positions()) {
                 if (card.definition().type() == CardType.LAND
                         && position.isOnPlayerSide(player) && state.board().isEmpty(position)) {

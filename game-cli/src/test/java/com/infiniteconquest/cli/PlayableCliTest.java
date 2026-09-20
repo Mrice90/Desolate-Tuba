@@ -34,10 +34,12 @@ class PlayableCliTest {
         GameState state = new DemoMatchFactory().create(7L);
         String rendered = new BattlefieldRenderer().render(state);
 
-        assertTrue(rendered.contains("Turn 1 | Player 1 (You) | GP 1/1"));
+        assertTrue(rendered.contains("Turn 1 | Player " + (state.activePlayer() + 1)));
+        assertTrue(rendered.contains("GP " + state.player(state.activePlayer()).currentGp()));
         assertTrue(rendered.contains("x0"));
         assertTrue(rendered.contains("y5"));
-        assertTrue(rendered.contains("Player 1 (You) hand:"));
+        assertTrue(rendered.contains(state.activePlayer() == 0
+                ? "Player 1 (You) hand:" : "Player 2 (Bot) hand:"));
         assertTrue(rendered.contains("Opponent: 6 cards in hand"));
         assertFalse(rendered.contains("Player 1 Capital —"));
     }
@@ -50,8 +52,9 @@ class PlayableCliTest {
         assertTrue(processor.execute("help").contains("play <hand#>"));
         assertTrue(processor.execute("actions").contains("end"));
         assertEquals("Invalid command: Expected a number", processor.execute("move x 0 1 1"));
+        int first = state.activePlayer();
         assertTrue(processor.execute("end").startsWith("OK:"));
-        assertEquals(1, state.activePlayer());
+        assertEquals(1 - first, state.activePlayer());
         assertEquals("Match closed.", processor.execute("quit"));
         assertTrue(processor.quitRequested());
     }
