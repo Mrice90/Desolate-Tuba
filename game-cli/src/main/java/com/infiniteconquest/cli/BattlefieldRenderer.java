@@ -74,6 +74,11 @@ public final class BattlefieldRenderer {
         } else if (d.isPermanent()) {
             out.append(" — HP ").append(d.hitPoints());
         }
+        if (d.type() == CardType.LAND || d.type() == CardType.STRUCTURE) {
+            out.append(" — +").append(d.gpGeneration()).append(" GP/turn");
+            String passive = DevelopmentRules.passiveText(d.developmentPassive());
+            if (!passive.isBlank()) out.append(" — ").append(passive);
+        }
         if (d.type() == CardType.CAPITAL) out.append(" — Passive: ")
                 .append(new CapitalPassiveRules().description(d));
         if (!d.keywords().isEmpty()) out.append(" — ").append(d.keywords());

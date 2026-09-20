@@ -10,6 +10,7 @@ public final class GameState {
     private final Map<UUID, CardInstance> cards = new LinkedHashMap<>();
     private final List<GameEvent> events = new ArrayList<>();
     private final int[] personalTurns = new int[2];
+    private final boolean[] mulliganCompleted = new boolean[2];
     private final Set<String> capitalPassivesUsedThisTurn = new HashSet<>();
     private final CapitalPassiveRules capitalPassiveRules = new CapitalPassiveRules();
     private int activePlayer;
@@ -19,6 +20,7 @@ public final class GameState {
     private long nextEventSequence;
     private Integer winner;
     private boolean started;
+    private boolean mulliganWindowOpen = true;
     private boolean initialCapitalPassiveActivated;
 
     public GameState(long seed) { this(seed, MatchRules.current(), true); }
@@ -42,6 +44,34 @@ public final class GameState {
     public Optional<CardInstance> card(UUID id) { return Optional.ofNullable(cards.get(id)); }
     public List<CardInstance> battlefieldCards(int playerId) {
         return cards.values().stream().filter(card -> card.owner() == playerId && card.zone() == Zone.BATTLEFIELD).toList();
+    }
+    public int gpIncomePerTurn(int playerId) {
+        return battlefieldCards(playerId).stream()
+                .filter(card -> card.definition().type() == CardType.LAND
+                        || card.definition().type() == CardType.STRUCTURE)
+                .mapToInt(card -> card.definition().gpGeneration()).sum();
+    }
+
+    public void mulligan(int playerId, Collection<UUID> keptCardIds) {
+        if (playerId < 0 || playerId > 1) throw new IllegalArgumentException("Player must be 0 or 1");
+        if (!mulliganWindowOpen || turnNumber != 1 || phase == Phase.GAME_OVER) throw new IllegalStateException("Mulligan window has closed");
+        if (mulliganCompleted[playerId]) throw new IllegalStateException("Player already completed a mulligan");
+        Set<UUID> kept = Set.copyOf(keptCardIds);
+        if (kept.size() > 3) throw new IllegalArgumentException("You may keep at most 3 cards");
+        List<UUID> openingHand = new ArrayList<>(player(playerId).hand());
+        if (!openingHand.containsAll(kept)) throw new IllegalArgumentException("Kept cards must be in the opening hand");
+        int replaced = 0;
+        for (UUID id : openingHand) if (!kept.contains(id)) {
+            player(playerId).removeFromHand(id);
+            CardInstance card = card(id).orElseThrow();
+            card.moveTo(Zone.DISCARD);
+            player(playerId).addToDiscard(id);
+            replaced++;
+        }
+        for (int i = 0; i < replaced; i++) drawCard(playerId);
+        mulliganCompleted[playerId] = true;
+        emit(GameEvent.Type.MULLIGAN_COMPLETED, playerId,
+                "Kept " + kept.size() + "; replaced " + replaced);
     }
     public Optional<CapitalPassive> capitalPassiveFor(int playerId) {
         return battlefieldCards(playerId).stream()
@@ -80,6 +110,7 @@ public final class GameState {
             for (int i = 0; i < rules.initialHandSizeFor(playerId != startingPlayer); i++) drawCard(playerId);
     }
     void advanceTurn() {
+        mulliganWindowOpen = false;
         phase = Phase.END;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "END");
         emit(GameEvent.Type.TURN_ENDED, activePlayer, "Turn ended");
@@ -87,13 +118,17 @@ public final class GameState {
         startTurn();
     }
     void recordCardPlayed(CardInstance card) {
+        mulliganWindowOpen = false;
         emit(GameEvent.Type.CARD_PLAYED, card.owner(), card.instanceId().toString());
         capitalPassiveRules.onCardPlayed(this, card);
+        applyDevelopmentDeployPassive(card);
     }
     void recordCharacterMoved(CardInstance card, BoardPosition from, BoardPosition to, int distance) {
+        mulliganWindowOpen = false;
         emit(GameEvent.Type.CHARACTER_MOVED, card.owner(), card.instanceId() + " " + from + " -> " + to + " cost " + distance);
     }
     void recordAttack(CardInstance attacker, CardInstance target) {
+        mulliganWindowOpen = false;
         emit(GameEvent.Type.ATTACK_RESOLVED, attacker.owner(), attacker.instanceId() + " -> " + target.instanceId());
     }
     void recordOpportunityAttack(CardInstance attacker, CardInstance target, BoardPosition trigger) {
@@ -135,8 +170,11 @@ public final class GameState {
         phase = Phase.START;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "START");
         generatePermanentGp(activePlayer);
+        applyDevelopmentStartPassives(activePlayer);
         resetControlledCards(activePlayer);
-        for (int i = 0; i < rules.cardsDrawnAtTurnStart(); i++) drawCard(activePlayer);
+        if (turnNumber > 1) {
+            for (int i = 0; i < rules.cardsDrawnAtTurnStart(); i++) drawCard(activePlayer);
+        }
         if (phase == Phase.GAME_OVER) return;
         capitalPassiveRules.onTurnStarted(this, activePlayer);
         if (phase == Phase.GAME_OVER) return;
@@ -190,12 +228,37 @@ public final class GameState {
         emit(GameEvent.Type.CAPITAL_PASSIVE_TRIGGERED, playerId, passive.name() + ": " + detail);
     }
     private void generatePermanentGp(int playerId) {
-        int generated = (int) battlefieldCards(playerId).stream()
-                .filter(card -> card.definition().type() == CardType.LAND
-                        || card.definition().type() == CardType.STRUCTURE)
-                .count();
+        int generated = gpIncomePerTurn(playerId);
         if (generated > 0) player(playerId).restoreGp(generated);
         emit(GameEvent.Type.GP_GENERATED, playerId, generated + " GP from Lands and Structures");
+    }
+    private void applyDevelopmentDeployPassive(CardInstance card) {
+        switch (card.definition().developmentPassive()) {
+            case DRAW_ON_DEPLOY -> {
+                drawCards(card.owner(), 1);
+                recordDevelopmentPassive(card);
+            }
+            case HEAL_CAPITAL_ON_DEPLOY -> {
+                battlefieldCards(card.owner()).stream()
+                    .filter(value -> value.definition().type() == CardType.CAPITAL)
+                    .findFirst().ifPresent(value -> value.healDamage(3));
+                recordDevelopmentPassive(card);
+            }
+            default -> { }
+        }
+    }
+    private void applyDevelopmentStartPassives(int playerId) {
+        battlefieldCards(playerId).stream()
+                .filter(card -> card.definition().developmentPassive() == DevelopmentPassive.SELF_REPAIR)
+                .filter(card -> card.damage() > 0)
+                .forEach(card -> {
+                    card.healDamage(2);
+                    recordDevelopmentPassive(card);
+                });
+    }
+    private void recordDevelopmentPassive(CardInstance card) {
+        emit(GameEvent.Type.DEVELOPMENT_PASSIVE_TRIGGERED, card.owner(),
+                card.instanceId() + " " + DevelopmentRules.passiveText(card.definition().developmentPassive()));
     }
     private void finishGame(Integer winningPlayer, String detail) {
         winner = winningPlayer;

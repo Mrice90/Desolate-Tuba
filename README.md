@@ -24,7 +24,7 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 
 The client includes the full 4×6 battlefield, pregame Capital placement, an animated initiative coin flip, unique generated prototype art for every card, real faction starter decks, persistent GP and deck meters, automatic bot turns, reaction windows, and match results.
 
-The initiative winner begins with 10 GP and five cards. The second player begins with 12 GP and six cards. Lands and Structures are free once their printed development turn has been reached; each controlled Land and Structure generates 1 GP at the start of its owner's turn. There is no automatic per-turn GP and no late-game pressure or turn deadline.
+The initiative winner begins with 10 GP and five cards. The second player begins with 12 GP and six cards. Each player may keep up to three opening cards and replace the rest through the mulligan. Lands and Structures are free once their printed development turn has been reached and show their GP-per-turn output directly. Standard income rises from 1 GP on early development cards to 5 GP on turn-9/10 cards; cards with utility passives generally generate less. There is no automatic per-turn GP and no late-game pressure or turn deadline.
 
 Combat is simultaneous: attack equal to defense destroys a Character, and an in-range defending Character retaliates at the same time. A defender outside its own range cannot retaliate. Moving through an enemy Character's attack range grants that enemy one free opportunity attack per move; human players receive a route warning showing each threat and whether its attack is lethal.
 

@@ -9,13 +9,14 @@ import java.util.Set;
 public record CardDefinition(
         String id, String name, CardType type, String faction, int cost,
         int attack, int defense, int movement, int range, int hitPoints,
-        Set<Keyword> keywords, List<SpellEffect> effects
+        Set<Keyword> keywords, List<SpellEffect> effects,
+        int gpGeneration, DevelopmentPassive developmentPassive
 ) {
     public CardDefinition {
         if (id == null || id.isBlank()) throw new IllegalArgumentException("Stable card ID is required");
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(type, "type");
-        if (cost < 0 || attack < 0 || defense < 0 || movement < 0 || range < 0 || hitPoints < 0) {
+        if (cost < 0 || attack < 0 || defense < 0 || movement < 0 || range < 0 || hitPoints < 0 || gpGeneration < 0) {
             throw new IllegalArgumentException("Card numbers cannot be negative");
         }
         if (isPermanent(type) && hitPoints == 0) {
@@ -23,12 +24,24 @@ public record CardDefinition(
         }
         keywords = keywords == null ? Set.of() : Set.copyOf(keywords);
         effects = effects == null ? List.of() : List.copyOf(effects);
+        developmentPassive = developmentPassive == null ? DevelopmentPassive.NONE : developmentPassive;
+        if (type != CardType.LAND && type != CardType.STRUCTURE
+                && (gpGeneration != 0 || developmentPassive != DevelopmentPassive.NONE)) {
+            throw new IllegalArgumentException("Only Lands and Structures may generate GP or use development passives");
+        }
         if (type == CardType.SPELL && effects.isEmpty()) {
             throw new IllegalArgumentException("Spells require at least one typed effect");
         }
         if (type != CardType.SPELL && !effects.isEmpty()) {
             throw new IllegalArgumentException("Only Spells may define spell effects");
         }
+    }
+
+    public CardDefinition(String id, String name, CardType type, String faction, int cost,
+                          int attack, int defense, int movement, int range, int hitPoints,
+                          Set<Keyword> keywords, List<SpellEffect> effects) {
+        this(id, name, type, faction, cost, attack, defense, movement, range, hitPoints,
+                keywords, effects, DevelopmentRules.standardGp(type, cost), DevelopmentPassive.NONE);
     }
 
     public CardDefinition(String id, String name, CardType type, String faction, int cost,

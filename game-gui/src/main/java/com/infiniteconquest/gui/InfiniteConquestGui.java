@@ -238,11 +238,61 @@ public final class InfiniteConquestGui extends JFrame {
         historyModel.clear();
         historyNumber = 0;
         showCoinFlip(state.startingPlayer());
+        runOpeningMulligans();
+        lastSystemEvent = state.events().stream().mapToLong(GameEvent::sequence).max().orElse(-1);
         addHistory("Match", title(humanFaction) + " vs " + title(botFaction)
                 + " — Player " + (state.startingPlayer() + 1) + " won the coin flip");
         message("Player " + (state.startingPlayer() + 1) + " starts. The second player has 12 GP and six cards.");
         refresh();
         if (isAutomatedPlayer(state.activePlayer())) SwingUtilities.invokeLater(this::runBotTurn);
+    }
+
+    private void runOpeningMulligans() {
+        if (playerOneBot) completeBotMulligan(0);
+        else showHumanMulligan();
+        completeBotMulligan(1);
+    }
+
+    private void showHumanMulligan() {
+        List<MulliganChoice> choices = state.player(0).hand().stream()
+                .map(id -> new MulliganChoice(id, state.card(id).orElseThrow().definition())).toList();
+        JList<MulliganChoice> list = new JList<>(choices.toArray(MulliganChoice[]::new));
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        list.setVisibleRowCount(Math.min(7, choices.size()));
+        if (!choices.isEmpty()) list.setSelectionInterval(0, Math.min(2, choices.size() - 1));
+        while (true) {
+            int result = JOptionPane.showConfirmDialog(this,
+                    new Object[]{"Select up to 3 cards to KEEP. Every unselected card is discarded and replaced.",
+                            new JScrollPane(list)},
+                    "Opening Mulligan", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (result != JOptionPane.OK_OPTION) list.setSelectionInterval(0, Math.min(2, choices.size() - 1));
+            if (list.getSelectedIndices().length <= 3) break;
+            JOptionPane.showMessageDialog(this, "You may keep no more than 3 cards.",
+                    "Too Many Cards", JOptionPane.WARNING_MESSAGE);
+        }
+        Set<UUID> kept = list.getSelectedValuesList().stream()
+                .map(MulliganChoice::id).collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        state.mulligan(0, kept);
+        addHistory("You", "Mulligan — kept " + kept.size() + ", replaced " + (choices.size() - kept.size()));
+    }
+
+    private void completeBotMulligan(int playerId) {
+        List<CardInstance> cards = state.player(playerId).hand().stream()
+                .map(id -> state.card(id).orElseThrow())
+                .sorted(Comparator.comparingInt(this::openingKeepScore).reversed())
+                .toList();
+        Set<UUID> kept = cards.stream().limit(3).map(CardInstance::instanceId)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        state.mulligan(playerId, kept);
+        addHistory("Bot " + (playerId + 1), "Mulligan — kept 3, replaced " + (cards.size() - 3));
+    }
+
+    private int openingKeepScore(CardInstance card) {
+        CardDefinition def = card.definition();
+        if ((def.type() == CardType.LAND || def.type() == CardType.STRUCTURE) && def.cost() <= 2) return 100 - def.cost();
+        if (def.type() == CardType.CHARACTER && def.cost() <= 3) return 80 - def.cost();
+        if (def.type() == CardType.SPELL && def.cost() <= 3) return 70 - def.cost();
+        return 20 - def.cost();
     }
 
     private MatchChoice defaultChoice() {
@@ -490,8 +540,10 @@ public final class InfiniteConquestGui extends JFrame {
         PlayerState human = state.player(0);
         PlayerState enemy = state.player(1);
         humanLabel.setText((playerOneBot ? "BOT 1" : "YOU") + " • " + humanFaction + "   GP " + human.currentGp()
+                + "  (+" + state.gpIncomePerTurn(0) + "/turn)"
                 + "   Deck " + human.deck().size() + "   Discard " + human.discard().size());
         botLabel.setText("BOT 2 • " + botFaction + "   GP " + enemy.currentGp()
+                + "  (+" + state.gpIncomePerTurn(1) + "/turn)"
                 + "   Hand " + enemy.hand().size() + "   Deck " + enemy.deck().size());
         refreshBoard();
         refreshHand();
@@ -529,10 +581,12 @@ public final class InfiniteConquestGui extends JFrame {
                     ? "ATK " + card.effectiveAttack() + "  DEF " + card.effectiveDefense()
                     : "HP " + Math.max(0, def.hitPoints() - card.damage()) + "/" + def.hitPoints()
                     + (card.damage() > 0 ? "  DMG " + card.damage() : "");
+            String economy = developmentText(def);
             EffectBadge badge = effectBadges.get(position);
             cell.setText("<html><font color='#aebdd0'>" + position.x() + "," + position.y()
                     + " • " + def.type() + (stack > 1 ? " • STACK " + stack : "") + "</font><br>"
                     + "<b>" + html(def.name()) + "</b><br><br>" + stats
+                    + (economy.isBlank() ? "" : "<br><b><font color='#67d890'>" + html(economy) + "</font></b>")
                     + "<br><font color='#d9b95f'>" + html(keywordLine(def)) + "</font>"
                     + (badge == null ? "" : "<br><b><font color='" + badge.color() + "'>" + html(badge.text()) + "</font></b>")
                     + (intent == null ? "" : "<br><b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
@@ -874,6 +928,7 @@ public final class InfiniteConquestGui extends JFrame {
                 case GP_GENERATED -> event.detail();
                 case CARD_DESTROYED -> friendlyCardDetail(event.detail(), " was destroyed");
                 case CAPITAL_PASSIVE_TRIGGERED -> "Capital passive — " + event.detail().replace('_', ' ').toLowerCase(Locale.ROOT);
+                case DEVELOPMENT_PASSIVE_TRIGGERED -> friendlyDevelopmentPassive(event.detail());
                 case OPPORTUNITY_ATTACK -> friendlyOpportunityDetail(event.detail());
                 case GAME_OVER -> "GAME OVER — " + event.detail();
                 default -> null;
@@ -910,6 +965,17 @@ public final class InfiniteConquestGui extends JFrame {
         }
     }
 
+    private String friendlyDevelopmentPassive(String detail) {
+        String[] parts = detail.split("\\s+", 2);
+        try {
+            String name = state.card(UUID.fromString(parts[0]))
+                    .map(card -> card.definition().name()).orElse("Development");
+            return name + " passive — " + (parts.length > 1 ? parts[1] : "resolved");
+        } catch (IllegalArgumentException exception) {
+            return "Development passive resolved";
+        }
+    }
+
     private void showPreview(CardInstance card) {
         CardDefinition def = card.definition();
         previewArt.setIcon(CardArtFactory.iconFor(def, 300, 88));
@@ -919,7 +985,8 @@ public final class InfiniteConquestGui extends JFrame {
                 : def.isPermanent() ? "HP " + Math.max(0, def.hitPoints() - card.damage()) + "/" + def.hitPoints()
                 : effectLine(def);
         previewText.setText("<html><b>" + html(def.name()) + "</b> — " + html(playRequirement(def)) + " " + title(def.type().name())
-                + "<br>" + html(stats) + "<br><font color='#d9b95f'>" + html(keywordLine(def)) + "</font></html>");
+                + "<br>" + html(stats) + (developmentText(def).isBlank() ? "" : "<br><font color='#67d890'><b>" + html(developmentText(def)) + "</b></font>")
+                + "<br><font color='#d9b95f'>" + html(keywordLine(def)) + "</font></html>");
     }
 
     private void showStackInspector(BoardPosition position) {
@@ -935,7 +1002,9 @@ public final class InfiniteConquestGui extends JFrame {
             CardDefinition def = card.definition();
             JLabel row = new JLabel("<html><b>" + (i == stack.size() - 1 ? "TOP" : "Layer " + (i + 1))
                     + " — " + html(def.name()) + "</b><br>" + title(def.type().name()) + " • "
-                    + html(def.faction()) + " • " + html(keywordLine(def)) + "</html>",
+                    + html(def.faction()) + " • " + html(keywordLine(def))
+                    + (developmentText(def).isBlank() ? "" : "<br><font color='#67d890'>" + html(developmentText(def)) + "</font>")
+                    + "</html>",
                     CardArtFactory.iconFor(def, 140, 58), SwingConstants.LEFT);
             row.setForeground(Color.WHITE);
             row.setBorder(new EmptyBorder(7, 7, 7, 7));
@@ -1003,7 +1072,14 @@ public final class InfiniteConquestGui extends JFrame {
                 : def.isPermanent() ? "HP " + def.hitPoints() : effectLine(def);
         return "<html><font color='#f0bf49'><b>" + html(playRequirement(def)) + "</b></font> &nbsp; " + def.type()
                 + "<br><b>" + html(def.name()) + "</b><br><br>" + stats
+                + (developmentText(def).isBlank() ? "" : "<br><font color='#67d890'><b>" + html(developmentText(def)) + "</b></font>")
                 + "<br><font color='#c9d5e4'>" + html(keywordLine(def)) + "</font></html>";
+    }
+
+    private String developmentText(CardDefinition definition) {
+        if (definition.type() != CardType.LAND && definition.type() != CardType.STRUCTURE) return "";
+        String passive = DevelopmentRules.passiveText(definition.developmentPassive());
+        return "+" + definition.gpGeneration() + " GP/TURN" + (passive.isBlank() ? "" : " • " + passive);
     }
 
     private String playRequirement(CardDefinition definition) {
@@ -1096,6 +1172,15 @@ public final class InfiniteConquestGui extends JFrame {
 
     private record CapitalChoice(CardDefinition card) {
         @Override public String toString() { return card.name() + " • " + card.hitPoints() + " HP"; }
+    }
+
+    private record MulliganChoice(UUID id, CardDefinition card) {
+        @Override public String toString() {
+            String requirement = card.type() == CardType.LAND || card.type() == CardType.STRUCTURE
+                    ? "Turn " + Math.max(1, card.cost()) + ", +" + card.gpGeneration() + " GP/turn"
+                    : card.cost() + " GP";
+            return card.name() + " — " + card.type() + " — " + requirement;
+        }
     }
 
     private record MatchChoice(String humanFaction, CardDefinition humanCapital,

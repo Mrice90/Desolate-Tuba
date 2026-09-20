@@ -25,8 +25,8 @@ class PlayableCliTest {
 
         assertEquals(1, playerZeroCapitals);
         assertEquals(1, playerOneCapitals);
-        assertEquals(6, state.player(0).hand().size());
-        assertEquals(6, state.player(1).hand().size());
+        assertEquals(5, state.player(state.startingPlayer()).hand().size());
+        assertEquals(6, state.player(1 - state.startingPlayer()).hand().size());
     }
 
     @Test

@@ -18,7 +18,7 @@ class TurnLoopTest {
         GameState state = new MatchFactory().create(9L, MatchRules.current(), validDeck("a"), validDeck("b"));
         int first = state.startingPlayer();
         int second = 1 - first;
-        assertEquals(6, state.player(first).hand().size(), "Five-card opener plus first-turn draw");
+        assertEquals(5, state.player(first).hand().size(), "Starting player opens with five and skips the first-turn draw");
         assertEquals(10, state.player(first).currentGp());
         assertEquals(6, state.player(second).hand().size(), "Second player opens with six before their first draw");
         assertEquals(12, state.player(second).currentGp());
@@ -56,6 +56,8 @@ class TurnLoopTest {
         state.register(permanent);
         state.board().push(new BoardPosition(0, 0), permanent.instanceId());
         state.initializeMatch();
+        state.advanceTurn();
+        state.advanceTurn();
         assertEquals(1, permanent.damage());
         assertTrue(state.events().stream().anyMatch(e -> e.type() == GameEvent.Type.DRAW_FAILED));
         assertTrue(state.events().stream().anyMatch(e -> e.type() == GameEvent.Type.EXHAUSTION_DAMAGE));
