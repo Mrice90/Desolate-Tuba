@@ -26,7 +26,7 @@ final class CardArtFactory {
     }
 
     static ImageIcon boardIconFor(CardDefinition card) {
-        return CACHE.computeIfAbsent(card.id()+":board", key -> render(card,132,74));
+        return CACHE.computeIfAbsent(card.id()+":board-compact", key -> render(card,78,56));
     }
 
     private static ImageIcon render(CardDefinition card, int w, int h) {

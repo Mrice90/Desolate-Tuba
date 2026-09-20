@@ -813,6 +813,8 @@ public final class InfiniteConquestGui extends JFrame {
                     new EmptyBorder(7, 7, 7, 7))));
             if (topId.isEmpty()) {
                 cell.setIcon(null);
+                cell.setHorizontalAlignment(SwingConstants.LEFT);
+                cell.setVerticalAlignment(SwingConstants.TOP);
                 cell.setText("<html><font color='#78899d'>" + position.x() + "," + position.y() + "</font>"
                         + (intent == null ? "" : "<br><b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
                 cell.setToolTipText("Empty cell " + position.x() + "," + position.y() + " — drop a legal card or unit here");
@@ -822,21 +824,22 @@ public final class InfiniteConquestGui extends JFrame {
             CardDefinition def = card.definition();
             cell.setBackground(blend(base, factionColor(def.faction()), .42f));
             cell.setIcon(CardArtFactory.boardIconFor(def));
-            cell.setHorizontalTextPosition(SwingConstants.CENTER);
-            cell.setVerticalTextPosition(SwingConstants.BOTTOM);
-            cell.setHorizontalAlignment(SwingConstants.CENTER);
+            cell.setHorizontalTextPosition(SwingConstants.RIGHT);
+            cell.setVerticalTextPosition(SwingConstants.CENTER);
+            cell.setIconTextGap(7);
+            cell.setHorizontalAlignment(SwingConstants.LEFT);
             cell.setVerticalAlignment(SwingConstants.CENTER);
             int stack = state.board().stackAt(position).size();
             String stats = def.type() == CardType.CHARACTER
-                    ? "ATK " + new GameEngine().effectiveAttack(state, card) + "  DEF " + card.defenseRemaining()
-                    + "/" + card.effectiveDefense()
-                    + (card.combatDamage() > 0 ? "  MARKED " + card.combatDamage() : "")
+                    ? "A " + new GameEngine().effectiveAttack(state, card) + "  D " + card.defenseRemaining()
+                    + "/" + card.effectiveDefense() + "  M " + def.movement() + "  R " + def.range()
+                    + (card.combatDamage() > 0 ? "  <font color='#ff9b73'>MARK " + card.combatDamage() + "</font>" : "")
                     : "HP " + Math.max(0, def.hitPoints() - card.damage()) + "/" + def.hitPoints()
-                    + (card.damage() > 0 ? "  DMG " + card.damage() : "");
+                    + (card.damage() > 0 ? "  <font color='#ff9b73'>DMG " + card.damage() + "</font>" : "");
             EffectBadge badge = effectBadges.get(position);
-            cell.setText("<html><font color='#aebdd0'>" + position.x() + "," + position.y()
-                    + " • " + def.type() + (stack > 1 ? " • STACK " + stack : "") + "</font><br>"
-                    + "<b>" + html(def.name()) + "</b><br>" + stats
+            cell.setText("<html><font size='-2' color='#aebdd0'>" + position.x() + "," + position.y()
+                    + " • " + compactType(def.type()) + (stack > 1 ? " • S" + stack : "") + "</font><br>"
+                    + "<b>" + html(compactName(def.name(), 20)) + "</b><br><font size='-2'>" + stats + "</font>"
                     + (badge == null ? "" : "<br><b><font color='" + badge.color() + "'>" + html(badge.text()) + "</font></b>")
                     + (intent == null ? "" : "<br><b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
             cell.setToolTipText("<html><b>" + html(def.name()) + "</b><br>" + html(keywordLine(def))
@@ -844,6 +847,19 @@ public final class InfiniteConquestGui extends JFrame {
                     + (abilityLine(def).isBlank() ? "" : "<br>" + html(abilityLine(def)))
                     + "<br>Click a highlighted cell or drag; right-click to inspect stack.</html>");
         }
+    }
+
+    private String compactType(CardType type) {
+        return switch (type) {
+            case CHARACTER -> "CHAR";
+            case STRUCTURE -> "STRUCT";
+            case CAPITAL -> "CAPITAL";
+            default -> type.name();
+        };
+    }
+
+    private String compactName(String name, int maximum) {
+        return name.length() <= maximum ? name : name.substring(0, maximum - 1) + "…";
     }
 
     private void refreshHand() {

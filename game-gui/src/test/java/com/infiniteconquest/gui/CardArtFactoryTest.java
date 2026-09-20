@@ -24,6 +24,9 @@ class CardArtFactoryTest {
         assertEquals(78, first.getIconHeight());
         assertNotEquals(pixelHash(first), pixelHash(second));
         assertSame(first, CardArtFactory.iconFor(storm, 190, 78), "rendered art should be cached");
+        ImageIcon board = CardArtFactory.boardIconFor(storm);
+        assertEquals(78, board.getIconWidth());
+        assertEquals(56, board.getIconHeight());
     }
 
     private int pixelHash(ImageIcon icon) {
