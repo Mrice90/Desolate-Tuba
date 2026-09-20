@@ -56,6 +56,8 @@ class TurnLoopTest {
         state.register(permanent);
         state.board().push(new BoardPosition(0, 0), permanent.instanceId());
         state.initializeMatch();
+        state.advanceTurn();
+        state.advanceTurn();
         assertEquals(1, permanent.damage());
         assertTrue(state.events().stream().anyMatch(e -> e.type() == GameEvent.Type.DRAW_FAILED));
         assertTrue(state.events().stream().anyMatch(e -> e.type() == GameEvent.Type.EXHAUSTION_DAMAGE));
