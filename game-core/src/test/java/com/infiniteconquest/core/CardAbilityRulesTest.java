@@ -44,13 +44,51 @@ class CardAbilityRulesTest {
         assertEquals(Zone.BATTLEFIELD, home.zone());
     }
 
+    @Test void typedDrawAbilitiesFindTheRequestedCardWithoutPunishingAMiss() {
+        GameState state = new GameState(92L);
+        CardInstance character = inDeck(state, 0, new CardDefinition("character", "Character",
+                CardType.CHARACTER, "TEST", 1, 1, 1, 1, 1));
+        CardInstance land = inDeck(state, 0, permanentOfType("land", CardType.LAND));
+        CardInstance structure = inDeck(state, 0, permanentOfType("structure", CardType.STRUCTURE));
+        state.player(0).loadDeck(List.of(land.instanceId(), character.instanceId(), structure.instanceId()));
+
+        CardInstance landTutor = add(state, 0, permanent("land_tutor", List.of(
+                ability(AbilityTrigger.ACTIVATED, AbilityEffectType.DRAW_STRUCTURE, 1, 0))), new BoardPosition(0, 0));
+        new CardAbilityRules().resolve(state, landTutor, AbilityTrigger.ACTIVATED);
+        assertTrue(state.player(0).hand().contains(structure.instanceId()));
+
+        CardInstance structureTutor = add(state, 0, permanentOfType("structure_tutor", CardType.STRUCTURE,
+                List.of(ability(AbilityTrigger.ACTIVATED, AbilityEffectType.DRAW_CHARACTER, 1, 0))), new BoardPosition(1, 0));
+        new CardAbilityRules().resolve(state, structureTutor, AbilityTrigger.ACTIVATED);
+        assertTrue(state.player(0).hand().contains(character.instanceId()));
+
+        int damageBefore = landTutor.damage();
+        new CardAbilityRules().resolve(state, structureTutor, AbilityTrigger.ACTIVATED);
+        assertEquals(damageBefore, landTutor.damage(), "A failed typed search is not deck-exhaustion damage");
+        assertTrue(state.events().stream().anyMatch(event -> event.type() == GameEvent.Type.DRAW_FAILED));
+    }
+
     private CardAbility ability(AbilityTrigger trigger, AbilityEffectType effect, int amount, int cost) {
         return new CardAbility(trigger, effect, amount, cost);
     }
 
     private CardDefinition permanent(String id, List<CardAbility> abilities) {
-        return new CardDefinition(id, id, CardType.LAND, "TEST", 1,
+        return permanentOfType(id, CardType.LAND, abilities);
+    }
+
+    private CardDefinition permanentOfType(String id, CardType type) {
+        return permanentOfType(id, type, List.of());
+    }
+
+    private CardDefinition permanentOfType(String id, CardType type, List<CardAbility> abilities) {
+        return new CardDefinition(id, id, type, "TEST", 1,
                 0, 0, 0, 0, 8, Set.of(), List.of(), 1, DevelopmentPassive.NONE, abilities);
+    }
+
+    private CardInstance inDeck(GameState state, int owner, CardDefinition definition) {
+        CardInstance card = new CardInstance(UUID.randomUUID(), definition, owner, Zone.DECK);
+        state.register(card);
+        return card;
     }
 
     private CardInstance add(GameState state, int owner, CardDefinition definition, BoardPosition position) {

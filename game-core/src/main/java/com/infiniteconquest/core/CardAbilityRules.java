@@ -14,6 +14,8 @@ final class CardAbilityRules {
     void resolve(GameState state, CardInstance source, CardAbility ability) {
         switch (ability.effect()) {
             case DRAW_CARD -> state.drawCards(source.owner(), ability.amount());
+            case DRAW_CHARACTER -> state.drawCardsOfType(source.owner(), CardType.CHARACTER, ability.amount());
+            case DRAW_STRUCTURE -> state.drawCardsOfType(source.owner(), CardType.STRUCTURE, ability.amount());
             case GAIN_GP -> state.player(source.owner()).restoreGp(ability.amount());
             case HEAL_SELF -> {
                 if (source.definition().isPermanent()) source.healDamage(ability.amount());

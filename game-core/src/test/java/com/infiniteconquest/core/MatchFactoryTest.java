@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class MatchFactoryTest {
     private List<CardDefinition> validDeck(String prefix) {
         List<CardDefinition> cards = new ArrayList<>();
-        for (int id = 0; id < 10; id++) {
+        for (int id = 0; id < 15; id++) {
             CardDefinition definition = new CardDefinition(
                     prefix + id, prefix + id, CardType.LAND, "DEV", 0, 0, 0, 0, 0);
             for (int copy = 0; copy < 4; copy++) cards.add(definition);
@@ -25,9 +25,9 @@ class MatchFactoryTest {
         assertEquals(first.startingPlayer(), second.startingPlayer());
         int starter = first.startingPlayer();
         assertEquals(5, first.player(starter).hand().size(), "Starting player opens with five cards");
-        assertEquals(35, first.player(starter).deck().size());
+        assertEquals(55, first.player(starter).deck().size());
         assertEquals(6, first.player(1 - starter).hand().size(), "Second player receives a sixth opening card");
-        assertEquals(34, first.player(1 - starter).deck().size());
+        assertEquals(54, first.player(1 - starter).deck().size());
     }
 
     @Test void coinFlipVariesAndPlayerTwoGetsEconomyBonus() {

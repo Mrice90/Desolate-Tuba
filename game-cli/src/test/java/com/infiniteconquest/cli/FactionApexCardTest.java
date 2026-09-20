@@ -48,17 +48,17 @@ class FactionApexCardTest {
     }
 
     @Test
-    void startersContainFortyUniqueFactionCards() {
+    void startersContainSixtyFactionCards() {
         PrototypeCardPool pool = new PrototypeCardPool();
         FactionDecks decks = new FactionDecks(pool);
         for (String faction : FactionDecks.FACTIONS) {
             List<CardDefinition> deck = decks.starter(faction);
-            assertEquals(40, deck.size());
+            assertEquals(60, deck.size());
             assertTrue(new DeckValidator().isValid(deck));
             Map<String, Long> copies = deck.stream()
                     .collect(Collectors.groupingBy(CardDefinition::id, Collectors.counting()));
-            assertEquals(40, copies.size(), faction);
-            assertEquals(18, deck.stream().filter(card -> card.type() == CardType.LAND
+            assertTrue(copies.values().stream().allMatch(count -> count <= DeckValidator.MAX_COPIES), faction);
+            assertEquals(36, deck.stream().filter(card -> card.type() == CardType.LAND
                     || card.type() == CardType.STRUCTURE).count(), faction);
         }
     }

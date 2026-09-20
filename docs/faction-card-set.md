@@ -2,7 +2,9 @@
 
 The current playable pool contains 54 prototype deck-building choices per faction across Characters, Lands, Structures, Spells, apex cards, keyword tiers, and triggered-ability cards. Each faction has a distinct two-keyword pairing and examples of enter-play, destroyed, start-of-turn passive, and paid activated effects.
 
-Each faction starter contains 40 unique cards: 18 Lands/Structures and 22 Characters/Spells. Custom decks must total exactly 40 cards and may contain no more than four copies of one card.
+Each faction starter contains 60 cards: 18 Lands, 18 Structures, and 24 Characters/Spells. Custom decks must contain at least 40 cards and may contain no more than four copies of one card.
+
+Every faction has two Lands and two Structures at each turn value from 1 through 10. Ramp Lands have an activated ability that searches the deck for a Structure; ramp Structures search for a Character. Only one Land and one Structure may be played each turn, tracked separately.
 
 | Faction | Identity | Stat and keyword emphasis |
 |---|---|---|
