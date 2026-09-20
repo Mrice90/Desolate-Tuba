@@ -417,7 +417,7 @@ public final class InfiniteConquestGui extends JFrame {
             List<String> errors = new DeckValidator().validate(working);
             long development = working.stream().filter(card -> card.type() == CardType.LAND
                     || card.type() == CardType.STRUCTURE).count();
-            status.setText("<html><b>" + working.size() + "/40 cards</b> • " + development
+            status.setText("<html><b>" + working.size() + " cards • 40 minimum</b> • " + development
                     + " Lands/Structures" + (errors.isEmpty() ? " • READY TO SAVE"
                     : "<br><font color='#ff9b9b'>" + html(String.join("; ", errors)) + "</font>") + "</html>");
         };
@@ -427,7 +427,7 @@ public final class InfiniteConquestGui extends JFrame {
             CardDefinition card = collection.getSelectedValue();
             if (card == null) return;
             long copies = working.stream().filter(value -> value.id().equals(card.id())).count();
-            if (working.size() >= DeckValidator.REQUIRED_SIZE || copies >= DeckValidator.MAX_COPIES) {
+            if (copies >= DeckValidator.MAX_COPIES) {
                 Toolkit.getDefaultToolkit().beep(); return;
             }
             working.add(card); rebuild.run();
@@ -446,7 +446,7 @@ public final class InfiniteConquestGui extends JFrame {
             @Override public void mouseClicked(MouseEvent e) { if (e.getClickCount() == 2) remove.doClick(); }
         });
 
-        JLabel help = new JLabel("<html>Remove a card before adding when the deck is full.<br>Double-click cards or use the buttons.</html>");
+        JLabel help = new JLabel("<html>Starters contain 60 cards; custom decks need at least 40.<br>The four-copy limit still applies.</html>");
         help.setForeground(new Color(205, 215, 229));
         JPanel centerButtons = new JPanel(new GridLayout(4, 1, 5, 5));
         centerButtons.setOpaque(false); centerButtons.add(add); centerButtons.add(remove); centerButtons.add(reset);
@@ -1490,6 +1490,8 @@ public final class InfiniteConquestGui extends JFrame {
             };
             String effect = switch (ability.effect()) {
                 case DRAW_CARD -> "draw " + ability.amount();
+                case DRAW_CHARACTER -> "search your deck for a Character";
+                case DRAW_STRUCTURE -> "search your deck for a Structure";
                 case GAIN_GP -> "gain " + ability.amount() + " GP";
                 case HEAL_SELF -> "heal this " + ability.amount();
                 case HEAL_CAPITAL -> "heal your Capital " + ability.amount();

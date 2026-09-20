@@ -17,14 +17,14 @@
 
 - [x] Versioned JSON loader and stable IDs
 - [x] Import current Drive Characters as editable prototype content
-- [x] Six lore-driven 40-card faction pools plus neutral/development prototypes
+- [x] Six lore-driven 94-card faction pools plus neutral/development prototypes
 - [x] Primary/secondary type identities and 60 late-game apex cards
 - [x] Primary/secondary implemented-keyword identities and 30 tiered keyword cards
 - [x] Three selectable Capitals per faction
 - [x] Eighteen unique, engine-resolved Capital passive abilities
-- [x] Validated 40-card deck files with a four-copy maximum
+- [x] Validated deck files with a 40-card minimum and four-copy maximum
 - [ ] Import future populated Drive rows
-- [x] Validated 40-card faction starters
+- [x] Validated 60-card faction starters
 - [x] Headless faction/Capital simulations and JSON playtest telemetry
 - [ ] Review simulation results and perform the first balance pass
 

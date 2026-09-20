@@ -1,6 +1,6 @@
 # Capital passive abilities
 
-Every faction has three 20 HP Capital choices. Capitals remain outside the 40-card deck. Their passive abilities are automatic, deterministic, visible in the CLI, and recorded as `CAPITAL_PASSIVE_TRIGGERED` game events.
+Every faction has three 20 HP Capital choices. Capitals remain outside the deck. Their passive abilities are automatic, deterministic, visible in the CLI, and recorded as `CAPITAL_PASSIVE_TRIGGERED` game events.
 
 | Faction | Capital | Passive | Implemented effect |
 |---|---|---|---|

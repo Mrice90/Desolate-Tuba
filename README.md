@@ -20,7 +20,7 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 - Open the **Action Log** tab to review the match in chronological order.
 - Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
 - Opening mulligans let you visually select up to three cards to discard and redraw, and enemy-turn reactions use a matching visual spell tray plus battlefield targeting instead of a text menu.
-- Choose **Deck Builder** to edit and save one local 40-card deck per faction; saved decks are loaded automatically for new matches.
+- Choose **Deck Builder** to edit and save one local deck per faction; decks require at least 40 cards, starter decks contain 60, and saved decks load automatically for new matches.
 - The Deck Builder is always available from **Game → Deck Builder** (`Ctrl+D`), even when compact window sizing hides header controls.
 - Choose **Bot (watch match)** for Player 1 during setup to run a bot-versus-bot match.
 - Battlefield callouts, directional source-to-target animations, and distinct CC0 sound cues identify movement, melee, ranged attacks, spells, destruction, and rule damage. Damaged permanents display both remaining HP and accumulated damage. Audio provenance is documented in `game-gui/src/main/resources/audio/ATTRIBUTION.md`.
@@ -51,11 +51,11 @@ gradle :game-cli:run --args="42"
 
 ## Build a custom deck
 
-The graphical **Deck Builder** and command-line editor support 348 editable prototypes: 324 faction cards across regular, apex, keyword, tactical, development, and triggered-ability tiers, plus 24 neutral/development cards. Each faction now has 54 choices and at least 18 Lands/Structures; its starter uses 18 developments and 22 action cards centered on a unique two-keyword identity. The 18 Capitals are selected separately and never count toward the 40-card deck.
+The graphical **Deck Builder** and command-line editor support 588 editable prototypes: 564 faction cards across regular, apex, keyword, tactical, development, ramp, and triggered-ability tiers, plus 24 neutral/development cards. Each faction now has 94 choices, including two Lands and two Structures at every turn value from 1–10. Its 60-card starter uses 18 Lands, 18 Structures, and 24 action cards centered on a unique two-keyword identity. Custom decks require at least 40 cards and allow no more than four copies of one card. The 18 Capitals are selected separately and never count toward the deck.
 
 Lands, Structures, and Characters can now carry data-driven abilities with four timing windows: **When this enters play**, **When this is destroyed**, **Start of your turn** passive effects, and once-per-turn **Activated** effects with a printed GP cost. The current effect set supports card draw, GP gain, self-repair, Capital repair, temporary self Attack/Defense bonuses, and direct enemy-Capital damage. Select the top card of a stack and use its highlighted **Activate** legal action to pay for an activated ability.
 
-All 348 deck-building cards and 18 Capitals now receive unique deterministic illustrations. Each visual combines its faction environment, card type, name-derived symbols, mechanics, and stable seeded composition; new cards automatically receive artwork as they are added. See [the card-art system](docs/card-art-system.md) for its visual vocabulary and asset provenance.
+All 588 deck-building cards and 18 Capitals receive unique deterministic illustrations. Each visual combines its faction environment, card type, name-derived symbols, mechanics, and stable seeded composition; new cards automatically receive artwork as they are added. See [the card-art system](docs/card-art-system.md) for its visual vocabulary and asset provenance.
 The renderer keeps board thumbnails fast by caching each completed image for reuse during the match.
 
 Board actions use distinct animated effects for movement, Blink, melee, ranged projectiles, Spells, deployment, and rules damage. Completed matches open an animated result screen with the winning Capital, match summary, and direct choices to rematch with the same settings, change match settings, or review the final battlefield.
@@ -66,7 +66,7 @@ Professional transparent VFX sprites from Kenney's CC0 Particle Pack are composi
 gradle :game-cli:run --args="deck"
 ```
 
-Use `factions`, `pool <faction>`, or `reset <faction>` to explore a starter. Use `swap <remove-id> <add-id>`, then `save my-deck.json`. A deck saves only when it contains exactly 40 cards and no card has more than four copies.
+Use `factions`, `pool <faction>`, or `reset <faction>` to explore a 60-card starter. Use `swap <remove-id> <add-id>`, then `save my-deck.json`. A deck saves when it contains at least 40 cards and no card has more than four copies.
 
 Play using a saved human deck against a saved bot deck:
 
@@ -117,7 +117,7 @@ Ten repetitions produce 3,240 matches. Reports include faction and Capital win r
 - movement, range, Capitals, deployment, combat, HP, destruction, and victory
 - Mole, Blink, Vanguard, Fast Strike, Siege, Sharp Shot, line of sight, and typed Spell effects
 - private local-player handoff, inspection, and legal-action hints
-- six 54-card faction pools with development-heavy 40-card starters, expanded Land/Structure choices, triggered abilities, and primary/secondary identities, plus 24 neutral/development prototypes
+- six 94-card faction pools with development-heavy 60-card starters, full turn 1–10 Land/Structure curves, typed draw abilities, and primary/secondary identities, plus 24 neutral/development prototypes
 - three separately selectable Capitals per faction, each with a unique implemented passive ability
 - executable active-turn and enemy-turn reaction Spells
 - validated JSON deck files and interactive deck editor

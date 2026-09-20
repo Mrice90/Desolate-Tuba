@@ -12,7 +12,9 @@ public final class DemoMatchFactory {
             "neo_proto_naiad_recon_droid", "neo_proto_talus_defender",
             "neo_proto_asclepius_medibot", "neo_proto_zephyr_scout",
             "neo_proto_hephaestus_drone", "demo_land_a", "demo_land_b",
-            "demo_land_c", "demo_structure_a", "demo_structure_b");
+            "demo_land_c", "demo_structure_a", "demo_structure_b",
+            "demo_volcanic_forge", "demo_ballista_nest", "demo_healing_sanctum",
+            "demo_bronze_hoplite", "demo_oracle_skimmer");
 
     private final PrototypeCardPool pool = new PrototypeCardPool();
     private final CapitalRoster capitals = new CapitalRoster();

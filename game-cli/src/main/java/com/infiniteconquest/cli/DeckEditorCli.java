@@ -24,7 +24,7 @@ public final class DeckEditorCli {
     public void run(BufferedReader input, PrintStream output, List<CardDefinition> startingDeck) throws IOException {
         DeckEditor editor = new DeckEditor(pool, startingDeck);
         output.println("Infinite Conquest deck editor");
-        output.println("Starting from the 40-card demo deck. Type help.");
+        output.println("Starting from the 60-card demo deck. Type help.");
 
         while (true) {
             output.print("deck> ");
@@ -43,7 +43,7 @@ public final class DeckEditorCli {
                     case "reset" -> {
                         require(parts, 2);
                         editor.reset(factionDecks.starter(parts[1]));
-                        output.println("Loaded the " + parts[1].toUpperCase() + " 40-card starter deck.");
+                        output.println("Loaded the " + parts[1].toUpperCase() + " 60-card starter deck.");
                     }
                     case "add" -> { require(parts, 2); editor.add(parts[1]); output.println("Added " + parts[1]); }
                     case "remove" -> { require(parts, 2); editor.remove(parts[1]); output.println("Removed " + parts[1]); }
@@ -53,7 +53,7 @@ public final class DeckEditorCli {
                     }
                     case "save" -> {
                         require(parts, 2); files.save(Path.of(parts[1]), "Custom Deck", editor.cards());
-                        output.println("Saved valid 40-card deck to " + parts[1]);
+                        output.println("Saved valid deck (40-card minimum) to " + parts[1]);
                     }
                     case "validate" -> {
                         List<String> errors = editor.validationErrors();
@@ -86,7 +86,7 @@ public final class DeckEditorCli {
     }
 
     String renderDeck(DeckEditor editor) {
-        StringBuilder out = new StringBuilder("Cards: " + editor.cards().size() + "/40");
+        StringBuilder out = new StringBuilder("Cards: " + editor.cards().size() + " (40 minimum; starters have 60)");
         for (Map.Entry<String, Long> entry : editor.counts().entrySet()) {
             out.append(System.lineSeparator()).append(entry.getValue()).append("x ")
                     .append(pool.require(entry.getKey()).name()).append(" [")
@@ -103,12 +103,12 @@ public final class DeckEditorCli {
         return """
                 factions                     list the six launch factions
                 pool [faction]               list all cards or one faction's cards
-                reset <faction>              load that faction's 40-card starter
+                reset <faction>              load that faction's 60-card starter
                 deck                         show the current deck and copy counts
                 swap <remove-id> <add-id>    replace one card while staying at 40
                 remove <card-id>             remove one copy
                 add <card-id>                add one copy (maximum four)
-                validate                     check exact 40-card and copy-limit rules
+                validate                     check 40-card minimum and copy-limit rules
                 save <file.json>             save only if the deck is valid
                 quit                         leave the editor
                 """.strip();

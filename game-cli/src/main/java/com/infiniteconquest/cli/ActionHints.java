@@ -15,6 +15,7 @@ public final class ActionHints {
 
         for (int index = 0; index < hand.size(); index++) {
             CardInstance card = state.card(hand.get(index)).orElseThrow();
+            if (!state.canPlayDevelopment(player, card.definition().type())) continue;
             boolean development = card.definition().type() == CardType.LAND
                     || card.definition().type() == CardType.STRUCTURE;
             if (development ? card.definition().cost() > state.personalTurnNumber(player)

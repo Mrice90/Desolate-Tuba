@@ -32,6 +32,17 @@ public final class PlayerState {
         hand.add(card);
         return Optional.of(card);
     }
+    Optional<UUID> drawFirst(java.util.function.Predicate<UUID> predicate) {
+        for (int index = 0; index < deck.size(); index++) {
+            UUID card = deck.get(index);
+            if (predicate.test(card)) {
+                deck.remove(index);
+                hand.add(card);
+                return Optional.of(card);
+            }
+        }
+        return Optional.empty();
+    }
     public void addToHand(UUID id) { hand.add(Objects.requireNonNull(id)); }
     public boolean hasInHand(UUID id) { return hand.contains(id); }
     public void removeFromHand(UUID id) {

@@ -15,6 +15,6 @@ All 30 cards are `PROTOTYPE` content. Their costs and statistics are test values
 
 ## Capital selection
 
-Each faction has three selectable Capitals (18 total). Capitals are loaded from a separate catalog, do not count toward the 40-card deck, and are deployed simultaneously using the existing Capital placement rules. The CLI lists them with `capitals` and accepts Capital IDs after the optional seed in `play` mode.
+Each faction has three selectable Capitals (18 total). Capitals are loaded from a separate catalog, do not count toward the deck, and are deployed simultaneously using the existing Capital placement rules. The CLI lists them with `capitals` and accepts Capital IDs after the optional seed in `play` mode.
 
 All Capital choices share 20 HP. Each now has a unique passive ability resolved by the rules engine; see `capital-passives.md`.

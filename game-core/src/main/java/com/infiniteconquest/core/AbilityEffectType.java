@@ -2,6 +2,8 @@ package com.infiniteconquest.core;
 
 public enum AbilityEffectType {
     DRAW_CARD,
+    DRAW_CHARACTER,
+    DRAW_STRUCTURE,
     GAIN_GP,
     HEAL_SELF,
     HEAL_CAPITAL,

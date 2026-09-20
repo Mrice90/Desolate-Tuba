@@ -4,14 +4,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public final class DeckValidator {
-    public static final int REQUIRED_SIZE = 40;
+    public static final int MINIMUM_SIZE = 40;
+    public static final int REQUIRED_SIZE = MINIMUM_SIZE;
     public static final int MAX_COPIES = 4;
     public static final int MIN_DISTINCT = 10;
 
     public List<String> validate(List<CardDefinition> cards) {
         Objects.requireNonNull(cards);
         List<String> errors = new ArrayList<>();
-        if (cards.size() != REQUIRED_SIZE) errors.add("Deck must contain exactly 40 cards");
+        if (cards.size() < MINIMUM_SIZE) errors.add("Deck must contain at least 40 cards");
 
         Map<String, Long> counts = cards.stream()
                 .collect(Collectors.groupingBy(CardDefinition::id, Collectors.counting()));

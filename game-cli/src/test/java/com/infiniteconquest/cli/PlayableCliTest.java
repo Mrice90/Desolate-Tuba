@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class PlayableCliTest {
     @Test
-    void demoCreatesValidatedFortyCardDecksAndDeployedCapitals() {
+    void demoCreatesValidatedSixtyCardDecksAndDeployedCapitals() {
         DemoMatchFactory factory = new DemoMatchFactory();
-        assertEquals(40, factory.demoDeck().size());
+        assertEquals(60, factory.demoDeck().size());
 
         GameState state = factory.create(42L);
         long playerZeroCapitals = state.board().positions().stream()

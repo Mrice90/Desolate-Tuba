@@ -188,6 +188,9 @@ public final class GameEngine {
     }
 
     private ActionResult playStructure(GameState state, GameAction.PlayStructure action) {
+        if (!state.canPlayDevelopment(action.playerId(), CardType.STRUCTURE)) {
+            return ActionResult.rejected("Only one Structure may be played per turn");
+        }
         CardInstance card = developableFromHand(state, action.playerId(), action.cardId(), CardType.STRUCTURE);
         if (card == null) return ActionResult.rejected("Structure must be in hand and its turn value must be reached");
         Optional<UUID> top = state.board().topAt(action.destination());
@@ -383,6 +386,9 @@ public final class GameEngine {
     }
 
     private ActionResult playLand(GameState state, GameAction.PlayLand action) {
+        if (!state.canPlayDevelopment(action.playerId(), CardType.LAND)) {
+            return ActionResult.rejected("Only one Land may be played per turn");
+        }
         CardInstance card = developableFromHand(state, action.playerId(), action.cardId(), CardType.LAND);
         if (card == null) return ActionResult.rejected("Land must be in hand and its turn value must be reached");
         if (!action.destination().isOnPlayerSide(action.playerId()) || !state.board().isEmpty(action.destination()))

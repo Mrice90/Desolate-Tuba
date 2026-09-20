@@ -11,6 +11,8 @@ public final class GameState {
     private final List<GameEvent> events = new ArrayList<>();
     private final int[] personalTurns = new int[2];
     private final boolean[] mulliganCompleted = new boolean[2];
+    private final int[] landsPlayedThisTurn = new int[2];
+    private final int[] structuresPlayedThisTurn = new int[2];
     private final Set<String> capitalPassivesUsedThisTurn = new HashSet<>();
     private final CapitalPassiveRules capitalPassiveRules = new CapitalPassiveRules();
     private final CardAbilityRules cardAbilityRules = new CardAbilityRules();
@@ -39,6 +41,13 @@ public final class GameState {
     public int startingPlayer() { return startingPlayer; }
     public int turnNumber() { return turnNumber; }
     public int personalTurnNumber(int id) { return personalTurns[id]; }
+    public boolean canPlayDevelopment(int playerId, CardType type) {
+        return switch (type) {
+            case LAND -> landsPlayedThisTurn[playerId] == 0;
+            case STRUCTURE -> structuresPlayedThisTurn[playerId] == 0;
+            default -> true;
+        };
+    }
     public Phase phase() { return phase; }
     public OptionalInt winner() { return winner == null ? OptionalInt.empty() : OptionalInt.of(winner); }
     public List<GameEvent> events() { return Collections.unmodifiableList(events); }
@@ -123,6 +132,8 @@ public final class GameState {
     }
     void recordCardPlayed(CardInstance card) {
         mulliganWindowOpen = false;
+        if (card.definition().type() == CardType.LAND) landsPlayedThisTurn[card.owner()]++;
+        if (card.definition().type() == CardType.STRUCTURE) structuresPlayedThisTurn[card.owner()]++;
         emit(GameEvent.Type.CARD_PLAYED, card.owner(), card.instanceId().toString());
         capitalPassiveRules.onCardPlayed(this, card);
         applyDevelopmentDeployPassive(card);
@@ -142,6 +153,19 @@ public final class GameState {
     }
     void drawCards(int playerId, int amount) {
         for (int i = 0; i < amount; i++) drawCard(playerId);
+    }
+    void drawCardsOfType(int playerId, CardType type, int amount) {
+        for (int i = 0; i < amount; i++) {
+            Optional<UUID> drawn = player(playerId).drawFirst(id -> card(id)
+                    .map(value -> value.definition().type() == type).orElse(false));
+            if (drawn.isEmpty()) {
+                emit(GameEvent.Type.DRAW_FAILED, playerId, "No " + type + " remains in deck");
+                return;
+            }
+            CardInstance instance = card(drawn.orElseThrow()).orElseThrow();
+            instance.moveTo(Zone.HAND);
+            emit(GameEvent.Type.CARD_DRAWN, playerId, instance.instanceId().toString());
+        }
     }
     void returnCharacterToHand(CardInstance card) {
         board.remove(card.instanceId());
@@ -173,6 +197,8 @@ public final class GameState {
 
     private void startTurn() {
         capitalPassivesUsedThisTurn.clear();
+        landsPlayedThisTurn[activePlayer] = 0;
+        structuresPlayedThisTurn[activePlayer] = 0;
         cards.values().forEach(CardInstance::clearCombatDamage);
         phase = Phase.START;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "START");

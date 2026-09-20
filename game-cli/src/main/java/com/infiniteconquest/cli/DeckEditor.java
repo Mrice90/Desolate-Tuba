@@ -33,9 +33,6 @@ public final class DeckEditor {
         if (copies >= DeckValidator.MAX_COPIES) {
             throw new IllegalArgumentException(id + " already has four copies");
         }
-        if (cards.size() >= DeckValidator.REQUIRED_SIZE) {
-            throw new IllegalArgumentException("Remove a card before adding another; deck already has 40 cards");
-        }
         cards.add(card);
     }
 

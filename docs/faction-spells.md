@@ -2,7 +2,7 @@
 
 Spells are low-cost, one-use cards that may be cast during either player's Play Phase. A player may preserve unspent GP and use it for reaction Spells during the opponent's turn. Spells resolve immediately; the first digital implementation does not use a response stack.
 
-This power has a deck-building cost: every Spell occupies one of exactly 40 deck slots that could otherwise contain a Character, Land, or Structure.
+This power has a deck-building cost: every Spell occupies a deck slot that could otherwise contain a Character, Land, or Structure. Custom decks require at least 40 cards; the faction starters contain 60.
 
 ## Timing and targeting
 

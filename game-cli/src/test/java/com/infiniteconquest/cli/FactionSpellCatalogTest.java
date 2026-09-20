@@ -33,7 +33,7 @@ class FactionSpellCatalogTest {
         FactionDecks decks = new FactionDecks(pool);
         for (String faction : FactionDecks.FACTIONS) {
             List<CardDefinition> deck = decks.starter(faction);
-            assertEquals(40, deck.size());
+            assertEquals(60, deck.size());
             assertTrue(new DeckValidator().isValid(deck));
             assertTrue(deck.stream().anyMatch(card -> card.type() == CardType.SPELL));
         }
