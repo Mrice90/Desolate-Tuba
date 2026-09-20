@@ -19,15 +19,15 @@ class FactionCardSetTest {
     void everyFactionHasAnExpandedUniquePlayablePool() {
         PrototypeCardPool pool = new PrototypeCardPool();
 
-        assertEquals(588, pool.cards().size());
+        assertEquals(648, pool.cards().size());
         for (String faction : FactionDecks.FACTIONS) {
             List<CardDefinition> cards = pool.cardsForFaction(faction);
-            assertEquals(94, cards.size(), faction);
-            assertEquals(94, cards.stream().map(CardDefinition::id).distinct().count(), faction);
+            assertEquals(104, cards.size(), faction);
+            assertEquals(104, cards.stream().map(CardDefinition::id).distinct().count(), faction);
 
             Map<CardType, Long> types = cards.stream()
                     .collect(Collectors.groupingBy(CardDefinition::type, Collectors.counting()));
-            assertEquals(94L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
+            assertEquals(104L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
         }
     }
 
@@ -72,6 +72,25 @@ class FactionCardSetTest {
                 assertEquals(2, tierCards.stream().filter(card -> card.type() == CardType.STRUCTURE).count(), faction + " Structure " + tier);
             }
             ramp.forEach(card -> {
+                assertEquals(1, card.abilities().size(), card.id());
+                assertEquals(AbilityTrigger.ACTIVATED, card.abilities().get(0).trigger(), card.id());
+                assertEquals(card.type() == CardType.LAND ? AbilityEffectType.DRAW_STRUCTURE
+                        : AbilityEffectType.DRAW_CHARACTER, card.abilities().get(0).effect(), card.id());
+            });
+        }
+    }
+
+    @Test
+    void everyFactionGetsFiveLandAndFiveStructureTutors() {
+        PrototypeCardPool pool = new PrototypeCardPool();
+        for (String faction : FactionDecks.FACTIONS) {
+            List<CardDefinition> tutors = pool.cardsForFaction(faction).stream()
+                    .filter(card -> card.id().contains("_tutor_")).toList();
+            assertEquals(10, tutors.size(), faction);
+            assertEquals(5, tutors.stream().filter(card -> card.type() == CardType.LAND).count(), faction);
+            assertEquals(5, tutors.stream().filter(card -> card.type() == CardType.STRUCTURE).count(), faction);
+            assertEquals(Set.of(2, 4, 6, 8, 10), tutors.stream().map(CardDefinition::cost).collect(Collectors.toSet()), faction);
+            tutors.forEach(card -> {
                 assertEquals(1, card.abilities().size(), card.id());
                 assertEquals(AbilityTrigger.ACTIVATED, card.abilities().get(0).trigger(), card.id());
                 assertEquals(card.type() == CardType.LAND ? AbilityEffectType.DRAW_STRUCTURE

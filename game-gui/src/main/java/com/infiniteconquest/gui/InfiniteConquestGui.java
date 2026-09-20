@@ -1524,8 +1524,8 @@ public final class InfiniteConquestGui extends JFrame {
             };
             String effect = switch (ability.effect()) {
                 case DRAW_CARD -> "draw " + ability.amount();
-                case DRAW_CHARACTER -> "search your deck for a Character";
-                case DRAW_STRUCTURE -> "search your deck for a Structure";
+                case DRAW_CHARACTER -> "draw a random Character from your deck";
+                case DRAW_STRUCTURE -> "draw a random Structure from your deck";
                 case GAIN_GP -> "gain " + ability.amount() + " GP";
                 case HEAL_SELF -> "heal this " + ability.amount();
                 case HEAL_CAPITAL -> "heal your Capital " + ability.amount();
