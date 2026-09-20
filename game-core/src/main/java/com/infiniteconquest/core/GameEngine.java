@@ -7,6 +7,7 @@ import java.util.*;
 public final class GameEngine {
     private final MovementRules movementRules = new MovementRules();
     private final LineOfSightRules lineOfSightRules = new LineOfSightRules();
+    private final CardAbilityRules cardAbilityRules = new CardAbilityRules();
 
     public ActionResult apply(GameState state, GameAction action) {
         Objects.requireNonNull(state); Objects.requireNonNull(action);
@@ -21,7 +22,28 @@ public final class GameEngine {
         if (action instanceof GameAction.MoveCharacter a) return moveCharacter(state, a);
         if (action instanceof GameAction.BlinkCharacter a) return blinkCharacter(state, a);
         if (action instanceof GameAction.Attack a) return attack(state, a);
+        if (action instanceof GameAction.ActivateAbility a) return activateAbility(state, a);
         return ActionResult.rejected("Unsupported action");
+    }
+
+    private ActionResult activateAbility(GameState state, GameAction.ActivateAbility action) {
+        CardInstance source = state.card(action.cardId()).orElse(null);
+        if (source == null || source.owner() != action.playerId() || source.zone() != Zone.BATTLEFIELD) {
+            return ActionResult.rejected("Ability source must be your battlefield card");
+        }
+        BoardPosition position = state.board().positionOf(source.instanceId()).orElse(null);
+        if (position == null || !state.board().topAt(position).orElseThrow().equals(source.instanceId())) {
+            return ActionResult.rejected("Only the top card of a stack can activate an ability");
+        }
+        List<CardAbility> abilities = cardAbilityRules.abilities(source, AbilityTrigger.ACTIVATED);
+        if (abilities.isEmpty()) return ActionResult.rejected("Card has no activated ability");
+        if (source.abilityUsedThisTurn()) return ActionResult.rejected("Ability already used this turn");
+        int totalCost = abilities.stream().mapToInt(CardAbility::gpCost).sum();
+        if (state.player(action.playerId()).currentGp() < totalCost) return ActionResult.rejected("Not enough GP");
+        state.player(action.playerId()).spendGp(totalCost);
+        source.markAbilityUsed();
+        abilities.forEach(ability -> cardAbilityRules.resolve(state, source, ability));
+        return ActionResult.accepted("Activated ability resolved");
     }
 
     public Set<BoardPosition> legalMovementDestinations(GameState state, UUID id) {

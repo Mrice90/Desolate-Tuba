@@ -16,6 +16,7 @@ public final class CardInstance {
     private int attackBonus;
     private int defenseBonus;
     private int combatDamage;
+    private boolean abilityUsedThisTurn;
 
     public CardInstance(UUID instanceId, CardDefinition definition, int owner, Zone zone) {
         this.instanceId = Objects.requireNonNull(instanceId);
@@ -42,6 +43,7 @@ public final class CardInstance {
     /** Damage marked on a Character by combat during the current turn. */
     public int combatDamage() { return combatDamage; }
     public int defenseRemaining() { return Math.max(0, effectiveDefense() - combatDamage); }
+    public boolean abilityUsedThisTurn() { return abilityUsedThisTurn; }
     public void moveTo(Zone newZone) { zone = Objects.requireNonNull(newZone); }
     public void addDamage(int amount) {
         if (amount < 0) throw new IllegalArgumentException("Damage cannot be negative");
@@ -74,10 +76,12 @@ public final class CardInstance {
     }
     public void markAttacked() { attackedThisTurn = true; }
     public void markBlinkUsed() { blinkUsedThisTurn = true; }
+    public void markAbilityUsed() { abilityUsedThisTurn = true; }
     public void resetTurnActions() {
         movementSpent = 0;
         attackedThisTurn = false;
         blinkUsedThisTurn = false;
+        abilityUsedThisTurn = false;
         attackBonus = 0;
         defenseBonus = 0;
         tapped = false;

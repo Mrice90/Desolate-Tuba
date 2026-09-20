@@ -60,6 +60,7 @@ public final class BotPlayer {
             case "burrow" -> 82;
             case "blink" -> 45;
             case "move" -> 35;
+            case "activate" -> 75;
             case "end" -> 0;
             default -> 1;
         };

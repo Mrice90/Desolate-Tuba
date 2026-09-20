@@ -13,6 +13,7 @@ public final class GameState {
     private final boolean[] mulliganCompleted = new boolean[2];
     private final Set<String> capitalPassivesUsedThisTurn = new HashSet<>();
     private final CapitalPassiveRules capitalPassiveRules = new CapitalPassiveRules();
+    private final CardAbilityRules cardAbilityRules = new CardAbilityRules();
     private int activePlayer;
     private int startingPlayer;
     private int turnNumber;
@@ -125,6 +126,7 @@ public final class GameState {
         emit(GameEvent.Type.CARD_PLAYED, card.owner(), card.instanceId().toString());
         capitalPassiveRules.onCardPlayed(this, card);
         applyDevelopmentDeployPassive(card);
+        cardAbilityRules.resolve(this, card, AbilityTrigger.ENTERS_PLAY);
     }
     void recordCharacterMoved(CardInstance card, BoardPosition from, BoardPosition to, int distance) {
         mulliganWindowOpen = false;
@@ -153,8 +155,9 @@ public final class GameState {
         card.moveTo(Zone.DISCARD);
         player(card.owner()).addToDiscard(card.instanceId());
         emit(GameEvent.Type.CARD_DESTROYED, card.owner(), card.instanceId().toString());
+        cardAbilityRules.resolve(this, card, AbilityTrigger.DESTROYED);
         if (permanent) capitalPassiveRules.onPermanentDestroyed(this, card);
-        if (permanent) {
+        if (permanent && phase != Phase.GAME_OVER) {
             int result = new VictoryEvaluator().winnerAfterPermanentLoss(this, card.owner());
             if (result >= 0) {
                 finishGame(result, "Player " + result + " wins");
@@ -176,6 +179,7 @@ public final class GameState {
         generatePermanentGp(activePlayer);
         applyDevelopmentStartPassives(activePlayer);
         resetControlledCards(activePlayer);
+        battlefieldCards(activePlayer).forEach(card -> cardAbilityRules.resolve(this, card, AbilityTrigger.PASSIVE));
         if (turnNumber > 1) {
             for (int i = 0; i < rules.cardsDrawnAtTurnStart(); i++) drawCard(activePlayer);
         }
@@ -270,6 +274,11 @@ public final class GameState {
     private void recordDevelopmentPassive(CardInstance card) {
         emit(GameEvent.Type.DEVELOPMENT_PASSIVE_TRIGGERED, card.owner(),
                 card.instanceId() + " " + DevelopmentRules.passiveText(card.definition().developmentPassive()));
+    }
+    void recordCardAbility(CardInstance card, CardAbility ability) {
+        emit(GameEvent.Type.CARD_ABILITY_TRIGGERED, card.owner(), card.instanceId() + " "
+                + ability.trigger() + " " + ability.effect() + " " + ability.amount()
+                + (ability.gpCost() > 0 ? " cost " + ability.gpCost() : ""));
     }
     private void finishGame(Integer winningPlayer, String detail) {
         winner = winningPlayer;

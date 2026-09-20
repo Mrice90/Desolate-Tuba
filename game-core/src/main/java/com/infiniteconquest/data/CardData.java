@@ -5,6 +5,7 @@ import com.infiniteconquest.core.CardType;
 import com.infiniteconquest.core.SpellEffect;
 import com.infiniteconquest.core.DevelopmentPassive;
 import com.infiniteconquest.core.DevelopmentRules;
+import com.infiniteconquest.core.CardAbility;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +29,8 @@ public record CardData(
         int rarity,
         ContentStatus contentStatus,
         Integer gpGeneration,
-        DevelopmentPassive developmentPassive
+        DevelopmentPassive developmentPassive,
+        List<CardAbility> abilities
 ) {
     public CardData {
         if (id == null || !id.matches("[a-z0-9]+(?:_[a-z0-9]+)*")) {
@@ -43,8 +45,10 @@ public record CardData(
         }
         keywords = keywords == null ? List.of() : List.copyOf(keywords);
         effects = effects == null ? List.of() : List.copyOf(effects);
-        if (keywords.stream().anyMatch(Objects::isNull) || effects.stream().anyMatch(Objects::isNull)) {
-            throw new IllegalArgumentException("Keywords and effects cannot contain null");
+        abilities = abilities == null ? List.of() : List.copyOf(abilities);
+        if (keywords.stream().anyMatch(Objects::isNull) || effects.stream().anyMatch(Objects::isNull)
+                || abilities.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException("Keywords, effects and abilities cannot contain null");
         }
         rulesText = rulesText == null ? "" : rulesText;
         description = description == null ? "" : description;
@@ -55,6 +59,7 @@ public record CardData(
         return new CardDefinition(id, name, type, faction, cost, attack, defense, movement, range,
                 hitPoints, Set.copyOf(keywords), effects,
                 gpGeneration == null ? DevelopmentRules.standardGp(type, cost) : gpGeneration,
-                developmentPassive == null ? DevelopmentPassive.NONE : developmentPassive);
+                developmentPassive == null ? DevelopmentPassive.NONE : developmentPassive,
+                abilities);
     }
 }
