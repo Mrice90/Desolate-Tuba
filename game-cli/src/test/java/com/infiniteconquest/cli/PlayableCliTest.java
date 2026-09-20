@@ -38,7 +38,8 @@ class PlayableCliTest {
         assertTrue(rendered.contains("GP " + state.player(state.activePlayer()).currentGp()));
         assertTrue(rendered.contains("x0"));
         assertTrue(rendered.contains("y5"));
-        assertTrue(rendered.contains("Player 1 (You) hand:"));
+        assertTrue(rendered.contains(state.activePlayer() == 0
+                ? "Player 1 (You) hand:" : "Player 2 (Bot) hand:"));
         assertTrue(rendered.contains("Opponent: 6 cards in hand"));
         assertFalse(rendered.contains("Player 1 Capital —"));
     }
