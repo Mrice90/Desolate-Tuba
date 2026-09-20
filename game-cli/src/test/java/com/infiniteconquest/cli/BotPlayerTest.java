@@ -42,7 +42,8 @@ class BotPlayerTest {
 
         assertTrue(output.contains(state.activePlayer() == 0 ? "Player 1 (You)" : "Player 2 (Bot)"));
         assertTrue(output.contains("BOT K:Player 2"));
-        assertFalse(output.contains("Player 2 (Bot) hand:"));
+        String inactiveLabel = state.activePlayer() == 0 ? "Player 2 (Bot)" : "Player 1 (You)";
+        assertFalse(output.contains(inactiveLabel + " hand:"));
     }
 
     private List<String> openingDecisions(long seed) {
