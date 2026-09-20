@@ -49,6 +49,31 @@ class CombatTest {
         assertEquals(Zone.DISCARD, defender.zone());
     }
 
+    @Test void attacksAccumulateAgainstCharacterForOnlyTheCurrentTurn() {
+        GameState state = new GameState(23L);
+        CardInstance first = battlefield(state, 0,
+                new CardDefinition("first", "First", CardType.CHARACTER, "DEV", 0, 2, 4, 1, 1), new BoardPosition(0, 0));
+        CardInstance second = battlefield(state, 0,
+                new CardDefinition("second", "Second", CardType.CHARACTER, "DEV", 0, 2, 4, 1, 1), new BoardPosition(1, 0));
+        CardInstance defender = battlefield(state, 1,
+                new CardDefinition("defender", "Defender", CardType.CHARACTER, "DEV", 0, 0, 4, 1, 1), new BoardPosition(0, 1));
+
+        assertTrue(new GameEngine().apply(state, new GameAction.Attack(0, first.instanceId(), defender.instanceId())).accepted());
+        assertEquals(2, defender.combatDamage());
+        assertEquals(Zone.BATTLEFIELD, defender.zone());
+        assertTrue(new GameEngine().apply(state, new GameAction.Attack(0, second.instanceId(), defender.instanceId())).accepted());
+        assertEquals(Zone.DISCARD, defender.zone());
+
+        GameState clearing = new GameState(24L);
+        CardInstance chipper = battlefield(clearing, 0,
+                new CardDefinition("chipper", "Chipper", CardType.CHARACTER, "DEV", 0, 2, 4, 1, 1), new BoardPosition(0, 0));
+        CardInstance survivor = battlefield(clearing, 1,
+                new CardDefinition("survivor", "Survivor", CardType.CHARACTER, "DEV", 0, 0, 4, 1, 1), new BoardPosition(0, 1));
+        new GameEngine().apply(clearing, new GameAction.Attack(0, chipper.instanceId(), survivor.instanceId()));
+        clearing.advanceTurn();
+        assertEquals(0, survivor.combatDamage());
+    }
+
     @Test void permanentAccumulatesDamageAndLastPermanentLossEndsGame() {
         GameState state = new GameState(3L);
         battlefield(state, 0, new CardDefinition("home", "Home", CardType.LAND, "DEV", 0, 0, 0, 0, 0, 5),

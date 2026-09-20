@@ -69,12 +69,14 @@ public final class InfiniteConquestGui extends JFrame {
     private long lastSystemEvent = -1;
     private boolean playerOneBot;
     private boolean winnerSoundPlayed;
+    private boolean fullScreen;
 
     public InfiniteConquestGui() {
         super("Infinite Conquest");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(1280, 860));
         setSize(1500, 980);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
         installTheme();
         setJMenuBar(buildMenuBar());
@@ -140,8 +142,24 @@ public final class InfiniteConquestGui extends JFrame {
         JMenuItem newGame = new JMenuItem("New Match...");
         newGame.setAccelerator(KeyStroke.getKeyStroke("control N"));
         newGame.addActionListener(event -> newMatch());
-        game.add(decks); game.addSeparator(); game.add(newGame); bar.add(game);
+        JMenuItem fullscreen = new JMenuItem("Toggle Full Screen");
+        fullscreen.setAccelerator(KeyStroke.getKeyStroke("F11"));
+        fullscreen.addActionListener(event -> toggleFullScreen());
+        game.add(decks); game.addSeparator(); game.add(newGame); game.add(fullscreen); bar.add(game);
         return bar;
+    }
+
+    private void toggleFullScreen() {
+        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        if (fullScreen) device.setFullScreenWindow(null);
+        dispose();
+        fullScreen = !fullScreen;
+        setUndecorated(fullScreen);
+        setVisible(true);
+        if (fullScreen && device.isFullScreenSupported()) device.setFullScreenWindow(this);
+        else {
+            setExtendedState(JFrame.MAXIMIZED_BOTH);
+        }
     }
 
     private JComponent buildBoard() {
@@ -308,9 +326,9 @@ public final class InfiniteConquestGui extends JFrame {
     private void showHumanMulligan() {
         List<MulliganChoice> choices = state.player(0).hand().stream()
                 .map(id -> new MulliganChoice(id, state.card(id).orElseThrow().definition())).toList();
-        Set<UUID> kept = new VisualMulliganDialog(choices).choose();
-        state.mulligan(0, kept);
-        addHistory("You", "Mulligan — kept " + kept.size() + ", replaced " + (choices.size() - kept.size()));
+        Set<UUID> discarded = new VisualMulliganDialog(choices).choose();
+        state.mulligan(0, discarded);
+        addHistory("You", "Mulligan — discarded and redrew " + discarded.size());
     }
 
     private void completeBotMulligan(int playerId) {
@@ -318,10 +336,10 @@ public final class InfiniteConquestGui extends JFrame {
                 .map(id -> state.card(id).orElseThrow())
                 .sorted(Comparator.comparingInt(this::openingKeepScore).reversed())
                 .toList();
-        Set<UUID> kept = cards.stream().limit(3).map(CardInstance::instanceId)
+        Set<UUID> discarded = cards.stream().skip(Math.max(0, cards.size() - 3)).map(CardInstance::instanceId)
                 .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        state.mulligan(playerId, kept);
-        addHistory("Bot " + (playerId + 1), "Mulligan — kept 3, replaced " + (cards.size() - 3));
+        state.mulligan(playerId, discarded);
+        addHistory("Bot " + (playerId + 1), "Mulligan — discarded and redrew " + discarded.size());
     }
 
     private int openingKeepScore(CardInstance card) {
@@ -495,6 +513,9 @@ public final class InfiniteConquestGui extends JFrame {
                 new JLabel("Bot"));
         addSetupRow(setup, c, 5, "PLACE YOUR CAPITAL", capitalPlacement,
                 "BOT CAPITAL POSITION", new JLabel("Chosen secretly at random"));
+        JButton editDecks = button("Open Deck Builder", e -> openDeckEditor());
+        addSetupRow(setup, c, 6, "CUSTOM DECKS", editDecks,
+                "DISPLAY", new JLabel("F11 toggles full screen"));
 
         int result = JOptionPane.showConfirmDialog(this, setup, "Configure Conquest",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
@@ -743,11 +764,12 @@ public final class InfiniteConquestGui extends JFrame {
             cell.setBackground(base);
             cell.setForeground(Color.WHITE);
             Intent intent = destinationIntent(position);
-            cell.setBorder(new CompoundBorder(
+            cell.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED,
+                    base.brighter(), base.brighter(), base.darker(), base.darker()), new CompoundBorder(
                     new LineBorder(Objects.equals(selectedCell, position) ? SELECTED
                             : intent != null ? intent.color : base.brighter(),
                             Objects.equals(selectedCell, position) || intent != null ? 4 : 1, true),
-                    new EmptyBorder(7, 7, 7, 7)));
+                    new EmptyBorder(7, 7, 7, 7))));
             if (topId.isEmpty()) {
                 cell.setIcon(null);
                 cell.setText("<html><font color='#78899d'>" + position.x() + "," + position.y() + "</font>"
@@ -765,7 +787,9 @@ public final class InfiniteConquestGui extends JFrame {
             cell.setVerticalAlignment(SwingConstants.CENTER);
             int stack = state.board().stackAt(position).size();
             String stats = def.type() == CardType.CHARACTER
-                    ? "ATK " + new GameEngine().effectiveAttack(state, card) + "  DEF " + card.effectiveDefense()
+                    ? "ATK " + new GameEngine().effectiveAttack(state, card) + "  DEF " + card.defenseRemaining()
+                    + "/" + card.effectiveDefense()
+                    + (card.combatDamage() > 0 ? "  MARKED " + card.combatDamage() : "")
                     : "HP " + Math.max(0, def.hitPoints() - card.damage()) + "/" + def.hitPoints()
                     + (card.damage() > 0 ? "  DMG " + card.damage() : "");
             EffectBadge badge = effectBadges.get(position);
@@ -776,7 +800,7 @@ public final class InfiniteConquestGui extends JFrame {
                     + (intent == null ? "" : "<br><b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
             cell.setToolTipText("<html><b>" + html(def.name()) + "</b><br>" + html(keywordLine(def))
                     + (developmentText(def).isBlank() ? "" : "<br>" + html(developmentText(def)))
-                    + "<br>Drag to a highlighted cell; right-click to inspect stack.</html>");
+                    + "<br>Click a highlighted cell or drag; right-click to inspect stack.</html>");
         }
     }
 
@@ -845,6 +869,13 @@ public final class InfiniteConquestGui extends JFrame {
                     return;
                 }
                 if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
+                if (source.position() != null && (selectedHand != null || selectedCell != null)
+                        && !Objects.equals(selectedCell, source.position()) && isLegalDestination(source.position())) {
+                    DragSource selectedSource = new DragSource(selectedHand, selectedCell);
+                    dragSource = null;
+                    executeDrop(selectedSource, source.position());
+                    return;
+                }
                 dragSource = source;
                 selectedHand = source.handIndex();
                 selectedCell = source.position();
@@ -1292,7 +1323,8 @@ public final class InfiniteConquestGui extends JFrame {
     private JPanel panel(LayoutManager layout) {
         JPanel panel = new JPanel(layout);
         panel.setBackground(PANEL);
-        panel.setBorder(new CompoundBorder(new LineBorder(new Color(55, 70, 94), 1, true),
+        panel.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED,
+                        new Color(67, 82, 107), new Color(52, 66, 89), new Color(8, 13, 22), new Color(12, 18, 29)),
                 new EmptyBorder(10, 10, 10, 10)));
         return panel;
     }
@@ -1309,6 +1341,7 @@ public final class InfiniteConquestGui extends JFrame {
         button.setBackground(new Color(48, 83, 108));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
+        button.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new EmptyBorder(6, 12, 6, 12)));
         button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
         button.addActionListener(listener);
         return button;
@@ -1326,6 +1359,13 @@ public final class InfiniteConquestGui extends JFrame {
         UIManager.put("ScrollBar.track", PANEL);
         UIManager.put("ToolTip.background", PANEL_LIGHT);
         UIManager.put("ToolTip.foreground", Color.WHITE);
+        UIManager.put("MenuBar.background", PANEL);
+        UIManager.put("Menu.background", PANEL);
+        UIManager.put("Menu.foreground", Color.WHITE);
+        UIManager.put("MenuItem.background", PANEL_LIGHT);
+        UIManager.put("MenuItem.foreground", Color.WHITE);
+        UIManager.put("TabbedPane.background", PANEL);
+        UIManager.put("TabbedPane.foreground", Color.WHITE);
     }
 
     private Color factionColor(String faction) {
@@ -1437,6 +1477,10 @@ public final class InfiniteConquestGui extends JFrame {
                 JButton cell = new JButton(reactionCellText(position));
                 cell.setPreferredSize(new Dimension(135, 82));
                 cell.setForeground(Color.WHITE); cell.setBackground(position.isOnPlayerSide(0) ? HUMAN_PLOT : BOT_PLOT);
+                state.board().topAt(position).flatMap(state::card)
+                        .ifPresent(card -> cell.setIcon(CardArtFactory.iconFor(card.definition(), 72, 42)));
+                cell.setHorizontalTextPosition(SwingConstants.CENTER);
+                cell.setVerticalTextPosition(SwingConstants.BOTTOM);
                 cell.addActionListener(e -> chooseTarget(position));
                 cell.addMouseListener(new MouseAdapter() {
                     @Override public void mouseReleased(MouseEvent e) { if (selectedHandIndex != null) chooseTarget(position); }
@@ -1489,7 +1533,8 @@ public final class InfiniteConquestGui extends JFrame {
             targets.forEach((position, button) -> {
                 boolean legal = selectedHandIndex != null && commands.stream()
                         .anyMatch(command -> handIndex(command) == selectedHandIndex && target(command).equals(position));
-                button.setBorder(new LineBorder(legal ? CAST : PANEL_LIGHT, legal ? 4 : 1, true));
+                button.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED),
+                        new LineBorder(legal ? CAST : PANEL_LIGHT, legal ? 4 : 1, true)));
                 button.setEnabled(selectedHandIndex == null || legal);
             });
         }
@@ -1530,28 +1575,28 @@ public final class InfiniteConquestGui extends JFrame {
 
     private final class VisualMulliganDialog extends JDialog {
         private final List<MulliganChoice> choices;
-        private final Set<UUID> kept = new LinkedHashSet<>();
-        private final JPanel keepTray = new JPanel();
-        private final JPanel replaceTray = new JPanel();
+        private final Set<UUID> discarded = new LinkedHashSet<>();
+        private final JPanel handTray = new JPanel();
+        private final JPanel discardTray = new JPanel();
         private final JLabel count = new JLabel();
         private UUID dragging;
 
         VisualMulliganDialog(List<MulliganChoice> choices) {
             super(InfiniteConquestGui.this, "Opening Mulligan", true);
             this.choices = choices;
-            keepTray.setLayout(new BoxLayout(keepTray, BoxLayout.X_AXIS));
-            replaceTray.setLayout(new BoxLayout(replaceTray, BoxLayout.X_AXIS));
-            keepTray.setBackground(new Color(24, 72, 58));
-            replaceTray.setBackground(new Color(78, 42, 50));
+            handTray.setLayout(new BoxLayout(handTray, BoxLayout.X_AXIS));
+            discardTray.setLayout(new BoxLayout(discardTray, BoxLayout.X_AXIS));
+            handTray.setBackground(new Color(24, 72, 58));
+            discardTray.setBackground(new Color(78, 42, 50));
             count.setForeground(Color.WHITE);
             JButton confirm = button("Confirm Mulligan", e -> dispose());
             JPanel content = panel(new BorderLayout(8, 8));
             content.setBorder(new EmptyBorder(12, 12, 12, 12));
-            JLabel directions = new JLabel("<html><b>Drag cards between trays or click to toggle.</b> Keep up to 3; every card below is discarded and redrawn.</html>");
+            JLabel directions = new JLabel("<html><b>Choose up to 3 cards to discard and redraw.</b> Click a card or drag it between trays. Unselected cards stay in your hand.</html>");
             directions.setForeground(Color.WHITE);
             JPanel trays = new JPanel(new GridLayout(2, 1, 0, 10)); trays.setOpaque(false);
-            trays.add(tray("KEEP", keepTray, new Color(104, 211, 139)));
-            trays.add(tray("REPLACE", replaceTray, new Color(239, 106, 122)));
+            trays.add(tray("OPENING HAND — THESE CARDS STAY", handTray, new Color(104, 211, 139)));
+            trays.add(tray("DISCARD & REDRAW — UP TO 3", discardTray, new Color(239, 106, 122)));
             JPanel footer = new JPanel(new BorderLayout()); footer.setOpaque(false);
             footer.add(count, BorderLayout.WEST); footer.add(confirm, BorderLayout.EAST);
             content.add(directions, BorderLayout.NORTH); content.add(trays, BorderLayout.CENTER); content.add(footer, BorderLayout.SOUTH);
@@ -1560,7 +1605,7 @@ public final class InfiniteConquestGui extends JFrame {
             rebuild();
         }
 
-        Set<UUID> choose() { setVisible(true); return Set.copyOf(kept); }
+        Set<UUID> choose() { setVisible(true); return Set.copyOf(discarded); }
 
         private JPanel tray(String title, JPanel cards, Color color) {
             JPanel result = new JPanel(new BorderLayout(5, 5)); result.setOpaque(false);
@@ -1571,31 +1616,31 @@ public final class InfiniteConquestGui extends JFrame {
         }
 
         private void rebuild() {
-            keepTray.removeAll(); replaceTray.removeAll();
+            handTray.removeAll(); discardTray.removeAll();
             for (MulliganChoice choice : choices) {
-                JPanel destination = kept.contains(choice.id()) ? keepTray : replaceTray;
+                JPanel destination = discarded.contains(choice.id()) ? discardTray : handTray;
                 JButton card = visualChoiceCard(choice.card(), 180, 185);
                 card.addMouseListener(new MouseAdapter() {
                     @Override public void mousePressed(MouseEvent e) { dragging = choice.id(); }
                     @Override public void mouseReleased(MouseEvent e) {
-                        Point keepPoint = SwingUtilities.convertPoint(card, e.getPoint(), keepTray);
-                        Point replacePoint = SwingUtilities.convertPoint(card, e.getPoint(), replaceTray);
-                        if (keepTray.contains(keepPoint)) moveToKeep(choice.id());
-                        else if (replaceTray.contains(replacePoint)) kept.remove(choice.id());
+                        Point handPoint = SwingUtilities.convertPoint(card, e.getPoint(), handTray);
+                        Point discardPoint = SwingUtilities.convertPoint(card, e.getPoint(), discardTray);
+                        if (discardTray.contains(discardPoint)) moveToDiscard(choice.id());
+                        else if (handTray.contains(handPoint)) discarded.remove(choice.id());
                         else toggle(choice.id());
                         dragging = null; rebuild();
                     }
                 });
                 destination.add(card); destination.add(Box.createHorizontalStrut(7));
             }
-            count.setText("KEEPING " + kept.size() + "/3 • REPLACING " + (choices.size() - kept.size()));
-            keepTray.revalidate(); replaceTray.revalidate(); keepTray.repaint(); replaceTray.repaint();
+            count.setText("DISCARDING " + discarded.size() + "/3 • KEEPING " + (choices.size() - discarded.size()));
+            handTray.revalidate(); discardTray.revalidate(); handTray.repaint(); discardTray.repaint();
         }
 
-        private void toggle(UUID id) { if (!kept.remove(id)) moveToKeep(id); }
-        private void moveToKeep(UUID id) {
-            if (kept.size() >= 3 && !kept.contains(id)) { Toolkit.getDefaultToolkit().beep(); return; }
-            kept.add(id);
+        private void toggle(UUID id) { if (!discarded.remove(id)) moveToDiscard(id); }
+        private void moveToDiscard(UUID id) {
+            if (discarded.size() >= 3 && !discarded.contains(id)) { Toolkit.getDefaultToolkit().beep(); return; }
+            discarded.add(id);
         }
     }
 

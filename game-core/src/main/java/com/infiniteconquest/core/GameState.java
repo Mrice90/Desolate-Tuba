@@ -54,16 +54,16 @@ public final class GameState {
                         ? 1 : card.definition().gpGeneration()).sum();
     }
 
-    public void mulligan(int playerId, Collection<UUID> keptCardIds) {
+    public void mulligan(int playerId, Collection<UUID> discardedCardIds) {
         if (playerId < 0 || playerId > 1) throw new IllegalArgumentException("Player must be 0 or 1");
         if (!mulliganWindowOpen || turnNumber != 1 || phase == Phase.GAME_OVER) throw new IllegalStateException("Mulligan window has closed");
         if (mulliganCompleted[playerId]) throw new IllegalStateException("Player already completed a mulligan");
-        Set<UUID> kept = Set.copyOf(keptCardIds);
-        if (kept.size() > 3) throw new IllegalArgumentException("You may keep at most 3 cards");
+        Set<UUID> discarded = Set.copyOf(discardedCardIds);
+        if (discarded.size() > 3) throw new IllegalArgumentException("You may discard at most 3 cards");
         List<UUID> openingHand = new ArrayList<>(player(playerId).hand());
-        if (!openingHand.containsAll(kept)) throw new IllegalArgumentException("Kept cards must be in the opening hand");
+        if (!openingHand.containsAll(discarded)) throw new IllegalArgumentException("Discarded cards must be in the opening hand");
         int replaced = 0;
-        for (UUID id : openingHand) if (!kept.contains(id)) {
+        for (UUID id : openingHand) if (discarded.contains(id)) {
             player(playerId).removeFromHand(id);
             CardInstance card = card(id).orElseThrow();
             card.moveTo(Zone.DISCARD);
@@ -73,7 +73,7 @@ public final class GameState {
         for (int i = 0; i < replaced; i++) drawCard(playerId);
         mulliganCompleted[playerId] = true;
         emit(GameEvent.Type.MULLIGAN_COMPLETED, playerId,
-                "Kept " + kept.size() + "; replaced " + replaced);
+                "Discarded and redrew " + replaced);
     }
     public Optional<CapitalPassive> capitalPassiveFor(int playerId) {
         return battlefieldCards(playerId).stream()
@@ -170,6 +170,7 @@ public final class GameState {
 
     private void startTurn() {
         capitalPassivesUsedThisTurn.clear();
+        cards.values().forEach(CardInstance::clearCombatDamage);
         phase = Phase.START;
         emit(GameEvent.Type.PHASE_CHANGED, activePlayer, "START");
         generatePermanentGp(activePlayer);

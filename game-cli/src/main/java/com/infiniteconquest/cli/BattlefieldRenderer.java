@@ -69,7 +69,8 @@ public final class BattlefieldRenderer {
                 .append(d.type() == CardType.LAND || d.type() == CardType.STRUCTURE
                         ? "Turn " + Math.max(1, d.cost()) + " (free)" : d.cost() + " GP");
         if (d.type() == CardType.CHARACTER) {
-            out.append(" — A").append(card.effectiveAttack()).append("/D").append(card.effectiveDefense())
+            out.append(" — A").append(card.effectiveAttack()).append("/D").append(card.defenseRemaining())
+                    .append('/').append(card.effectiveDefense())
                     .append("/R").append(d.range()).append("/M").append(d.movement());
         } else if (d.isPermanent()) {
             out.append(" — HP ").append(d.hitPoints());
