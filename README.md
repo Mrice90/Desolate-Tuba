@@ -20,7 +20,7 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 - Open the **Action Log** tab to review the match in chronological order.
 - Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
 - Choose **Bot (watch match)** for Player 1 during setup to run a bot-versus-bot match.
-- Battlefield callouts and distinct sound cues identify movement, melee, ranged attacks, spells, destruction, and rule damage. Damaged permanents display both remaining HP and accumulated damage.
+- Battlefield callouts, directional source-to-target animations, and distinct CC0 sound cues identify movement, melee, ranged attacks, spells, destruction, and rule damage. Damaged permanents display both remaining HP and accumulated damage. Audio provenance is documented in `game-gui/src/main/resources/audio/ATTRIBUTION.md`.
 
 The client includes the full 4×6 battlefield, unique generated prototype art for every card, real faction starter decks, GP and deck meters, automatic bot turns, reaction windows, and match results.
 

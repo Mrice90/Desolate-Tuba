@@ -8,6 +8,7 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Path2D;
 import java.util.List;
 import java.util.*;
 
@@ -40,6 +41,7 @@ public final class InfiniteConquestGui extends JFrame {
     private final JLabel previewText = new JLabel("<html><b>Hover over a card</b><br>Right-click a board stack to inspect it.</html>");
     private final Map<BoardPosition, JButton> boardButtons = new HashMap<>();
     private final Map<BoardPosition, EffectBadge> effectBadges = new HashMap<>();
+    private final CombatOverlay combatOverlay = new CombatOverlay();
     private final List<JButton> handButtons = new ArrayList<>();
 
     private GameState state;
@@ -70,6 +72,8 @@ public final class InfiniteConquestGui extends JFrame {
         setLocationRelativeTo(null);
         installTheme();
         setContentPane(buildScreen());
+        setGlassPane(combatOverlay);
+        combatOverlay.setVisible(true);
         newMatch();
     }
 
@@ -687,13 +691,16 @@ public final class InfiniteConquestGui extends JFrame {
         String[] p = command.split("\\s+");
         switch (p[0]) {
             case "move", "blink" -> {
+                BoardPosition from = position(p, 1);
                 BoardPosition to = position(p, 3);
                 badge(to, p[0].equals("blink") ? "BLINK" : "MOVE", "#71d7ff");
+                combatOverlay.animate(from, to, new Color(91, 209, 255), false);
                 SoundEffects.play(SoundEffects.Cue.MOVE);
             }
             case "play", "burrow" -> {
                 BoardPosition to = position(p, 2);
                 badge(to, p[0].equals("burrow") ? "BURROWED BELOW TOP" : "PLACED ON TOP", "#78e29a");
+                combatOverlay.animate(null, to, p[0].equals("burrow") ? BURROW : DEPLOY, false);
                 SoundEffects.play(SoundEffects.Cue.DEPLOY);
             }
             case "attack" -> {
@@ -701,12 +708,14 @@ public final class InfiniteConquestGui extends JFrame {
                 BoardPosition target = position(p, 3);
                 boolean ranged = from.distanceTo(target) > 1;
                 showTargetResult(target, before, ranged ? "RANGED" : "MELEE", ranged ? "#ffb45b" : "#ff7373");
+                combatOverlay.animate(from, target, ranged ? new Color(255, 180, 91) : ATTACK, false);
                 SoundEffects.play(ranged ? SoundEffects.Cue.RANGED : SoundEffects.Cue.MELEE);
             }
             case "cast", "react" -> {
                 int targetIndex = p[0].equals("react") ? 3 : 2;
                 BoardPosition target = position(p, targetIndex);
                 showTargetResult(target, before, "SPELL", "#df92ff");
+                combatOverlay.animate(null, target, new Color(223, 146, 255), false);
                 SoundEffects.play(SoundEffects.Cue.SPELL);
             }
             default -> { }
@@ -724,6 +733,7 @@ public final class InfiniteConquestGui extends JFrame {
                         : Math.max(1, current.damage() - old.damage());
                 String cause = event.type() == GameEvent.Type.CONQUEST_PRESSURE ? "PRESSURE" : "EXHAUSTION";
                 badge(old.position(), cause + " • " + damage + " DMG", "#ffcf5c");
+                combatOverlay.animate(null, old.position(), new Color(255, 207, 92), true);
                 SoundEffects.play(SoundEffects.Cue.PENALTY);
             } catch (IllegalArgumentException ignored) { }
         }
@@ -1005,6 +1015,84 @@ public final class InfiniteConquestGui extends JFrame {
                 case "move" -> MOVE; case "attack" -> ATTACK; case "burrow" -> BURROW;
                 case "cast" -> CAST; case "blink" -> BLINK; default -> DEPLOY;
             };
+        }
+    }
+
+    private final class CombatOverlay extends JComponent {
+        private Animation animation;
+        private javax.swing.Timer timer;
+
+        @Override public boolean contains(int x, int y) { return false; }
+
+        void animate(BoardPosition from, BoardPosition to, Color color, boolean fromRules) {
+            animation = new Animation(from, to, color, fromRules, System.nanoTime());
+            if (timer != null) timer.stop();
+            timer = new javax.swing.Timer(28, event -> {
+                repaint();
+                if (animation != null && animation.progress() >= 1f) {
+                    ((javax.swing.Timer) event.getSource()).stop();
+                    animation = null;
+                    repaint();
+                }
+            });
+            timer.start();
+            repaint();
+        }
+
+        @Override protected void paintComponent(Graphics graphics) {
+            if (animation == null) return;
+            JButton targetButton = boardButtons.get(animation.to());
+            if (targetButton == null || !targetButton.isShowing()) return;
+            Point target = SwingUtilities.convertPoint(targetButton,
+                    targetButton.getWidth() / 2, targetButton.getHeight() / 2, this);
+            Point source;
+            if (animation.fromRules()) {
+                source = new Point(target.x, 8);
+            } else if (animation.from() == null) {
+                source = SwingUtilities.convertPoint(handPanel,
+                        Math.max(20, handPanel.getWidth() / 2), 0, this);
+            } else {
+                JButton sourceButton = boardButtons.get(animation.from());
+                if (sourceButton == null || !sourceButton.isShowing()) return;
+                source = SwingUtilities.convertPoint(sourceButton,
+                        sourceButton.getWidth() / 2, sourceButton.getHeight() / 2, this);
+            }
+
+            float progress = animation.progress();
+            float fade = progress < .72f ? 1f : Math.max(0f, (1f - progress) / .28f);
+            Graphics2D g = (Graphics2D) graphics.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setComposite(AlphaComposite.SrcOver.derive(.85f * fade));
+            g.setColor(animation.color());
+            g.setStroke(new BasicStroke(5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g.drawLine(source.x, source.y, target.x, target.y);
+
+            double angle = Math.atan2(target.y - source.y, target.x - source.x);
+            int arrow = 15;
+            Path2D head = new Path2D.Double();
+            head.moveTo(target.x, target.y);
+            head.lineTo(target.x - arrow * Math.cos(angle - .48), target.y - arrow * Math.sin(angle - .48));
+            head.lineTo(target.x - arrow * Math.cos(angle + .48), target.y - arrow * Math.sin(angle + .48));
+            head.closePath();
+            g.fill(head);
+
+            float travel = Math.min(1f, progress / .72f);
+            int orbX = Math.round(source.x + (target.x - source.x) * travel);
+            int orbY = Math.round(source.y + (target.y - source.y) * travel);
+            g.setColor(Color.WHITE);
+            g.fillOval(orbX - 7, orbY - 7, 14, 14);
+            g.setColor(animation.color());
+            g.setStroke(new BasicStroke(4f));
+            int pulse = 22 + Math.round(26 * progress);
+            g.drawOval(target.x - pulse / 2, target.y - pulse / 2, pulse, pulse);
+            g.dispose();
+        }
+    }
+
+    private record Animation(BoardPosition from, BoardPosition to, Color color,
+                             boolean fromRules, long startedAt) {
+        float progress() {
+            return Math.min(1f, (System.nanoTime() - startedAt) / 800_000_000f);
         }
     }
 }
