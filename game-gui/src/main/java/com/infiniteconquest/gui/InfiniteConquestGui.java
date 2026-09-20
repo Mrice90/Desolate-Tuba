@@ -34,6 +34,7 @@ public final class InfiniteConquestGui extends JFrame {
     private final JLabel messageLabel = new JLabel("Select a card or unit, then choose a legal action.");
     private final JPanel boardPanel = new JPanel(new GridLayout(BoardPosition.HEIGHT, BoardPosition.WIDTH, 6, 6));
     private final JPanel boardStage = new JPanel(new GridBagLayout());
+    private JScrollPane boardScroll;
     private final JPanel handPanel = new JPanel();
     private final DefaultListModel<ActionOption> actionModel = new DefaultListModel<>();
     private final JList<ActionOption> actionList = new JList<>(actionModel);
@@ -94,9 +95,9 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private JComponent buildScreen() {
-        JPanel root = new JPanel(new BorderLayout(12, 12));
+        JPanel root = new JPanel(new BorderLayout(8, 8));
         root.setBackground(INK);
-        root.setBorder(new EmptyBorder(14, 14, 14, 14));
+        root.setBorder(new EmptyBorder(8, 8, 8, 8));
         root.add(buildHeader(), BorderLayout.NORTH);
         root.add(buildBoard(), BorderLayout.CENTER);
         root.add(buildActions(), BorderLayout.EAST);
@@ -105,28 +106,24 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private JComponent buildHeader() {
-        JPanel header = panel(new BorderLayout(12, 4));
+        JPanel header = panel(new BorderLayout(8, 0));
+        header.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new EmptyBorder(5, 8, 5, 8)));
         JLabel title = new JLabel("INFINITE CONQUEST");
         title.setForeground(GOLD);
-        title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 24));
+        title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 21));
         turnLabel.setForeground(Color.WHITE);
-        turnLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 17));
+        turnLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
 
-        JPanel meters = new JPanel(new GridLayout(1, 2, 12, 0));
-        meters.setOpaque(false);
         styleMeter(humanLabel, new Color(87, 203, 234));
         styleMeter(botLabel, new Color(239, 106, 122));
-        meters.add(humanLabel);
-        meters.add(botLabel);
 
         JButton deckBuilder = button("Deck Builder", e -> openDeckEditor());
         JButton newMatch = button("New Match", e -> newMatch());
-        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 0));
+        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 2));
         left.setOpaque(false);
         left.add(title);
         left.add(turnLabel);
         header.add(left, BorderLayout.WEST);
-        header.add(meters, BorderLayout.CENTER);
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         controls.setOpaque(false);
         controls.add(deckBuilder);
@@ -188,7 +185,7 @@ public final class InfiniteConquestGui extends JFrame {
         surround.add(enemy, BorderLayout.NORTH);
         boardStage.setOpaque(false);
         boardStage.add(boardPanel);
-        JScrollPane boardScroll = new JScrollPane(boardStage,
+        boardScroll = new JScrollPane(boardStage,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         boardScroll.setBorder(null);
@@ -206,17 +203,31 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void fitBoardToViewport(Dimension available) {
         int usableWidth = Math.max(640, available.width - 22);
-        int tile = Math.max(160, usableWidth / BoardPosition.WIDTH);
-        Dimension boardSize = new Dimension(tile * BoardPosition.WIDTH, tile * BoardPosition.HEIGHT);
+        int tileWidth = Math.max(160, usableWidth / BoardPosition.WIDTH);
+        int tileHeight = Math.max(96, Math.min(170, Math.max(1, available.height - 18) / 3));
+        Dimension boardSize = new Dimension(tileWidth * BoardPosition.WIDTH,
+                tileHeight * BoardPosition.HEIGHT);
         boardPanel.setPreferredSize(boardSize);
         boardPanel.setMinimumSize(boardSize);
         boardPanel.setMaximumSize(boardSize);
         boardStage.revalidate();
+        SwingUtilities.invokeLater(() -> boardScroll.getVerticalScrollBar()
+                .setValue(boardScroll.getVerticalScrollBar().getMaximum()));
     }
 
     private JComponent buildActions() {
         JPanel side = panel(new BorderLayout(8, 8));
         side.setPreferredSize(new Dimension(350, 100));
+        JPanel status = new JPanel(new BorderLayout(0, 5));
+        status.setOpaque(false);
+        status.add(section("MATCH STATUS", GOLD), BorderLayout.NORTH);
+        JPanel meters = new JPanel(new GridLayout(2, 1, 4, 4));
+        meters.setOpaque(false);
+        meters.add(humanLabel);
+        meters.add(botLabel);
+        status.add(meters, BorderLayout.CENTER);
+        status.setPreferredSize(new Dimension(330, 91));
+
         JPanel preview = new JPanel(new BorderLayout(8, 8));
         preview.setOpaque(false);
         preview.setPreferredSize(new Dimension(330, 105));
@@ -226,7 +237,13 @@ public final class InfiniteConquestGui extends JFrame {
         preview.add(section("CARD INSPECTOR", GOLD), BorderLayout.NORTH);
         preview.add(previewArt, BorderLayout.CENTER);
         preview.add(previewText, BorderLayout.SOUTH);
-        side.add(preview, BorderLayout.NORTH);
+        JPanel sideTop = new JPanel();
+        sideTop.setOpaque(false);
+        sideTop.setLayout(new BoxLayout(sideTop, BoxLayout.Y_AXIS));
+        sideTop.add(status);
+        sideTop.add(Box.createVerticalStrut(7));
+        sideTop.add(preview);
+        side.add(sideTop, BorderLayout.NORTH);
         actionList.setBackground(PANEL_LIGHT);
         actionList.setForeground(Color.WHITE);
         actionList.setSelectionBackground(new Color(48, 112, 137));
@@ -273,7 +290,8 @@ public final class InfiniteConquestGui extends JFrame {
 
     private JComponent buildHand() {
         JPanel area = panel(new BorderLayout(8, 8));
-        area.setPreferredSize(new Dimension(100, 205));
+        area.setPreferredSize(new Dimension(100, 180));
+        area.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new EmptyBorder(6, 6, 6, 6)));
         area.add(section("YOUR HAND", new Color(87, 203, 234)), BorderLayout.NORTH);
         handPanel.setLayout(new BoxLayout(handPanel, BoxLayout.X_AXIS));
         handPanel.setBackground(PANEL);
@@ -767,12 +785,12 @@ public final class InfiniteConquestGui extends JFrame {
         turnLabel.setText("Turn " + state.turnNumber() + " • " + phaseText());
         PlayerState human = state.player(0);
         PlayerState enemy = state.player(1);
-        humanLabel.setText((playerOneBot ? "BOT 1" : "YOU") + " • " + humanFaction + "   GP " + human.currentGp()
-                + "  (+" + state.gpIncomePerTurn(0) + "/turn)"
-                + "   Deck " + human.deck().size() + "   Discard " + human.discard().size());
-        botLabel.setText("BOT 2 • " + botFaction + "   GP " + enemy.currentGp()
-                + "  (+" + state.gpIncomePerTurn(1) + "/turn)"
-                + "   Hand " + enemy.hand().size() + "   Deck " + enemy.deck().size());
+        humanLabel.setText("<html><b>" + (playerOneBot ? "BOT 1" : "YOU") + " • " + humanFaction
+                + "</b><br>GP " + human.currentGp() + "  (+" + state.gpIncomePerTurn(0) + "/turn)"
+                + " • Deck " + human.deck().size() + " • Discard " + human.discard().size() + "</html>");
+        botLabel.setText("<html><b>BOT 2 • " + botFaction + "</b><br>GP " + enemy.currentGp()
+                + "  (+" + state.gpIncomePerTurn(1) + "/turn) • Hand " + enemy.hand().size()
+                + " • Deck " + enemy.deck().size() + "</html>");
         refreshBoard();
         refreshHand();
         refreshActions();
@@ -835,10 +853,10 @@ public final class InfiniteConquestGui extends JFrame {
         for (int index = 0; index < hand.size(); index++) {
             CardInstance card = state.card(hand.get(index)).orElseThrow();
             CardDefinition def = card.definition();
-            JButton tile = new JButton(cardHtml(def), CardArtFactory.iconFor(def, 190, 78));
-            tile.setPreferredSize(new Dimension(208, 170));
-            tile.setMaximumSize(new Dimension(208, 170));
-            tile.setMinimumSize(new Dimension(208, 170));
+            JButton tile = new JButton(cardHtml(def), CardArtFactory.iconFor(def, 190, 58));
+            tile.setPreferredSize(new Dimension(208, 145));
+            tile.setMaximumSize(new Dimension(208, 145));
+            tile.setMinimumSize(new Dimension(208, 145));
             tile.setVerticalAlignment(SwingConstants.TOP);
             tile.setHorizontalAlignment(SwingConstants.CENTER);
             tile.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -1559,8 +1577,8 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void styleMeter(JLabel label, Color color) {
         label.setForeground(color);
-        label.setFont(new Font(Font.MONOSPACED, Font.BOLD, 13));
-        label.setBorder(new CompoundBorder(new LineBorder(color.darker(), 1, true), new EmptyBorder(6, 8, 6, 8)));
+        label.setFont(new Font(Font.MONOSPACED, Font.BOLD, 12));
+        label.setBorder(new CompoundBorder(new LineBorder(color.darker(), 1, true), new EmptyBorder(3, 7, 3, 7)));
     }
 
     private void installTheme() {
