@@ -27,7 +27,10 @@ class CardArtFactoryTest {
             "zeus_hera_protocol_warden", "zeus_keyword_sparkstep_runner",
             "zeus_fast_tempest_duelist", "zeus_keyword_stormgate_sentinel",
             "zeus_keyword_cloudline_raider", "zeus_sharp_aether_spotter",
-            "zeus_stormgate_adept");
+            "zeus_stormgate_adept", "zeus_keyword_thunderhead_guardian",
+            "zeus_siege_thunder_ram", "zeus_apex_keraunos_seraph",
+            "zeus_keraunos_prime", "zeus_apex_skyfather_archon",
+            "zeus_keyword_aetherbolt_avatar");
 
     @Test void packagesFactionWorldsAndRendersDistinctCardIllustrations() {
         assertNotNull(CardArtFactory.class.getResource("/art/faction-environments.png"));
@@ -69,8 +72,8 @@ class CardArtFactoryTest {
         }
         CardDefinition courier = new CardDefinition("zeus_cloudline_courier", "Cloudline Courier",
                 CardType.CHARACTER, "ZEUS", 1, 1, 1, 4, 1);
-        CardDefinition awaitingArt = new CardDefinition("zeus_keyword_thunderhead_guardian", "Thunderhead Guardian",
-                CardType.CHARACTER, "ZEUS", 6, 5, 6, 2, 2);
+        CardDefinition awaitingArt = new CardDefinition("zeus_future_character", "Future Character",
+                CardType.CHARACTER, "ZEUS", 1, 1, 1, 1, 1);
         assertTrue(CardArtFactory.hasPaintedArt(courier));
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
         assertEquals(190, CardArtFactory.iconFor(courier, 190, 78).getIconWidth());

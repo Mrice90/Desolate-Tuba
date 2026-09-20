@@ -2,7 +2,7 @@
 
 `CardArtFactory` uses a hybrid art pipeline. Every Capital loads its own painterly environment illustration, while other cards are illustrated by the deterministic runtime compositor. The same stable card ID always produces the same visual at every supported display size.
 
-The Character art rollout now covers 18 of Zeus's 24 Characters. The first six-card benchmark established mobility, defense, spellcasting, ranged combat, creatures, and apex scale; the second 12-card batch completes Zeus's low- and mid-cost roster through Stormgate Adept. The six remaining high-cost Zeus Characters continue to use the procedural compositor until the next Character batch ships.
+The Character art rollout now covers all 24 Zeus Characters. The first six-card benchmark established mobility, defense, spellcasting, ranged combat, creatures, and apex scale; the second 12-card batch completed the low- and mid-cost roster; and the final six-card batch completed the high-cost roster from Thunderhead Guardian through Aetherbolt Avatar. Characters in factions awaiting their rollout continue to use the procedural compositor.
 
 ## Painted Capitals
 
