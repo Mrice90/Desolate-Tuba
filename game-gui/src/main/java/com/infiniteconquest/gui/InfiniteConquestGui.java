@@ -19,6 +19,11 @@ public final class InfiniteConquestGui extends JFrame {
     private static final Color HUMAN_PLOT = new Color(28, 62, 76);
     private static final Color BOT_PLOT = new Color(69, 38, 50);
     private static final Color SELECTED = new Color(91, 209, 255);
+    private static final Color MOVE = new Color(72, 181, 230);
+    private static final Color ATTACK = new Color(244, 92, 92);
+    private static final Color DEPLOY = new Color(104, 211, 139);
+    private static final Color BURROW = new Color(190, 121, 235);
+    private static final Color CAST = new Color(246, 194, 78);
 
     private final JLabel turnLabel = new JLabel();
     private final JLabel humanLabel = new JLabel();
@@ -30,6 +35,7 @@ public final class InfiniteConquestGui extends JFrame {
     private final JList<ActionOption> actionList = new JList<>(actionModel);
     private final DefaultListModel<String> historyModel = new DefaultListModel<>();
     private final JList<String> historyList = new JList<>(historyModel);
+    private final JTabbedPane actionTabs = new JTabbedPane();
     private final JLabel previewArt = new JLabel();
     private final JLabel previewText = new JLabel("<html><b>Hover over a card</b><br>Right-click a board stack to inspect it.</html>");
     private final Map<BoardPosition, JButton> boardButtons = new HashMap<>();
@@ -51,6 +57,8 @@ public final class InfiniteConquestGui extends JFrame {
     private CardDefinition botCapital;
     private DragSource dragSource;
     private int historyNumber;
+    private long lastSystemEvent = -1;
+    private boolean playerOneBot;
 
     public InfiniteConquestGui() {
         super("Infinite Conquest");
@@ -134,7 +142,7 @@ public final class InfiniteConquestGui extends JFrame {
         side.setPreferredSize(new Dimension(350, 100));
         JPanel preview = new JPanel(new BorderLayout(8, 8));
         preview.setOpaque(false);
-        preview.setPreferredSize(new Dimension(330, 185));
+        preview.setPreferredSize(new Dimension(330, 140));
         previewArt.setHorizontalAlignment(SwingConstants.CENTER);
         previewText.setForeground(Color.WHITE);
         previewText.setVerticalAlignment(SwingConstants.TOP);
@@ -158,10 +166,9 @@ public final class InfiniteConquestGui extends JFrame {
         historyList.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         historyList.setFixedCellHeight(28);
         historyList.setBorder(new EmptyBorder(5, 5, 5, 5));
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("LEGAL MOVES", new JScrollPane(actionList));
-        tabs.addTab("ACTION LOG", new JScrollPane(historyList));
-        side.add(tabs, BorderLayout.CENTER);
+        actionTabs.addTab("LEGAL MOVES", new JScrollPane(actionList));
+        actionTabs.addTab("ACTION LOG", new JScrollPane(historyList));
+        side.add(actionTabs, BorderLayout.CENTER);
 
         JButton execute = button("Execute Selected", e -> executeSelectedAction());
         JButton clear = button("Clear Selection", e -> clearSelection());
@@ -178,7 +185,7 @@ public final class InfiniteConquestGui extends JFrame {
         messageLabel.setForeground(new Color(205, 215, 229));
         messageLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         messageLabel.setVerticalAlignment(SwingConstants.TOP);
-        messageLabel.setPreferredSize(new Dimension(320, 58));
+        messageLabel.setPreferredSize(new Dimension(320, 42));
         bottom.add(messageLabel, BorderLayout.NORTH);
         bottom.add(controls, BorderLayout.SOUTH);
         side.add(bottom, BorderLayout.SOUTH);
@@ -216,16 +223,19 @@ public final class InfiniteConquestGui extends JFrame {
         selectedHand = null;
         selectedCell = null;
         botRunning = false;
+        playerOneBot = choice.playerOneBot();
+        lastSystemEvent = state.events().stream().mapToLong(GameEvent::sequence).max().orElse(-1);
         historyModel.clear();
         historyNumber = 0;
         addHistory("Match", title(humanFaction) + " vs " + title(botFaction));
         message(humanFaction + " vs " + botFaction + " started. Deploy a card or move a unit.");
         refresh();
+        if (playerOneBot) SwingUtilities.invokeLater(this::runBotTurn);
     }
 
     private MatchChoice defaultChoice() {
         return new MatchChoice("ZEUS", matchFactory.capitals().forFaction("ZEUS").get(0),
-                "ARES", matchFactory.capitals().forFaction("ARES").get(0));
+                "ARES", matchFactory.capitals().forFaction("ARES").get(0), false);
     }
 
     private MatchChoice chooseMatch() {
@@ -236,6 +246,7 @@ public final class InfiniteConquestGui extends JFrame {
         botFactionBox.setSelectedItem(botFaction);
         JComboBox<CapitalChoice> humanCapitalBox = new JComboBox<>();
         JComboBox<CapitalChoice> botCapitalBox = new JComboBox<>();
+        JComboBox<String> playerOneControl = new JComboBox<>(new String[]{"Human", "Bot (watch match)"});
         JLabel humanStrategy = setupDescription();
         JLabel botStrategy = setupDescription();
         JLabel humanPassive = setupDescription();
@@ -268,6 +279,8 @@ public final class InfiniteConquestGui extends JFrame {
         addSetupRow(setup, c, 1, "STRATEGY", humanStrategy, "STRATEGY", botStrategy);
         addSetupRow(setup, c, 2, "YOUR CAPITAL", humanCapitalBox, "BOT CAPITAL", botCapitalBox);
         addSetupRow(setup, c, 3, "PASSIVE", humanPassive, "PASSIVE", botPassive);
+        addSetupRow(setup, c, 4, "PLAYER 1 CONTROL", playerOneControl, "PLAYER 2 CONTROL",
+                new JLabel("Bot"));
 
         int result = JOptionPane.showConfirmDialog(this, setup, "Configure Conquest",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
@@ -275,7 +288,8 @@ public final class InfiniteConquestGui extends JFrame {
         CapitalChoice selectedHuman = (CapitalChoice) humanCapitalBox.getSelectedItem();
         CapitalChoice selectedBot = (CapitalChoice) botCapitalBox.getSelectedItem();
         return new MatchChoice((String) humanFactionBox.getSelectedItem(), selectedHuman.card(),
-                (String) botFactionBox.getSelectedItem(), selectedBot.card());
+                (String) botFactionBox.getSelectedItem(), selectedBot.card(),
+                playerOneControl.getSelectedIndex() == 1);
     }
 
     private void addSetupRow(JPanel panel, GridBagConstraints c, int row,
@@ -324,14 +338,14 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void selectHand(int index) {
-        if (botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
+        if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
         selectedHand = Objects.equals(selectedHand, index) ? null : index;
         selectedCell = null;
         refresh();
     }
 
     private void selectCell(BoardPosition position) {
-        if (botRunning || state.phase() == Phase.GAME_OVER) return;
+        if (playerOneBot || botRunning || state.phase() == Phase.GAME_OVER) return;
         selectedCell = Objects.equals(selectedCell, position) ? null : position;
         selectedHand = null;
         refresh();
@@ -353,14 +367,14 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void executeHuman(String command) {
-        if (botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
+        if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
         String result = commands.execute(command);
         addHistory("You", describe(command));
         message(result);
         selectedHand = null;
         selectedCell = null;
         refresh();
-        if (state.phase() != Phase.GAME_OVER && state.activePlayer() == 1) runBotTurn();
+        if (state.phase() != Phase.GAME_OVER && isAutomatedPlayer(state.activePlayer())) runBotTurn();
     }
 
     private void runBotTurn() {
@@ -368,24 +382,35 @@ public final class InfiniteConquestGui extends JFrame {
         refresh();
         javax.swing.Timer timer = new javax.swing.Timer(380, null);
         timer.addActionListener(e -> {
-            if (state.phase() == Phase.GAME_OVER || state.activePlayer() == 0) {
+            if (state.phase() == Phase.GAME_OVER || !isAutomatedPlayer(state.activePlayer())) {
                 timer.stop();
                 botRunning = false;
                 refresh();
                 return;
             }
-            offerReaction();
-            if (state.phase() == Phase.GAME_OVER || state.activePlayer() == 0) return;
-            BotPlayer.Decision decision = bot.takeNextAction(state, commands, 1);
-            addHistory("Bot", describe(decision.command()));
-            message("Bot: " + describe(decision.command()) + " — " + decision.result());
+            int active = state.activePlayer();
+            offerReaction(active);
+            if (state.phase() == Phase.GAME_OVER || state.activePlayer() != active) return;
+            BotPlayer.Decision decision = bot.takeNextAction(state, commands, active);
+            addHistory(active == 0 ? "Bot 1" : "Bot 2", describe(decision.command()));
+            message((active == 0 ? "Bot 1: " : "Bot 2: ") + describe(decision.command()) + " — " + decision.result());
             refresh();
         });
         timer.start();
     }
 
-    private void offerReaction() {
-        List<String> reactions = hints.spellActionsForPlayer(state, 0);
+    private boolean isAutomatedPlayer(int player) {
+        return player == 1 || playerOneBot;
+    }
+
+    private void offerReaction(int active) {
+        int reacting = 1 - active;
+        if (isAutomatedPlayer(reacting)) {
+            BotPlayer.Decision reaction = bot.react(state, commands, reacting);
+            if (reaction != null) addHistory(reacting == 0 ? "Bot 1" : "Bot 2", describe(reaction.command()));
+            return;
+        }
+        List<String> reactions = hints.spellActionsForPlayer(state, reacting);
         if (reactions.isEmpty()) return;
         List<ActionOption> options = new ArrayList<>();
         options.add(new ActionOption("Pass reaction", ""));
@@ -401,12 +426,13 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void refresh() {
+        syncSystemEvents();
         turnLabel.setText("Turn " + state.turnNumber() + " • " + phaseText());
         PlayerState human = state.player(0);
         PlayerState enemy = state.player(1);
-        humanLabel.setText("YOU • " + humanFaction + "   GP " + human.currentGp() + "/" + human.maximumGp()
+        humanLabel.setText((playerOneBot ? "BOT 1" : "YOU") + " • " + humanFaction + "   GP " + human.currentGp() + "/" + human.maximumGp()
                 + "   Deck " + human.deck().size() + "   Discard " + human.discard().size());
-        botLabel.setText("BOT • " + botFaction + "   GP " + enemy.currentGp() + "/" + enemy.maximumGp()
+        botLabel.setText("BOT 2 • " + botFaction + "   GP " + enemy.currentGp() + "/" + enemy.maximumGp()
                 + "   Hand " + enemy.hand().size() + "   Deck " + enemy.deck().size());
         refreshBoard();
         refreshHand();
@@ -421,21 +447,23 @@ public final class InfiniteConquestGui extends JFrame {
             Color base = position.isOnPlayerSide(0) ? HUMAN_PLOT : BOT_PLOT;
             cell.setBackground(base);
             cell.setForeground(Color.WHITE);
+            Intent intent = destinationIntent(position);
             cell.setBorder(new CompoundBorder(
                     new LineBorder(Objects.equals(selectedCell, position) ? SELECTED
-                            : isLegalDestination(position) ? GOLD : base.brighter(),
-                            Objects.equals(selectedCell, position) || isLegalDestination(position) ? 4 : 1, true),
+                            : intent != null ? intent.color : base.brighter(),
+                            Objects.equals(selectedCell, position) || intent != null ? 4 : 1, true),
                     new EmptyBorder(7, 7, 7, 7)));
             if (topId.isEmpty()) {
                 cell.setIcon(null);
-                cell.setText("<html><font color='#78899d'>" + position.x() + "," + position.y() + "</font></html>");
+                cell.setText("<html><font color='#78899d'>" + position.x() + "," + position.y() + "</font>"
+                        + (intent == null ? "" : "<br><b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
                 cell.setToolTipText("Empty cell " + position.x() + "," + position.y() + " — drop a legal card or unit here");
                 continue;
             }
             CardInstance card = state.card(topId.orElseThrow()).orElseThrow();
             CardDefinition def = card.definition();
             cell.setBackground(blend(base, factionColor(def.faction()), .42f));
-            cell.setIcon(CardArtFactory.iconFor(def, 56, 38));
+            cell.setIcon(CardArtFactory.iconFor(def, 72, 46));
             cell.setHorizontalTextPosition(SwingConstants.RIGHT);
             int stack = state.board().stackAt(position).size();
             String stats = def.type() == CardType.CHARACTER
@@ -444,7 +472,8 @@ public final class InfiniteConquestGui extends JFrame {
             cell.setText("<html><font color='#aebdd0'>" + position.x() + "," + position.y()
                     + " • " + def.type() + (stack > 1 ? " • STACK " + stack : "") + "</font><br>"
                     + "<b>" + html(def.name()) + "</b><br><br>" + stats
-                    + "<br><font color='#d9b95f'>" + html(keywordLine(def)) + "</font></html>");
+                    + "<br><font color='#d9b95f'>" + html(keywordLine(def)) + "</font>"
+                    + (intent == null ? "" : "<br><b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
             cell.setToolTipText(def.name() + " — drag to a highlighted cell; right-click to inspect stack");
         }
     }
@@ -473,7 +502,7 @@ public final class InfiniteConquestGui extends JFrame {
                     new EmptyBorder(7, 7, 7, 7)));
             final int selectedIndex = index;
             tile.addMouseListener(dragListener(new DragSource(selectedIndex, null)));
-            tile.setEnabled(!botRunning && state.activePlayer() == 0 && state.phase() != Phase.GAME_OVER);
+            tile.setEnabled(!playerOneBot && !botRunning && state.activePlayer() == 0 && state.phase() != Phase.GAME_OVER);
             handButtons.add(tile);
             handPanel.add(tile);
             handPanel.add(Box.createHorizontalStrut(8));
@@ -484,7 +513,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void refreshActions() {
         actionModel.clear();
-        if (botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
+        if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
         List<String> legal = hints.forActivePlayer(state, new GameEngine());
         legal.stream().filter(this::matchesSelection)
                 .map(command -> new ActionOption(describe(command), command))
@@ -513,7 +542,7 @@ public final class InfiniteConquestGui extends JFrame {
                     if (source.position() != null) showStackInspector(source.position());
                     return;
                 }
-                if (botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
+                if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
                 dragSource = source;
                 selectedHand = source.handIndex();
                 selectedCell = source.position();
@@ -564,7 +593,10 @@ public final class InfiniteConquestGui extends JFrame {
         }
         ActionOption choice = choices.get(0);
         if (choices.size() > 1) {
-            Object selected = JOptionPane.showInputDialog(this, "Choose how to use this card:", "Choose Action",
+            String stack = stackSummary(destination);
+            Object selected = JOptionPane.showInputDialog(this,
+                    "Choose the action and stack position.\nCurrent stack (top first): " + stack,
+                    "Choose Action / Stack Order",
                     JOptionPane.QUESTION_MESSAGE, null, choices.toArray(), choice);
             if (!(selected instanceof ActionOption selectedOption)) return;
             choice = selectedOption;
@@ -573,7 +605,7 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private List<String> legalCommands() {
-        if (botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return List.of();
+        if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return List.of();
         return hints.forActivePlayer(state, new GameEngine());
     }
 
@@ -598,6 +630,62 @@ public final class InfiniteConquestGui extends JFrame {
         if (selectedHand == null && selectedCell == null) return false;
         DragSource source = new DragSource(selectedHand, selectedCell);
         return legalCommands().stream().anyMatch(command -> startsAt(command, source) && endsAt(command, destination));
+    }
+
+    private Intent destinationIntent(BoardPosition destination) {
+        if (selectedHand == null && selectedCell == null) return null;
+        DragSource source = new DragSource(selectedHand, selectedCell);
+        Set<Intent> intents = new LinkedHashSet<>();
+        legalCommands().stream().filter(command -> startsAt(command, source) && endsAt(command, destination))
+                .map(Intent::fromCommand).forEach(intents::add);
+        if (intents.isEmpty()) return null;
+        return intents.size() == 1 ? intents.iterator().next() : Intent.CHOOSE;
+    }
+
+    private String stackSummary(BoardPosition position) {
+        List<UUID> stack = state.board().stackAt(position);
+        if (stack.isEmpty()) return "empty";
+        List<String> names = new ArrayList<>();
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            names.add(state.card(stack.get(i)).orElseThrow().definition().name());
+        }
+        return String.join(" > ", names);
+    }
+
+    private void syncSystemEvents() {
+        if (state == null) return;
+        for (GameEvent event : state.events()) {
+            if (event.sequence() <= lastSystemEvent) continue;
+            String actor = event.playerId() == 0 ? (playerOneBot ? "Bot 1" : "You")
+                    : event.playerId() == 1 ? "Bot 2" : "Rules";
+            String detail = switch (event.type()) {
+                case CONQUEST_PRESSURE -> friendlyCardDetail(event.detail(), " takes late-game Conquest Pressure");
+                case EXHAUSTION_DAMAGE -> friendlyCardDetail(event.detail(), " takes 1 exhaustion damage (empty deck)");
+                case CARD_DESTROYED -> friendlyCardDetail(event.detail(), " was destroyed");
+                case CAPITAL_PASSIVE_TRIGGERED -> "Capital passive — " + event.detail().replace('_', ' ').toLowerCase(Locale.ROOT);
+                case GAME_OVER -> "GAME OVER — " + event.detail();
+                default -> null;
+            };
+            if (detail != null) {
+                addHistory(actor, detail);
+                if (event.type() == GameEvent.Type.CONQUEST_PRESSURE
+                        || event.type() == GameEvent.Type.EXHAUSTION_DAMAGE
+                        || event.type() == GameEvent.Type.GAME_OVER) actionTabs.setSelectedIndex(1);
+            }
+            lastSystemEvent = event.sequence();
+        }
+    }
+
+    private String friendlyCardDetail(String detail, String suffix) {
+        String idText = detail.split("\\s+")[0];
+        try {
+            CardInstance card = state.card(UUID.fromString(idText)).orElse(null);
+            if (card != null) {
+                String amount = detail.contains(" takes ") ? detail.substring(detail.indexOf(" takes ")) : "";
+                return card.definition().name() + suffix + (amount.isBlank() ? "" : " (" + amount.trim() + ")");
+            }
+        } catch (IllegalArgumentException ignored) { }
+        return detail + suffix;
     }
 
     private void showPreview(CardInstance card) {
@@ -647,11 +735,13 @@ public final class InfiniteConquestGui extends JFrame {
     static String describe(String command) {
         String[] p = command.split("\\s+");
         return switch (p[0]) {
-            case "play" -> "Deploy hand #" + p[1] + " at (" + p[2] + ", " + p[3] + ")";
+            case "play" -> "Place hand #" + p[1] + " on TOP at (" + p[2] + ", " + p[3] + ")";
             case "burrow" -> "Burrow hand #" + p[1] + " beneath (" + p[2] + ", " + p[3] + ")";
             case "move" -> "Move (" + p[1] + ", " + p[2] + ") → (" + p[3] + ", " + p[4] + ")";
             case "blink" -> "Blink (" + p[1] + ", " + p[2] + ") → (" + p[3] + ", " + p[4] + ")";
-            case "attack" -> "Attack (" + p[1] + ", " + p[2] + ") → (" + p[3] + ", " + p[4] + ")";
+            case "attack" -> (Math.max(Math.abs(Integer.parseInt(p[1]) - Integer.parseInt(p[3])),
+                    Math.abs(Integer.parseInt(p[2]) - Integer.parseInt(p[4]))) > 1 ? "Ranged attack " : "Melee attack ")
+                    + "(" + p[1] + ", " + p[2] + ") → (" + p[3] + ", " + p[4] + ")";
             case "cast" -> "Cast hand #" + p[1] + " on (" + p[2] + ", " + p[3] + ")"
                     + (p.length > 4 ? " → (" + p[4] + ", " + p[5] + ")" : "");
             case "react" -> "React with hand #" + p[2] + " on (" + p[3] + ", " + p[4] + ")";
@@ -670,7 +760,10 @@ public final class InfiniteConquestGui extends JFrame {
         String result = state.winner().isEmpty() ? "DRAW"
                 : state.winner().getAsInt() == 0 ? "VICTORY" : "DEFEAT";
         turnLabel.setText("Turn " + state.turnNumber() + " • " + result);
-        message("<b>" + result + "</b> — Start a new match to play again.");
+        String reason = state.events().stream().filter(event -> event.type() == GameEvent.Type.GAME_OVER)
+                .reduce((first, second) -> second).map(GameEvent::detail).orElse("Match ended");
+        message("<b>" + result + "</b> — " + reason
+                + ". A player loses immediately when they have no permanents. Start a new match to play again.");
     }
 
     private void message(String text) {
@@ -772,6 +865,27 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private record MatchChoice(String humanFaction, CardDefinition humanCapital,
-                               String botFaction, CardDefinition botCapital) { }
+                               String botFaction, CardDefinition botCapital, boolean playerOneBot) { }
     private record DragSource(Integer handIndex, BoardPosition position) { }
+
+    private enum Intent {
+        MOVE("MOVE", InfiniteConquestGui.MOVE, "#48b5e6"),
+        ATTACK("ATTACK", InfiniteConquestGui.ATTACK, "#f45c5c"),
+        DEPLOY("PLACE ON TOP", InfiniteConquestGui.DEPLOY, "#68d38b"),
+        BURROW("BURROW BELOW TOP", InfiniteConquestGui.BURROW, "#be79eb"),
+        CAST("SPELL TARGET", InfiniteConquestGui.CAST, "#f6c24e"),
+        BLINK("BLINK", InfiniteConquestGui.SELECTED, "#5bd1ff"),
+        CHOOSE("CHOOSE ACTION", Color.WHITE, "#ffffff");
+
+        private final String label;
+        private final Color color;
+        private final String hex;
+        Intent(String label, Color color, String hex) { this.label = label; this.color = color; this.hex = hex; }
+        static Intent fromCommand(String command) {
+            return switch (command.substring(0, command.indexOf(' '))) {
+                case "move" -> MOVE; case "attack" -> ATTACK; case "burrow" -> BURROW;
+                case "cast" -> CAST; case "blink" -> BLINK; default -> DEPLOY;
+            };
+        }
+    }
 }
