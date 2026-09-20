@@ -1,6 +1,12 @@
 # Infinite Conquest card art system
 
-Every card is illustrated at runtime by `CardArtFactory`. The illustration is deterministic: the same stable card ID always produces the same composition at every supported display size.
+`CardArtFactory` uses a hybrid art pipeline. Every Capital loads its own painterly environment illustration, while other cards are illustrated by the deterministic runtime compositor. The same stable card ID always produces the same visual at every supported display size.
+
+## Painted Capitals
+
+All 18 Capitals have individual 3:2 landscape illustrations in `game-gui/src/main/resources/art/capitals`. They emphasize a strong central architectural silhouette so each Capital remains recognizable in the hand, inspector, and compact board tile. The renderer center-crops and bicubic-scales the source without stretching it.
+
+The six faction families deliberately use different visual languages: Zeus is celestial and storm-crowned; Poseidon is oceanic and monumental; Hades is underworld architecture; Ares is aggressive military geometry; Athena is luminous strategic classicism; and Hephaestus is volcanic machinery.
 
 ## Visual layers
 
@@ -11,7 +17,7 @@ Every card is illustrated at runtime by `CardArtFactory`. The illustration is de
 5. Ability cards receive a cyan ability marker, while the lower-left monogram reinforces the card's individual identity at board-thumbnail size.
 6. CC0 particle textures add faction-specific flame, smoke, sparks, rings, magical orbits, and light blooms without replacing the card's unique composition.
 
-The renderer has a procedural fallback, so a missing image resource never makes cards invisible.
+The renderer has a procedural fallback, so a missing or unreadable painted image never makes a Capital invisible.
 
 ## Adding cards
 
@@ -21,6 +27,6 @@ When adding a recurring concept, add its vocabulary to `CardArtFactory.find` and
 
 ## Asset provenance
 
-`game-gui/src/main/resources/art/faction-environments.png` is original project artwork generated for Infinite Conquest on September 20, 2026. It contains no downloaded third-party material, logos, or licensed characters. The Java compositor and all vector overlays are original project code.
+`game-gui/src/main/resources/art/faction-environments.png` and the 18 files in `game-gui/src/main/resources/art/capitals` are original project artwork generated for Infinite Conquest with OpenAI image generation on September 20, 2026. Each Capital used a bespoke prompt describing its named architecture, faction palette, and strategic identity, with explicit exclusions for people, text, logos, borders, and watermarks. They contain no downloaded third-party material or licensed characters. The Java compositor and all vector overlays are original project code.
 
 The finishing particle textures come from Kenney's CC0 Particle Pack. Full provenance and the included license are recorded in [`THIRD_PARTY_ASSETS.md`](../THIRD_PARTY_ASSETS.md).
