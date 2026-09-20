@@ -878,7 +878,7 @@ public final class InfiniteConquestGui extends JFrame {
         return new MouseAdapter() {
             @Override public void mousePressed(MouseEvent event) {
                 if (SwingUtilities.isRightMouseButton(event)) {
-                    if (source.position() != null) showStackInspector(source.position());
+                    if (source.position() != null) showStackContextMenu(event, source.position());
                     return;
                 }
                 if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
@@ -925,6 +925,42 @@ public final class InfiniteConquestGui extends JFrame {
                 }
             }
         };
+    }
+
+    private void showStackContextMenu(MouseEvent event, BoardPosition position) {
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem inspect = new JMenuItem("Inspect stack");
+        inspect.addActionListener(action -> showStackInspector(position));
+        menu.add(inspect);
+
+        state.board().topAt(position).flatMap(state::card).ifPresent(top -> {
+            if (top.definition().abilities().stream().anyMatch(ability -> ability.trigger() == AbilityTrigger.ACTIVATED)) {
+                JMenuItem activate = new JMenuItem(activationMenuText(top));
+                activate.setEnabled(canActivate(position));
+                activate.setToolTipText(activate.isEnabled()
+                        ? "Pay the listed GP cost and use this ability"
+                        : "This ability cannot be used now (check turn, owner, GP, and once-per-turn limit)");
+                activate.addActionListener(action -> executeHuman(activationCommand(position)));
+                menu.add(activate);
+            }
+        });
+        menu.show(event.getComponent(), event.getX(), event.getY());
+    }
+
+    private String activationCommand(BoardPosition position) {
+        return "activate " + position.x() + " " + position.y();
+    }
+
+    private boolean canActivate(BoardPosition position) {
+        if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() != Phase.PLAY) return false;
+        return hints.forActivePlayer(state, new GameEngine()).contains(activationCommand(position));
+    }
+
+    private String activationMenuText(CardInstance card) {
+        int cost = card.definition().abilities().stream()
+                .filter(ability -> ability.trigger() == AbilityTrigger.ACTIVATED)
+                .mapToInt(CardAbility::gpCost).sum();
+        return "Activate " + card.definition().name() + " (" + cost + " GP)";
     }
 
     private void executeDrop(DragSource source, BoardPosition destination) {
@@ -1253,12 +1289,44 @@ public final class InfiniteConquestGui extends JFrame {
                     CardArtFactory.iconFor(def, 140, 58), SwingConstants.LEFT);
             row.setForeground(Color.WHITE);
             row.setBorder(new EmptyBorder(7, 7, 7, 7));
+            if (i == stack.size() - 1 && def.abilities().stream()
+                    .anyMatch(ability -> ability.trigger() == AbilityTrigger.ACTIVATED)) {
+                row.setToolTipText("Right-click to activate this top card's ability");
+                row.addMouseListener(new MouseAdapter() {
+                    private void showAbilityMenu(MouseEvent event) {
+                        if (!event.isPopupTrigger()) return;
+                        JPopupMenu menu = new JPopupMenu();
+                        JMenuItem activate = new JMenuItem(activationMenuText(card));
+                        activate.setEnabled(canActivate(position));
+                        activate.setToolTipText(activate.isEnabled()
+                                ? "Use this ability now"
+                                : "Unavailable: it must be your turn and you need enough GP; each ability is once per turn");
+                        activate.addActionListener(action -> {
+                            Window inspector = SwingUtilities.getWindowAncestor(cards);
+                            if (inspector != null) inspector.dispose();
+                            SwingUtilities.invokeLater(() -> executeHuman(activationCommand(position)));
+                        });
+                        menu.add(activate);
+                        menu.show(event.getComponent(), event.getX(), event.getY());
+                    }
+
+                    @Override public void mousePressed(MouseEvent event) { showAbilityMenu(event); }
+                    @Override public void mouseReleased(MouseEvent event) { showAbilityMenu(event); }
+                });
+            }
             cards.add(row);
         }
         cards.setBackground(PANEL);
         JScrollPane scroll = new JScrollPane(cards);
         scroll.setPreferredSize(new Dimension(510, Math.min(420, 95 * stack.size())));
-        JOptionPane.showMessageDialog(this, scroll,
+        JPanel inspector = new JPanel(new BorderLayout(0, 8));
+        inspector.setBackground(PANEL);
+        inspector.add(scroll, BorderLayout.CENTER);
+        JLabel help = new JLabel("Top card acts first. Right-click its row to use an activated ability.");
+        help.setForeground(new Color(155, 231, 255));
+        help.setBorder(new EmptyBorder(2, 7, 2, 7));
+        inspector.add(help, BorderLayout.SOUTH);
+        JOptionPane.showMessageDialog(this, inspector,
                 "Stack at (" + position.x() + ", " + position.y() + ") — top first", JOptionPane.PLAIN_MESSAGE);
     }
 
