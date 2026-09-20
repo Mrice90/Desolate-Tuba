@@ -1,17 +1,17 @@
 # Neo-Olympus faction card set
 
-This first playable faction pass contains exactly 20 unique prototype cards for each of six factions: 12 Characters, 4 Lands, and 4 Structures. Every card uses mechanics already enforced by the engine. Spells are intentionally deferred until spell effects can execute.
+The current playable pool contains 54 prototype deck-building choices per faction across Characters, Lands, Structures, Spells, apex cards, keyword tiers, and triggered-ability cards. Each faction has a distinct two-keyword pairing and examples of enter-play, destroyed, start-of-turn passive, and paid activated effects.
 
-Each faction starter uses two copies of all 20 cards, producing a legal 40-card deck. Custom decks may mix factions, must total exactly 40 cards, and may contain no more than four copies of one card.
+Each faction starter contains 40 unique cards: 18 Lands/Structures and 22 Characters/Spells. Custom decks must total exactly 40 cards and may contain no more than four copies of one card.
 
 | Faction | Identity | Stat and keyword emphasis |
 |---|---|---|
-| Zeus | Storm tempo and aerial command | Blink, high movement, ranged pressure, moderate defenses |
+| Zeus | Storm tempo and aerial command | Blink / Sharp Shot; mobility, elevation, card draw |
 | Poseidon | Water control and resilient board presence | Higher Permanent HP, Vanguard, Mole, flexible movement |
-| Hades | Hidden deployment and attrition | Mole, durable gatekeepers, selective Blink |
-| Ares | Direct aggression | Above-curve Attack, high movement, lighter defenses |
-| Athena | Formation and tactical control | Vanguard density, high Defense, ranged observers |
-| Hephaestus | Machines and fortification | Highest Structure HP, Mole engineers, slow Vanguard automatons |
+| Hades | Hidden deployment and attrition | Mole / Fast Strike; death triggers and Capital pressure |
+| Ares | Direct aggression | Fast Strike / Siege; temporary Attack and permanent destruction |
+| Athena | Formation and tactical control | Vanguard / Sharp Shot; defense, elevation, card selection |
+| Hephaestus | Machines and fortification | Vanguard / Siege; repair, recycling, and heavy Structures |
 
 ## Balance envelope
 
@@ -24,4 +24,4 @@ Each faction starter uses two copies of all 20 cards, producing a legal 40-card 
 - Higher mobility, range, or keywords are offset through lower raw combat statistics.
 - All values and names remain `PROTOTYPE` content and can change after match telemetry and playtesting.
 
-The neutral Drive imports and development cards remain available alongside the 120 faction cards.
+Neutral Drive imports and development cards remain available alongside the faction sets.

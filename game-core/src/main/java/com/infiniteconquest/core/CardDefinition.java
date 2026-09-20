@@ -10,7 +10,7 @@ public record CardDefinition(
         String id, String name, CardType type, String faction, int cost,
         int attack, int defense, int movement, int range, int hitPoints,
         Set<Keyword> keywords, List<SpellEffect> effects,
-        int gpGeneration, DevelopmentPassive developmentPassive
+        int gpGeneration, DevelopmentPassive developmentPassive, List<CardAbility> abilities
 ) {
     public CardDefinition {
         if (id == null || id.isBlank()) throw new IllegalArgumentException("Stable card ID is required");
@@ -25,6 +25,7 @@ public record CardDefinition(
         keywords = keywords == null ? Set.of() : Set.copyOf(keywords);
         effects = effects == null ? List.of() : List.copyOf(effects);
         developmentPassive = developmentPassive == null ? DevelopmentPassive.NONE : developmentPassive;
+        abilities = abilities == null ? List.of() : List.copyOf(abilities);
         if (type != CardType.LAND && type != CardType.STRUCTURE
                 && (gpGeneration != 0 || developmentPassive != DevelopmentPassive.NONE)) {
             throw new IllegalArgumentException("Only Lands and Structures may generate GP or use development passives");
@@ -39,9 +40,17 @@ public record CardDefinition(
 
     public CardDefinition(String id, String name, CardType type, String faction, int cost,
                           int attack, int defense, int movement, int range, int hitPoints,
+                          Set<Keyword> keywords, List<SpellEffect> effects,
+                          int gpGeneration, DevelopmentPassive developmentPassive) {
+        this(id, name, type, faction, cost, attack, defense, movement, range, hitPoints,
+                keywords, effects, gpGeneration, developmentPassive, List.of());
+    }
+
+    public CardDefinition(String id, String name, CardType type, String faction, int cost,
+                          int attack, int defense, int movement, int range, int hitPoints,
                           Set<Keyword> keywords, List<SpellEffect> effects) {
         this(id, name, type, faction, cost, attack, defense, movement, range, hitPoints,
-                keywords, effects, DevelopmentRules.standardGp(type, cost), DevelopmentPassive.NONE);
+                keywords, effects, DevelopmentRules.standardGp(type, cost), DevelopmentPassive.NONE, List.of());
     }
 
     public CardDefinition(String id, String name, CardType type, String faction, int cost,

@@ -43,6 +43,7 @@ public final class CommandProcessor {
                 case "move" -> apply(boardAction(parts, "move"));
                 case "blink" -> apply(boardAction(parts, "blink"));
                 case "attack" -> apply(boardAction(parts, "attack"));
+                case "activate" -> apply(activate(parts));
                 case "cast" -> apply(spell(parts, state.activePlayer(), 1));
                 case "react" -> {
                     if (parts.length < 2) throw new IllegalArgumentException("Reaction requires a player number");
@@ -116,6 +117,13 @@ public final class CommandProcessor {
         };
     }
 
+    private GameAction activate(String[] parts) {
+        requireLength(parts, 3);
+        UUID source = state.board().topAt(position(parts[1], parts[2]))
+                .orElseThrow(() -> new IllegalArgumentException("No card at source"));
+        return new GameAction.ActivateAbility(state.activePlayer(), source);
+    }
+
     private String apply(GameAction action) {
         ActionResult result = engine.apply(state, action);
         return (result.accepted() ? "OK: " : "REJECTED: ") + result.message();
@@ -146,6 +154,7 @@ public final class CommandProcessor {
                   move <fromX> <fromY> <x> <y>  move the top Character
                   blink <fromX> <fromY> <x> <y> teleport a Blink Character
                   attack <fromX> <fromY> <x> <y> attack the top enemy card
+                  activate <x> <y>              pay GP to use a top card's ability
                   cast <hand#> <x> <y> [toX toY] cast during your turn
                   react <player#> <hand#> <x> <y> [toX toY]
                                                 cast using saved GP on the enemy turn

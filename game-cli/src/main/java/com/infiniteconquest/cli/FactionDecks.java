@@ -31,17 +31,17 @@ public final class FactionDecks {
             "ZEUS", Keyword.BLINK,
             "POSEIDON", Keyword.MOLE,
             "HADES", Keyword.MOLE,
-            "ARES", Keyword.VANGUARD,
+            "ARES", Keyword.FAST_STRIKE,
             "ATHENA", Keyword.VANGUARD,
             "HEPHAESTUS", Keyword.VANGUARD);
 
     public static final Map<String, Keyword> SECONDARY_KEYWORDS = Map.of(
-            "ZEUS", Keyword.VANGUARD,
+            "ZEUS", Keyword.SHARP_SHOT,
             "POSEIDON", Keyword.VANGUARD,
-            "HADES", Keyword.BLINK,
-            "ARES", Keyword.BLINK,
-            "ATHENA", Keyword.MOLE,
-            "HEPHAESTUS", Keyword.MOLE);
+            "HADES", Keyword.FAST_STRIKE,
+            "ARES", Keyword.SIEGE,
+            "ATHENA", Keyword.SHARP_SHOT,
+            "HEPHAESTUS", Keyword.SIEGE);
 
     private final PrototypeCardPool pool;
 
@@ -60,7 +60,10 @@ public final class FactionDecks {
                         .thenComparing(CardDefinition::name))
                 .limit(18).toList();
         List<CardDefinition> actions = factionCards.stream()
-                .filter(card -> card.type() != CardType.LAND && card.type() != CardType.STRUCTURE).toList();
+                .filter(card -> card.type() != CardType.LAND && card.type() != CardType.STRUCTURE)
+                .filter(card -> card.keywords().isEmpty() || card.keywords().stream().allMatch(keyword ->
+                        keyword == PRIMARY_KEYWORDS.get(faction) || keyword == SECONDARY_KEYWORDS.get(faction)))
+                .toList();
         if (developments.size() >= DeckValidator.REQUIRED_SIZE || developments.size() + actions.size() < DeckValidator.REQUIRED_SIZE) {
             throw new IllegalStateException(faction + " does not have a valid 40-card starter pool");
         }

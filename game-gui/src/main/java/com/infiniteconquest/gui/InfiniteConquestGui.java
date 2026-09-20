@@ -811,6 +811,7 @@ public final class InfiniteConquestGui extends JFrame {
                     + (intent == null ? "" : "<br><b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
             cell.setToolTipText("<html><b>" + html(def.name()) + "</b><br>" + html(keywordLine(def))
                     + (developmentText(def).isBlank() ? "" : "<br>" + html(developmentText(def)))
+                    + (abilityLine(def).isBlank() ? "" : "<br>" + html(abilityLine(def)))
                     + "<br>Click a highlighted cell or drag; right-click to inspect stack.</html>");
         }
     }
@@ -867,6 +868,7 @@ public final class InfiniteConquestGui extends JFrame {
         if (selectedCell != null) {
             String xy = selectedCell.x() + " " + selectedCell.y();
             return command.matches("(move|blink|attack) " + xy + " .*")
+                    || command.equals("activate " + xy)
                     || command.matches("cast \\d+ " + xy + "( .*)?");
         }
         return true;
@@ -959,7 +961,7 @@ public final class InfiniteConquestGui extends JFrame {
             return (p[0].equals("play") || p[0].equals("burrow") || p[0].equals("cast"))
                     && Integer.parseInt(p[1]) == source.handIndex();
         }
-        return p.length >= 3 && (p[0].equals("move") || p[0].equals("blink") || p[0].equals("attack"))
+        return p.length >= 3 && (p[0].equals("move") || p[0].equals("blink") || p[0].equals("attack") || p[0].equals("activate"))
                 && Integer.parseInt(p[1]) == source.position().x() && Integer.parseInt(p[2]) == source.position().y();
     }
 
@@ -1157,6 +1159,7 @@ public final class InfiniteConquestGui extends JFrame {
                 case CARD_DESTROYED -> friendlyCardDetail(event.detail(), " was destroyed");
                 case CAPITAL_PASSIVE_TRIGGERED -> "Capital passive — " + event.detail().replace('_', ' ').toLowerCase(Locale.ROOT);
                 case DEVELOPMENT_PASSIVE_TRIGGERED -> friendlyDevelopmentPassive(event.detail());
+                case CARD_ABILITY_TRIGGERED -> friendlyCardAbility(event.detail());
                 case OPPORTUNITY_ATTACK -> friendlyOpportunityDetail(event.detail());
                 case GAME_OVER -> "GAME OVER — " + event.detail();
                 default -> null;
@@ -1204,6 +1207,18 @@ public final class InfiniteConquestGui extends JFrame {
         }
     }
 
+    private String friendlyCardAbility(String detail) {
+        String[] parts = detail.split("\\s+", 2);
+        try {
+            String name = state.card(UUID.fromString(parts[0]))
+                    .map(card -> card.definition().name()).orElse("Card");
+            return name + " ability — " + (parts.length > 1
+                    ? parts[1].replace('_', ' ').toLowerCase(Locale.ROOT) : "resolved");
+        } catch (IllegalArgumentException exception) {
+            return "Card ability resolved";
+        }
+    }
+
     private void showPreview(CardInstance card) {
         CardDefinition def = card.definition();
         previewArt.setIcon(CardArtFactory.iconFor(def, 300, 88));
@@ -1214,7 +1229,8 @@ public final class InfiniteConquestGui extends JFrame {
                 : effectLine(def);
         previewText.setText("<html><b>" + html(def.name()) + "</b> — " + html(playRequirement(def)) + " " + title(def.type().name())
                 + "<br>" + html(stats) + (developmentText(def).isBlank() ? "" : "<br><font color='#67d890'><b>" + html(developmentText(def)) + "</b></font>")
-                + "<br><font color='#d9b95f'>" + html(keywordLine(def)) + "</font></html>");
+                + "<br><font color='#d9b95f'>" + html(keywordLine(def)) + "</font>"
+                + (abilityLine(def).isBlank() ? "" : "<br><font color='#9be7ff'>" + html(abilityLine(def)) + "</font>") + "</html>");
     }
 
     private void showStackInspector(BoardPosition position) {
@@ -1232,6 +1248,7 @@ public final class InfiniteConquestGui extends JFrame {
                     + " — " + html(def.name()) + "</b><br>" + title(def.type().name()) + " • "
                     + html(def.faction()) + " • " + html(keywordLine(def))
                     + (developmentText(def).isBlank() ? "" : "<br><font color='#67d890'>" + html(developmentText(def)) + "</font>")
+                    + (abilityLine(def).isBlank() ? "" : "<br><font color='#9be7ff'>" + html(abilityLine(def)) + "</font>")
                     + "</html>",
                     CardArtFactory.iconFor(def, 140, 58), SwingConstants.LEFT);
             row.setForeground(Color.WHITE);
@@ -1261,6 +1278,7 @@ public final class InfiniteConquestGui extends JFrame {
             case "attack" -> (Math.max(Math.abs(Integer.parseInt(p[1]) - Integer.parseInt(p[3])),
                     Math.abs(Integer.parseInt(p[2]) - Integer.parseInt(p[4]))) > 1 ? "Ranged attack " : "Melee attack ")
                     + "(" + p[1] + ", " + p[2] + ") → (" + p[3] + ", " + p[4] + ")";
+            case "activate" -> "Activate paid ability at (" + p[1] + ", " + p[2] + ")";
             case "cast" -> "Cast hand #" + p[1] + " on (" + p[2] + ", " + p[3] + ")"
                     + (p.length > 4 ? " → (" + p[4] + ", " + p[5] + ")" : "");
             case "react" -> "React with hand #" + p[2] + " on (" + p[3] + ", " + p[4] + ")";
@@ -1301,7 +1319,29 @@ public final class InfiniteConquestGui extends JFrame {
         return "<html><font color='#f0bf49'><b>" + html(playRequirement(def)) + "</b></font> &nbsp; " + def.type()
                 + "<br><b>" + html(def.name()) + "</b><br><br>" + stats
                 + (developmentText(def).isBlank() ? "" : "<br><font color='#67d890'><b>" + html(developmentText(def)) + "</b></font>")
-                + "<br><font color='#c9d5e4'>" + html(keywordLine(def)) + "</font></html>";
+                + "<br><font color='#c9d5e4'>" + html(keywordLine(def)) + "</font>"
+                + (abilityLine(def).isBlank() ? "" : "<br><font color='#9be7ff'>" + html(abilityLine(def)) + "</font>") + "</html>";
+    }
+
+    private String abilityLine(CardDefinition definition) {
+        return definition.abilities().stream().map(ability -> {
+            String timing = switch (ability.trigger()) {
+                case ENTERS_PLAY -> "When this enters play";
+                case DESTROYED -> "When this is destroyed";
+                case PASSIVE -> "Start of your turn";
+                case ACTIVATED -> "Activate (" + ability.gpCost() + " GP)";
+            };
+            String effect = switch (ability.effect()) {
+                case DRAW_CARD -> "draw " + ability.amount();
+                case GAIN_GP -> "gain " + ability.amount() + " GP";
+                case HEAL_SELF -> "heal this " + ability.amount();
+                case HEAL_CAPITAL -> "heal your Capital " + ability.amount();
+                case BUFF_SELF_ATTACK -> "this gains +" + ability.amount() + " Attack this turn";
+                case BUFF_SELF_DEFENSE -> "this gains +" + ability.amount() + " Defense this turn";
+                case DAMAGE_ENEMY_CAPITAL -> "deal " + ability.amount() + " damage to the enemy Capital";
+            };
+            return timing + ": " + effect + ".";
+        }).collect(java.util.stream.Collectors.joining(" "));
     }
 
     private String developmentText(CardDefinition definition) {

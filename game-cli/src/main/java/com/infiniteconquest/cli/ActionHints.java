@@ -54,6 +54,16 @@ public final class ActionHints {
                 hints.add("attack " + from.x() + " " + from.y() + " " + to.x() + " " + to.y());
             }
         }
+        for (BoardPosition position : state.board().positions()) {
+            state.board().topAt(position).flatMap(state::card)
+                    .filter(card -> card.owner() == player && !card.abilityUsedThisTurn())
+                    .filter(card -> card.definition().abilities().stream()
+                            .filter(ability -> ability.trigger() == AbilityTrigger.ACTIVATED)
+                            .mapToInt(CardAbility::gpCost).sum() <= state.player(player).currentGp())
+                    .filter(card -> card.definition().abilities().stream()
+                            .anyMatch(ability -> ability.trigger() == AbilityTrigger.ACTIVATED))
+                    .ifPresent(card -> hints.add("activate " + position.x() + " " + position.y()));
+        }
         hints.add("end");
         return List.copyOf(hints);
     }

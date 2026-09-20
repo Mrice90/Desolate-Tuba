@@ -3,10 +3,12 @@ package com.infiniteconquest.cli;
 import com.infiniteconquest.core.CardDefinition;
 import com.infiniteconquest.core.CardType;
 import com.infiniteconquest.core.DeckValidator;
+import com.infiniteconquest.core.AbilityTrigger;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,15 +18,15 @@ class FactionCardSetTest {
     void everyFactionHasAnExpandedUniquePlayablePool() {
         PrototypeCardPool pool = new PrototypeCardPool();
 
-        assertEquals(330, pool.cards().size());
+        assertEquals(348, pool.cards().size());
         for (String faction : FactionDecks.FACTIONS) {
             List<CardDefinition> cards = pool.cardsForFaction(faction);
-            assertEquals(51, cards.size(), faction);
-            assertEquals(51, cards.stream().map(CardDefinition::id).distinct().count(), faction);
+            assertEquals(54, cards.size(), faction);
+            assertEquals(54, cards.stream().map(CardDefinition::id).distinct().count(), faction);
 
             Map<CardType, Long> types = cards.stream()
                     .collect(Collectors.groupingBy(CardDefinition::type, Collectors.counting()));
-            assertEquals(51L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
+            assertEquals(54L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
         }
     }
 
@@ -69,9 +71,13 @@ class FactionCardSetTest {
             assertTrue(copies.values().stream().allMatch(count -> count == 1));
             assertEquals(18, deck.stream().filter(card -> card.type() == CardType.LAND
                     || card.type() == CardType.STRUCTURE).count(), faction);
-            assertEquals(1, deck.stream().filter(card -> card.hasKeyword(com.infiniteconquest.data.Keyword.FAST_STRIKE)).count(), faction);
-            assertEquals(1, deck.stream().filter(card -> card.hasKeyword(com.infiniteconquest.data.Keyword.SIEGE)).count(), faction);
-            assertEquals(1, deck.stream().filter(card -> card.hasKeyword(com.infiniteconquest.data.Keyword.SHARP_SHOT)).count(), faction);
+            var primary = FactionDecks.PRIMARY_KEYWORDS.get(faction);
+            var secondary = FactionDecks.SECONDARY_KEYWORDS.get(faction);
+            assertTrue(deck.stream().anyMatch(card -> card.hasKeyword(primary)), faction + " primary keyword");
+            assertTrue(deck.stream().anyMatch(card -> card.hasKeyword(secondary)), faction + " secondary keyword");
+            assertTrue(deck.stream().flatMap(card -> card.keywords().stream())
+                    .allMatch(keyword -> keyword == primary || keyword == secondary), faction + " off-theme keyword");
+            assertTrue(deck.stream().anyMatch(card -> !card.abilities().isEmpty()), faction + " triggered abilities");
         }
     }
 
@@ -82,9 +88,25 @@ class FactionCardSetTest {
         assertTrue(keywordCount(pool, "ZEUS", "BLINK") >= 3);
         assertTrue(keywordCount(pool, "POSEIDON", "MOLE") >= 2);
         assertTrue(keywordCount(pool, "HADES", "MOLE") >= 3);
-        assertTrue(keywordCount(pool, "ARES", "VANGUARD") >= 2);
+        assertTrue(keywordCount(pool, "ARES", "FAST_STRIKE") >= 3);
         assertTrue(keywordCount(pool, "ATHENA", "VANGUARD") >= 5);
-        assertTrue(keywordCount(pool, "HEPHAESTUS", "MOLE") >= 3);
+        assertTrue(keywordCount(pool, "HEPHAESTUS", "SIEGE") >= 3);
+    }
+
+    @Test
+    void everyFactionHasLandStructureAndCharacterAbilitiesAcrossAllTimingWindows() {
+        PrototypeCardPool pool = new PrototypeCardPool();
+        for (String faction : FactionDecks.FACTIONS) {
+            List<CardDefinition> abilityCards = pool.cardsForFaction(faction).stream()
+                    .filter(card -> card.id().contains("_ability_")).toList();
+            assertEquals(3, abilityCards.size(), faction);
+            assertEquals(Set.of(CardType.LAND, CardType.STRUCTURE, CardType.CHARACTER),
+                    abilityCards.stream().map(CardDefinition::type).collect(Collectors.toSet()), faction);
+        }
+        Set<AbilityTrigger> triggers = pool.cards().stream().flatMap(card -> card.abilities().stream())
+                .map(ability -> ability.trigger()).collect(Collectors.toSet());
+        assertEquals(Set.of(AbilityTrigger.ENTERS_PLAY, AbilityTrigger.DESTROYED,
+                AbilityTrigger.PASSIVE, AbilityTrigger.ACTIVATED), triggers);
     }
 
     private long keywordCount(PrototypeCardPool pool, String faction, String keyword) {

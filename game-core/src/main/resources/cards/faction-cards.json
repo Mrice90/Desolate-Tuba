@@ -1804,10 +1804,13 @@
       "movement": 2,
       "hitPoints": 0,
       "keywords": [
-        "MOLE"
+        "SIEGE"
       ],
-      "rulesText": "MOLE",
-      "description": "A compact worker repairing foundations from underneath.",
+      "abilities": [
+        {"trigger":"DESTROYED","effect":"GAIN_GP","amount":1,"gpCost":0}
+      ],
+      "rulesText": "SIEGE. When this is destroyed, gain 1 GP.",
+      "description": "A compact worker that tears hostile foundations apart for scrap.",
       "rarity": 1,
       "contentStatus": "PROTOTYPE"
     },
