@@ -58,6 +58,8 @@ Lands, Structures, and Characters can now carry data-driven abilities with four 
 All 348 deck-building cards and 18 Capitals now receive unique deterministic illustrations. Each visual combines its faction environment, card type, name-derived symbols, mechanics, and stable seeded composition; new cards automatically receive artwork as they are added. See [the card-art system](docs/card-art-system.md) for its visual vocabulary and asset provenance.
 The renderer keeps board thumbnails fast by caching each completed image for reuse during the match.
 
+Board actions use distinct animated effects for movement, Blink, melee, ranged projectiles, Spells, deployment, and rules damage. Completed matches open an animated result screen with the winning Capital, match summary, and direct choices to rematch with the same settings, change match settings, or review the final battlefield.
+
 ```bash
 gradle :game-cli:run --args="deck"
 ```
