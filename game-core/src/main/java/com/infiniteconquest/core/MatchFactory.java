@@ -13,7 +13,7 @@ public final class MatchFactory {
         validateDeck(playerOneDeck, 1);
 
         GameState state = new GameState(seed, rules, false);
-        state.setStartingPlayer(new Random(seed ^ 0xC01DF11FL).nextBoolean() ? 1 : 0);
+        state.setStartingPlayer(coinFlipWinner(seed));
         loadPlayerDeck(state, seed, 0, playerZeroDeck);
         loadPlayerDeck(state, seed, 1, playerOneDeck);
         state.drawInitialHands();
@@ -47,5 +47,13 @@ public final class MatchFactory {
 
     private long derivedSeed(long seed, int playerId) {
         return seed ^ (0x9E3779B97F4A7C15L * (playerId + 1L));
+    }
+
+    private int coinFlipWinner(long seed) {
+        long mixed = seed + 0x9E3779B97F4A7C15L;
+        mixed = (mixed ^ (mixed >>> 30)) * 0xBF58476D1CE4E5B9L;
+        mixed = (mixed ^ (mixed >>> 27)) * 0x94D049BB133111EBL;
+        mixed ^= mixed >>> 31;
+        return (int) (mixed & 1L);
     }
 }
