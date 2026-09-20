@@ -9,12 +9,14 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.*;
 
-/** Data-driven original artwork: faction world + card type + name motifs + stable composition. */
+/** Painted Capital art with a deterministic procedural renderer for every other card and fallback. */
 final class CardArtFactory {
     private static final Map<String, ImageIcon> CACHE = new HashMap<>();
+    private static final Map<String, BufferedImage> PAINTED_CAPITALS = new HashMap<>();
     private static final BufferedImage WORLDS = loadWorlds();
     private static final Map<String,Integer> WORLD = Map.of(
             "ZEUS",0,"POSEIDON",1,"HADES",2,"ARES",3,"ATHENA",4,"HEPHAESTUS",5);
@@ -30,12 +32,48 @@ final class CardArtFactory {
     }
 
     private static ImageIcon render(CardDefinition card, int w, int h) {
+        BufferedImage painted = paintedCapital(card);
+        if (painted != null) return cover(painted, w, h);
         BufferedImage image = new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
         Graphics2D g=image.createGraphics(); quality(g);
         Random random=new Random(((long)card.id().hashCode()<<32)^card.name().hashCode());
         world(g,card,w,h,random); atmosphere(g,card,w,h,random);
         subject(g,card,w,h,random); motifs(g,card,w,h,random); particleFinish(g,card,w,h); finish(g,card,w,h);
         g.dispose(); return new ImageIcon(image);
+    }
+
+    static boolean hasPaintedArt(CardDefinition card) {
+        return paintedCapital(card) != null;
+    }
+
+    private static BufferedImage paintedCapital(CardDefinition card) {
+        if (card.type() != CardType.CAPITAL) return null;
+        BufferedImage cached = PAINTED_CAPITALS.get(card.id());
+        if (cached != null) return cached;
+        String path = "/art/capitals/" + card.id() + ".jpg";
+        try (InputStream stream = CardArtFactory.class.getResourceAsStream(path)) {
+            if (stream == null) return null;
+            BufferedImage loaded = ImageIO.read(stream);
+            if (loaded != null) PAINTED_CAPITALS.put(card.id(), loaded);
+            return loaded;
+        } catch (IOException ignored) {
+            return null;
+        }
+    }
+
+    /** Center-crops rather than distorting artwork across hand, inspector, and compact board formats. */
+    private static ImageIcon cover(BufferedImage source, int w, int h) {
+        double scale = Math.max((double) w / source.getWidth(), (double) h / source.getHeight());
+        int sw = Math.max(1, (int) Math.round(w / scale));
+        int sh = Math.max(1, (int) Math.round(h / scale));
+        int sx = Math.max(0, (source.getWidth() - sw) / 2);
+        int sy = Math.max(0, (source.getHeight() - sh) / 2);
+        BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        quality(g);
+        g.drawImage(source, 0, 0, w, h, sx, sy, sx + sw, sy + sh, null);
+        g.dispose();
+        return new ImageIcon(image);
     }
 
     private static void world(Graphics2D g, CardDefinition card, int w, int h, Random random) {
