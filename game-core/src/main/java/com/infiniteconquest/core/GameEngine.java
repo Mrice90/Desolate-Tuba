@@ -102,7 +102,7 @@ public final class GameEngine {
                                   CardInstance target, BoardPosition destination) {
         switch (effect.type()) {
             case STRIKE_CHARACTER -> {
-                if (effect.amount() > target.effectiveDefense()) state.destroy(target);
+                if (effect.amount() >= target.effectiveDefense()) state.destroy(target);
             }
             case DAMAGE_PERMANENT -> {
                 target.addDamage(effect.amount());
@@ -219,7 +219,17 @@ public final class GameEngine {
         attacker.markAttacked();
         state.recordAttack(attacker, target);
         if (target.definition().type() == CardType.CHARACTER) {
-            if (attacker.effectiveAttack() > target.effectiveDefense()) state.destroy(target);
+            boolean targetDies = attacker.effectiveAttack() >= target.effectiveDefense();
+            boolean canRetaliate = target.effectiveAttack() > 0
+                    && to.distanceTo(from) <= target.definition().range()
+                    && lineOfSightRules.hasLineOfSight(state, to, from);
+            boolean attackerDies = canRetaliate && target.effectiveAttack() >= attacker.effectiveDefense();
+            if (targetDies) state.destroy(target);
+            if (attackerDies) state.destroy(attacker);
+            if (targetDies && attackerDies) return ActionResult.accepted("Both Characters destroyed in simultaneous combat");
+            if (targetDies) return ActionResult.accepted("Defender destroyed");
+            if (attackerDies) return ActionResult.accepted("Attacker destroyed by retaliation");
+            return ActionResult.accepted(canRetaliate ? "Both attacks blocked" : "Attack blocked; defender could not retaliate at this range");
         } else if (target.definition().isPermanent()) {
             target.addDamage(attacker.effectiveAttack());
             if (target.damage() >= target.definition().hitPoints()) state.destroy(target);
@@ -231,14 +241,90 @@ public final class GameEngine {
         CardInstance card = state.card(action.cardId()).orElse(null);
         if (card == null || card.owner() != action.playerId() || card.definition().type() != CardType.CHARACTER)
             return ActionResult.rejected("Invalid Character");
-        int distance = movementRules.shortestLegalDistance(state, card, action.destination());
-        if (distance < 0) return ActionResult.rejected("Destination unreachable");
+        List<BoardPosition> path = movementRules.shortestLegalPath(state, card, action.destination());
+        if (path.isEmpty()) return ActionResult.rejected("Destination unreachable");
         BoardPosition origin = state.board().positionOf(card.instanceId()).orElseThrow();
-        state.board().moveTop(origin, action.destination(), card.instanceId());
-        card.spendMovement(distance);
-        state.recordCharacterMoved(card, origin, action.destination(), distance);
-        new CapitalPassiveRules().onMoved(state, card);
-        return ActionResult.accepted("Character moved");
+        BoardPosition current = origin;
+        Set<UUID> reacted = new HashSet<>();
+        int traveled = 0;
+        int opportunityAttacks = 0;
+        for (OpportunityThreat threat : opportunityThreatsAt(state, card, origin, reacted)) {
+            CardInstance enemy = state.card(threat.attackerId()).orElseThrow();
+            reacted.add(enemy.instanceId());
+            opportunityAttacks++;
+            state.recordOpportunityAttack(enemy, card, origin);
+            if (enemy.effectiveAttack() >= card.effectiveDefense()) {
+                state.destroy(card);
+                break;
+            }
+        }
+        for (BoardPosition step : path) {
+            if (card.zone() != Zone.BATTLEFIELD) break;
+            state.board().moveTop(current, step, card.instanceId());
+            current = step;
+            traveled++;
+            for (OpportunityThreat threat : opportunityThreatsAt(state, card, step, reacted)) {
+                CardInstance enemy = state.card(threat.attackerId()).orElseThrow();
+                reacted.add(enemy.instanceId());
+                opportunityAttacks++;
+                state.recordOpportunityAttack(enemy, card, step);
+                if (enemy.effectiveAttack() >= card.effectiveDefense()) {
+                    state.destroy(card);
+                    break;
+                }
+            }
+            if (card.zone() != Zone.BATTLEFIELD) break;
+        }
+        card.spendMovement(traveled);
+        state.recordCharacterMoved(card, origin, current, traveled);
+        if (card.zone() == Zone.BATTLEFIELD) new CapitalPassiveRules().onMoved(state, card);
+        if (card.zone() != Zone.BATTLEFIELD) {
+            return ActionResult.accepted("Movement stopped: Character destroyed by opportunity attack");
+        }
+        return ActionResult.accepted(opportunityAttacks == 0 ? "Character moved"
+                : "Character moved through " + opportunityAttacks + " opportunity attack" + (opportunityAttacks == 1 ? "" : "s"));
+    }
+
+    public List<OpportunityThreat> opportunityThreats(GameState state, UUID moverId, BoardPosition destination) {
+        CardInstance mover = state.card(moverId).orElse(null);
+        if (mover == null) return List.of();
+        List<BoardPosition> path = movementRules.shortestLegalPath(state, mover, destination);
+        if (path.isEmpty()) return List.of();
+        Set<UUID> found = new LinkedHashSet<>();
+        List<OpportunityThreat> threats = new ArrayList<>();
+        BoardPosition origin = state.board().positionOf(mover.instanceId()).orElseThrow();
+        List<BoardPosition> threatenedSteps = new ArrayList<>();
+        threatenedSteps.add(origin);
+        threatenedSteps.addAll(path);
+        for (BoardPosition step : threatenedSteps) {
+            for (OpportunityThreat threat : opportunityThreatsAt(state, mover, step, found)) {
+                found.add(threat.attackerId());
+                threats.add(threat);
+            }
+        }
+        return List.copyOf(threats);
+    }
+
+    private List<OpportunityThreat> opportunityThreatsAt(GameState state, CardInstance mover,
+                                                          BoardPosition step, Set<UUID> excluded) {
+        List<OpportunityThreat> threats = new ArrayList<>();
+        for (BoardPosition enemyPosition : state.board().positions()) {
+            Optional<UUID> top = state.board().topAt(enemyPosition);
+            if (top.isEmpty() || excluded.contains(top.get()) || top.get().equals(mover.instanceId())) continue;
+            CardInstance enemy = state.card(top.get()).orElseThrow();
+            if (enemy.owner() == mover.owner() || enemy.definition().type() != CardType.CHARACTER
+                    || enemy.effectiveAttack() <= 0 || enemyPosition.distanceTo(step) > enemy.definition().range()) continue;
+            if (lineOfSightRules.hasLineOfSight(state, enemyPosition, step)) {
+                threats.add(new OpportunityThreat(enemy.instanceId(), enemyPosition, step,
+                        enemy.definition().name(), enemy.effectiveAttack(), mover.effectiveDefense()));
+            }
+        }
+        return threats;
+    }
+
+    public record OpportunityThreat(UUID attackerId, BoardPosition attackerPosition, BoardPosition triggerPosition,
+                                    String attackerName, int attack, int moverDefense) {
+        public boolean lethal() { return attack >= moverDefense; }
     }
 
     private ActionResult playLand(GameState state, GameAction.PlayLand action) {

@@ -24,6 +24,8 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 
 The client includes the full 4×6 battlefield, unique generated prototype art for every card, real faction starter decks, GP and deck meters, automatic bot turns, reaction windows, and match results.
 
+Combat is simultaneous: attack equal to defense destroys a Character, and an in-range defending Character retaliates at the same time. A defender outside its own range cannot retaliate. Moving through an enemy Character's attack range grants that enemy one free opportunity attack per move; human players receive a route warning showing each threat and whether its attack is lethal.
+
 ## Play the command-line prototype
 
 Requires JDK 17 and Gradle 8+.
