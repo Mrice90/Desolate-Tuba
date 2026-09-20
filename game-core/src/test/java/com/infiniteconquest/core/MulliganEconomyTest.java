@@ -55,7 +55,7 @@ class MulliganEconomyTest {
         state.advanceTurn();
         state.advanceTurn();
 
-        assertEquals(14, state.player(0).currentGp());
+        assertEquals(4, state.player(0).currentGp());
         assertEquals(4, state.gpIncomePerTurn(0));
     }
 

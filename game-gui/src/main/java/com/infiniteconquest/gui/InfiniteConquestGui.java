@@ -185,8 +185,8 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void fitBoardToViewport(Dimension available) {
-        int usableWidth = Math.max(320, available.width - 18);
-        int tile = Math.max(138, Math.min(175, usableWidth / BoardPosition.WIDTH));
+        int usableWidth = Math.max(640, available.width - 22);
+        int tile = Math.max(160, usableWidth / BoardPosition.WIDTH);
         Dimension boardSize = new Dimension(tile * BoardPosition.WIDTH, tile * BoardPosition.HEIGHT);
         boardPanel.setPreferredSize(boardSize);
         boardPanel.setMinimumSize(boardSize);
@@ -293,7 +293,8 @@ public final class InfiniteConquestGui extends JFrame {
         lastSystemEvent = state.events().stream().mapToLong(GameEvent::sequence).max().orElse(-1);
         addHistory("Match", title(humanFaction) + " vs " + title(botFaction)
                 + " — Player " + (state.startingPlayer() + 1) + " won the coin flip");
-        message("Player " + (state.startingPlayer() + 1) + " starts. The second player has 12 GP and six cards.");
+        message("Player " + (state.startingPlayer() + 1)
+                + " starts. Player 1 begins at 0 GP; Player 2 begins at 1 GP; Capitals generate 1 GP per turn.");
         refresh();
         if (isAutomatedPlayer(state.activePlayer())) SwingUtilities.invokeLater(this::runBotTurn);
     }

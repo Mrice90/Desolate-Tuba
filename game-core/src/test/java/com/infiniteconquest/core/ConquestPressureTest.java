@@ -48,4 +48,14 @@ class ConquestPressureTest {
         assertTrue(state.winner().isEmpty());
         assertEquals(0, state.battlefieldCards(0).get(0).damage());
     }
+
+    @Test
+    void controlledCapitalGeneratesOneGpOnOwnersTurn() {
+        MatchRules rules = new MatchRules(0, 0, 1, 0);
+        GameState state = new GameState(7L, rules, false);
+        permanent(state, 0, "capital_income", 20, new BoardPosition(0, 0));
+        state.initializeMatch();
+        assertEquals(1, state.player(0).currentGp());
+        assertEquals(1, state.gpIncomePerTurn(0));
+    }
 }

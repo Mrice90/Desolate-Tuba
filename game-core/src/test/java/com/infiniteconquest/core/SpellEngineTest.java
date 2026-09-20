@@ -32,6 +32,7 @@ class SpellEngineTest {
     void inactivePlayerCanSpendSavedGpOnImmediateReactionBuff() {
         GameState state = new GameState(1L);
         GameEngine engine = new GameEngine();
+        state.player(1).restoreGp(2);
         engine.apply(state, new GameAction.EndTurn(0));
         engine.apply(state, new GameAction.EndTurn(1));
         CardInstance defender = add(state, 1, character("defender", 2, 2),
@@ -48,7 +49,7 @@ class SpellEngineTest {
         assertTrue(result.accepted());
         assertEquals(5, defender.effectiveDefense());
         assertEquals(Zone.DISCARD, reaction.zone());
-        assertEquals(10, state.player(1).currentGp());
+        assertEquals(1, state.player(1).currentGp());
 
         engine.apply(state, new GameAction.EndTurn(0));
         assertEquals(2, defender.effectiveDefense(), "buff expires at start of controller's next turn");

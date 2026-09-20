@@ -19,9 +19,9 @@ class TurnLoopTest {
         int first = state.startingPlayer();
         int second = 1 - first;
         assertEquals(5, state.player(first).hand().size(), "Starting player opens with five and skips the first-turn draw");
-        assertEquals(10, state.player(first).currentGp());
+        assertEquals(first == 0 ? 0 : 1, state.player(first).currentGp());
         assertEquals(6, state.player(second).hand().size(), "Second player opens with six before their first draw");
-        assertEquals(12, state.player(second).currentGp());
+        assertEquals(second == 0 ? 0 : 1, state.player(second).currentGp());
 
         assertTrue(new GameEngine().apply(state, new GameAction.EndTurn(first)).accepted());
         assertEquals(second, state.activePlayer());
