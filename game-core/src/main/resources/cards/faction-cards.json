@@ -348,10 +348,12 @@
       "movement": 0,
       "hitPoints": 11,
       "keywords": [],
-      "rulesText": "",
+      "rulesText": "Deploy: draw 1 card.",
       "description": "A hardened tactical node issuing battlefield corrections.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "gpGeneration": 1,
+      "developmentPassive": "DRAW_ON_DEPLOY"
     },
     {
       "id": "poseidon_tidepool_surveyor",
@@ -702,10 +704,12 @@
       "movement": 0,
       "hitPoints": 12,
       "keywords": [],
-      "rulesText": "",
+      "rulesText": "Deploy: heal your Capital for 3.",
       "description": "A colossal seal protecting the deepest arcology.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "gpGeneration": 1,
+      "developmentPassive": "HEAL_CAPITAL_ON_DEPLOY"
     },
     {
       "id": "hades_shade_packet",
@@ -1041,10 +1045,12 @@
       "movement": 0,
       "hitPoints": 9,
       "keywords": [],
-      "rulesText": "",
+      "rulesText": "Deploy: draw 1 card.",
       "description": "A data basin built to erase dangerous memory.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "gpGeneration": 1,
+      "developmentPassive": "DRAW_ON_DEPLOY"
     },
     {
       "id": "hades_hades_throne_vault",
@@ -1406,10 +1412,12 @@
       "movement": 0,
       "hitPoints": 10,
       "keywords": [],
-      "rulesText": "",
+      "rulesText": "Start of your turn: heal 2 damage from this card.",
       "description": "A mobile fortress built to push into enemy territory.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "gpGeneration": 1,
+      "developmentPassive": "SELF_REPAIR"
     },
     {
       "id": "athena_owl_recon_unit",
@@ -1760,10 +1768,12 @@
       "movement": 0,
       "hitPoints": 12,
       "keywords": [],
-      "rulesText": "",
+      "rulesText": "Deploy: draw 1 card.",
       "description": "A protected intelligence chamber directing the entire defense.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "gpGeneration": 1,
+      "developmentPassive": "DRAW_ON_DEPLOY"
     },
     {
       "id": "hephaestus_forge_spark_drone",
@@ -2116,10 +2126,12 @@
       "movement": 0,
       "hitPoints": 13,
       "keywords": [],
-      "rulesText": "",
+      "rulesText": "Start of your turn: heal 2 damage from this card.",
       "description": "The supreme machine fortress of Hephaestus's district.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "gpGeneration": 1,
+      "developmentPassive": "SELF_REPAIR"
     }
   ]
 }

@@ -18,7 +18,7 @@ class TurnLoopTest {
         GameState state = new MatchFactory().create(9L, MatchRules.current(), validDeck("a"), validDeck("b"));
         int first = state.startingPlayer();
         int second = 1 - first;
-        assertEquals(6, state.player(first).hand().size(), "Five-card opener plus first-turn draw");
+        assertEquals(5, state.player(first).hand().size(), "Starting player opens with five and skips the first-turn draw");
         assertEquals(10, state.player(first).currentGp());
         assertEquals(6, state.player(second).hand().size(), "Second player opens with six before their first draw");
         assertEquals(12, state.player(second).currentGp());
