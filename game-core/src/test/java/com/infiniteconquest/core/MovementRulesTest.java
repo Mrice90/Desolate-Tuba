@@ -27,11 +27,11 @@ class MovementRulesTest {
         assertTrue(engine.legalMovementDestinations(state, runner.instanceId()).isEmpty());
     }
 
-    @Test void occupiedCellsBlockOrdinaryMovementPaths() {
+    @Test void enemyOccupiedCellsBlockOrdinaryMovementPaths() {
         GameState state = new GameState(2L);
         CardInstance runner = character(state, 1, new BoardPosition(0, 0));
         CardDefinition landDef = new CardDefinition("block", "Block", CardType.LAND, "DEV", 0, 0, 0, 0, 0);
-        CardInstance blocker = new CardInstance(UUID.randomUUID(), landDef, 0, Zone.BATTLEFIELD);
+        CardInstance blocker = new CardInstance(UUID.randomUUID(), landDef, 1, Zone.BATTLEFIELD);
         state.register(blocker);
         state.board().push(new BoardPosition(1, 1), blocker.instanceId());
 
