@@ -74,7 +74,7 @@ public final class FactionDecks {
                         keyword == PRIMARY_KEYWORDS.get(faction) || keyword == SECONDARY_KEYWORDS.get(faction)))
                 .toList();
         final int starterSize = 60;
-        if (developments.size() != 36 || developments.size() + actions.size() < starterSize) {
+        if (developments.size() != 36 || actions.size() * DeckValidator.MAX_COPIES < starterSize - developments.size()) {
             throw new IllegalStateException(faction + " does not have a valid 60-card starter pool");
         }
         int actionSlots = starterSize - developments.size();
