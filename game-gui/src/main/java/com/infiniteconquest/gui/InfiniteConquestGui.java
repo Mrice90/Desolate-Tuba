@@ -517,7 +517,18 @@ public final class InfiniteConquestGui extends JFrame {
         addSetupRow(setup, c, 6, "CUSTOM DECKS", editDecks,
                 "DISPLAY", new JLabel("F11 toggles full screen"));
 
-        int result = JOptionPane.showConfirmDialog(this, setup, "Configure Conquest",
+        Rectangle usableScreen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int setupWidth = Math.max(620, Math.min(760, usableScreen.width - 80));
+        int setupHeight = Math.max(420, Math.min(540, usableScreen.height - 140));
+        JScrollPane setupScroll = new JScrollPane(setup,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        setupScroll.setPreferredSize(new Dimension(setupWidth, setupHeight));
+        setupScroll.setBorder(null);
+        setupScroll.getViewport().setBackground(PANEL);
+        setupScroll.getVerticalScrollBar().setUnitIncrement(20);
+
+        int result = JOptionPane.showConfirmDialog(this, setupScroll, "Configure Conquest",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (result != JOptionPane.OK_OPTION) return null;
         CapitalChoice selectedHuman = (CapitalChoice) humanCapitalBox.getSelectedItem();
