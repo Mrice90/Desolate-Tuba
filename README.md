@@ -55,6 +55,9 @@ The graphical **Deck Builder** and command-line editor support 348 editable prot
 
 Lands, Structures, and Characters can now carry data-driven abilities with four timing windows: **When this enters play**, **When this is destroyed**, **Start of your turn** passive effects, and once-per-turn **Activated** effects with a printed GP cost. The current effect set supports card draw, GP gain, self-repair, Capital repair, temporary self Attack/Defense bonuses, and direct enemy-Capital damage. Select the top card of a stack and use its highlighted **Activate** legal action to pay for an activated ability.
 
+All 348 deck-building cards and 18 Capitals now receive unique deterministic illustrations. Each visual combines its faction environment, card type, name-derived symbols, mechanics, and stable seeded composition; new cards automatically receive artwork as they are added. See [the card-art system](docs/card-art-system.md) for its visual vocabulary and asset provenance.
+The renderer keeps board thumbnails fast by caching each completed image for reuse during the match.
+
 ```bash
 gradle :game-cli:run --args="deck"
 ```
