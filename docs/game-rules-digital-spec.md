@@ -12,12 +12,13 @@ This document records implemented rules. Prototype card balance remains editable
 ## Turns and resources
 
 - Before play, each player places their chosen Capital secretly on any cell of their own 4×3 plot.
-- A visible coin flip determines the starting player. The starting player opens with 10 GP and five cards; the second player opens with 12 GP and six cards.
+- A visible coin flip determines the starting player. Player 1 begins with 0 GP and Player 2 with 1 GP. The initiative winner opens with five cards; the other player opens with six.
 - The starting player skips the normal draw on the first global turn; all later turns draw normally.
 - Before the first action, each player may keep up to three opening cards. Every unkept card is discarded and replaced one-for-one from the deck.
 - GP is persistent and does not automatically refill or increase by turn number.
 - At the start of a player's turn, each Land and Structure they control generates its printed GP income, then controlled cards refresh and the player draws one card.
 - Lands and Structures cost no GP. Their printed number is a development value: a value-1 card is legal from personal turn 1 onward, a value-3 card from personal turn 3 onward, and so on.
+- Every surviving Capital generates 1 GP at the start of its owner's turn, in addition to income from Lands and Structures.
 - Standard development income follows a visible curve: turns 1–2 generate 1 GP, 3–4 generate 2 GP, 5–6 generate 3 GP, 7–8 generate 4 GP, and 9–10 generate 5 GP. Utility passives normally reduce that income by 1 or more.
 - Characters and Spells retain their printed GP costs.
 - Empty-deck draws deal one exhaustion damage to each controlled Permanent.

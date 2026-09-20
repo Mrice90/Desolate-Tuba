@@ -27,6 +27,7 @@ class CapitalPassiveRulesTest {
     @Test
     void stormTitheRefundsOnlyTheFirstSpellEachTurn() {
         GameState state = new GameState(1L);
+        state.player(0).restoreGp(1);
         add(state, 0, capital("zeus_capital_keraunos_spire"), Zone.BATTLEFIELD, new BoardPosition(1, 0));
         CardDefinition spellDefinition = new CardDefinition("test_spell", "Test Spell", CardType.SPELL, "ZEUS",
                 1, 0, 0, 0, 0, 0, Set.of(), List.of(new SpellEffect(SpellEffectType.BUFF_ATTACK, 1, SpellTarget.FRIENDLY)));
@@ -35,7 +36,7 @@ class CapitalPassiveRulesTest {
 
         assertTrue(new GameEngine().apply(state,
                 new GameAction.CastSpell(0, spell.instanceId(), target.instanceId(), null)).accepted());
-        assertEquals(10, state.player(0).currentGp());
+        assertEquals(1, state.player(0).currentGp());
         assertEquals(1, passiveEvents(state, CapitalPassive.STORM_TITHE));
     }
 

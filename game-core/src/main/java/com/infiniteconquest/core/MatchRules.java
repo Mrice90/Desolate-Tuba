@@ -8,7 +8,7 @@ public record MatchRules(int initialHandSize, int startingGp, int secondPlayerSt
             throw new IllegalArgumentException("Rule values cannot be negative");
         }
     }
-    public static MatchRules current() { return new MatchRules(5, 10, 12, 1); }
+    public static MatchRules current() { return new MatchRules(5, 0, 1, 1); }
     public int initialHandSizeFor(boolean startsSecond) {
         return initialHandSize + (startsSecond ? 1 : 0);
     }

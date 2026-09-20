@@ -48,8 +48,10 @@ public final class GameState {
     public int gpIncomePerTurn(int playerId) {
         return battlefieldCards(playerId).stream()
                 .filter(card -> card.definition().type() == CardType.LAND
-                        || card.definition().type() == CardType.STRUCTURE)
-                .mapToInt(card -> card.definition().gpGeneration()).sum();
+                        || card.definition().type() == CardType.STRUCTURE
+                        || card.definition().type() == CardType.CAPITAL)
+                .mapToInt(card -> card.definition().type() == CardType.CAPITAL
+                        ? 1 : card.definition().gpGeneration()).sum();
     }
 
     public void mulligan(int playerId, Collection<UUID> keptCardIds) {
@@ -94,7 +96,7 @@ public final class GameState {
         turnNumber = 1;
         personalTurns[activePlayer] = 1;
         for (PlayerState player : players) player.initializeGp(
-                player.id() == startingPlayer ? rules.startingGp() : rules.secondPlayerStartingGp());
+                player.id() == 0 ? rules.startingGp() : rules.secondPlayerStartingGp());
         emit(GameEvent.Type.MATCH_STARTED, activePlayer,
                 "Match seed " + seed + "; coin flip: Player " + (activePlayer + 1) + " starts");
         startTurn();
@@ -103,6 +105,7 @@ public final class GameState {
         if (!started || turnNumber != 1) throw new IllegalStateException("Initial Capital passive timing has passed");
         if (initialCapitalPassiveActivated) throw new IllegalStateException("Initial Capital passive already activated");
         initialCapitalPassiveActivated = true;
+        generateCapitalGp(activePlayer);
         capitalPassiveRules.onTurnStarted(this, activePlayer);
     }
     void drawInitialHands() {
@@ -230,7 +233,14 @@ public final class GameState {
     private void generatePermanentGp(int playerId) {
         int generated = gpIncomePerTurn(playerId);
         if (generated > 0) player(playerId).restoreGp(generated);
-        emit(GameEvent.Type.GP_GENERATED, playerId, generated + " GP from Lands and Structures");
+        emit(GameEvent.Type.GP_GENERATED, playerId, generated + " GP from Capital, Lands and Structures");
+    }
+    private void generateCapitalGp(int playerId) {
+        boolean controlsCapital = battlefieldCards(playerId).stream()
+                .anyMatch(card -> card.definition().type() == CardType.CAPITAL);
+        if (!controlsCapital) return;
+        player(playerId).restoreGp(1);
+        emit(GameEvent.Type.GP_GENERATED, playerId, "1 GP from Capital");
     }
     private void applyDevelopmentDeployPassive(CardInstance card) {
         switch (card.definition().developmentPassive()) {

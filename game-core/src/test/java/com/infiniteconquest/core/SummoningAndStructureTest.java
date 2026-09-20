@@ -14,6 +14,7 @@ class SummoningAndStructureTest {
 
     @Test void summonsCharacterDiagonallyAdjacentToFriendlyPermanent() {
         GameState state = new GameState(1L);
+        state.player(0).restoreGp(1);
         CardDefinition landDef = new CardDefinition("land", "Land", CardType.LAND, "DEV", 0, 0, 0, 0, 0, 5);
         CardInstance land = add(state, 0, landDef, Zone.BATTLEFIELD);
         state.board().push(new BoardPosition(0, 0), land.instanceId());
@@ -29,6 +30,7 @@ class SummoningAndStructureTest {
 
     @Test void summonsCharacterOnTopOfFriendlyPermanent() {
         GameState state = new GameState(2L);
+        state.player(0).restoreGp(1);
         CardDefinition landDef = new CardDefinition("land", "Land", CardType.LAND, "DEV", 0, 0, 0, 0, 0, 5);
         CardInstance land = add(state, 0, landDef, Zone.BATTLEFIELD);
         BoardPosition position = new BoardPosition(0, 0);

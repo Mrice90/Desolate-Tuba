@@ -30,14 +30,14 @@ class MatchFactoryTest {
         assertEquals(34, first.player(1 - starter).deck().size());
     }
 
-    @Test void coinFlipVariesAndSecondPlayerGetsEconomyBonus() {
+    @Test void coinFlipVariesAndPlayerTwoGetsEconomyBonus() {
         MatchFactory factory = new MatchFactory();
         Set<Integer> winners = new HashSet<>();
         for (long seed = 1; seed <= 20; seed++) {
             GameState state = factory.create(seed, MatchRules.current(), validDeck("a"), validDeck("b"));
             winners.add(state.startingPlayer());
-            assertEquals(10, state.player(state.startingPlayer()).currentGp());
-            assertEquals(12, state.player(1 - state.startingPlayer()).currentGp());
+            assertEquals(0, state.player(0).currentGp());
+            assertEquals(1, state.player(1).currentGp());
         }
         assertEquals(Set.of(0, 1), winners);
     }
