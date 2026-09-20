@@ -87,6 +87,10 @@ public final class GameState {
     void recordAttack(CardInstance attacker, CardInstance target) {
         emit(GameEvent.Type.ATTACK_RESOLVED, attacker.owner(), attacker.instanceId() + " -> " + target.instanceId());
     }
+    void recordOpportunityAttack(CardInstance attacker, CardInstance target, BoardPosition trigger) {
+        emit(GameEvent.Type.OPPORTUNITY_ATTACK, attacker.owner(),
+                attacker.instanceId() + " -> " + target.instanceId() + " at " + trigger.x() + "," + trigger.y());
+    }
     void drawCards(int playerId, int amount) {
         for (int i = 0; i < amount; i++) drawCard(playerId);
     }

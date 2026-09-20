@@ -12,7 +12,7 @@ class CombatTest {
         return card;
     }
 
-    @Test void characterDiesOnlyWhenAttackStrictlyExceedsDefense() {
+    @Test void attackEqualToDefenseKillsAndInRangeDefenderRetaliatesSimultaneously() {
         GameState equalState = new GameState(1L);
         CardInstance equalAttacker = battlefield(equalState, 0,
                 new CardDefinition("a", "A", CardType.CHARACTER, "DEV", 0, 3, 1, 1, 1), new BoardPosition(0, 0));
@@ -21,7 +21,8 @@ class CombatTest {
 
         assertTrue(new GameEngine().apply(equalState,
                 new GameAction.Attack(0, equalAttacker.instanceId(), equalDefender.instanceId())).accepted());
-        assertEquals(Zone.BATTLEFIELD, equalDefender.zone());
+        assertEquals(Zone.DISCARD, equalDefender.zone());
+        assertEquals(Zone.DISCARD, equalAttacker.zone());
 
         GameState higherState = new GameState(2L);
         CardInstance strong = battlefield(higherState, 0,
@@ -31,6 +32,21 @@ class CombatTest {
         assertTrue(new GameEngine().apply(higherState,
                 new GameAction.Attack(0, strong.instanceId(), weak.instanceId())).accepted());
         assertEquals(Zone.DISCARD, weak.zone());
+    }
+
+    @Test void defenderCannotRetaliateWhenAttackerIsOutsideDefendersRange() {
+        GameState state = new GameState(22L);
+        CardInstance attacker = battlefield(state, 0,
+                new CardDefinition("archer", "Archer", CardType.CHARACTER, "DEV", 0, 3, 1, 1, 2),
+                new BoardPosition(0, 0));
+        CardInstance defender = battlefield(state, 1,
+                new CardDefinition("guard", "Guard", CardType.CHARACTER, "DEV", 0, 5, 3, 1, 1),
+                new BoardPosition(0, 2));
+
+        assertTrue(new GameEngine().apply(state,
+                new GameAction.Attack(0, attacker.instanceId(), defender.instanceId())).accepted());
+        assertEquals(Zone.BATTLEFIELD, attacker.zone());
+        assertEquals(Zone.DISCARD, defender.zone());
     }
 
     @Test void permanentAccumulatesDamageAndLastPermanentLossEndsGame() {

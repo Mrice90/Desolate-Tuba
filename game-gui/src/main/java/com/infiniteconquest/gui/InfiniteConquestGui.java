@@ -377,6 +377,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void executeHuman(String command) {
         if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
+        if (!confirmOpportunityRisk(command)) return;
         Map<UUID, BoardSnapshot> before = captureBoard();
         String result = commands.execute(command);
         showResolution(command, before);
@@ -687,6 +688,31 @@ public final class InfiniteConquestGui extends JFrame {
         return snapshot;
     }
 
+    private boolean confirmOpportunityRisk(String command) {
+        String[] p = command.split("\\s+");
+        if (!p[0].equals("move")) return true;
+        BoardPosition from = position(p, 1);
+        BoardPosition to = position(p, 3);
+        Optional<UUID> moverId = state.board().topAt(from);
+        if (moverId.isEmpty()) return true;
+        List<GameEngine.OpportunityThreat> threats = new GameEngine()
+                .opportunityThreats(state, moverId.get(), to);
+        if (threats.isEmpty()) return true;
+        StringBuilder warning = new StringBuilder("This route crosses enemy attack range:\n\n");
+        for (GameEngine.OpportunityThreat threat : threats) {
+            warning.append("• ").append(threat.attackerName()).append(" at (")
+                    .append(threat.attackerPosition().x()).append(", ")
+                    .append(threat.attackerPosition().y()).append(") — ATK ")
+                    .append(threat.attack()).append(" vs DEF ").append(threat.moverDefense())
+                    .append("; triggers at (").append(threat.triggerPosition().x()).append(", ")
+                    .append(threat.triggerPosition().y()).append(")")
+                    .append(threat.lethal() ? " — LETHAL" : " — survives").append('\n');
+        }
+        warning.append("\nEach listed enemy gets one free attack during this move. Continue?");
+        return JOptionPane.showConfirmDialog(this, warning.toString(), "Opportunity Attack Warning",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION;
+    }
+
     private void showResolution(String command, Map<UUID, BoardSnapshot> before) {
         String[] p = command.split("\\s+");
         switch (p[0]) {
@@ -709,6 +735,15 @@ public final class InfiniteConquestGui extends JFrame {
                 boolean ranged = from.distanceTo(target) > 1;
                 showTargetResult(target, before, ranged ? "RANGED" : "MELEE", ranged ? "#ffb45b" : "#ff7373");
                 combatOverlay.animate(from, target, ranged ? new Color(255, 180, 91) : ATTACK, false);
+                BoardSnapshot originalAttacker = before.values().stream()
+                        .filter(value -> value.position().equals(from) && value.top()).findFirst().orElse(null);
+                if (originalAttacker != null) {
+                    CardInstance surviving = state.card(originalAttacker.id()).orElse(null);
+                    if (surviving == null || surviving.zone() != Zone.BATTLEFIELD) {
+                        badge(from, "RETALIATION • DESTROYED", "#ff7373");
+                        combatOverlay.animate(target, from, ATTACK, false);
+                    }
+                }
                 SoundEffects.play(ranged ? SoundEffects.Cue.RANGED : SoundEffects.Cue.MELEE);
             }
             case "cast", "react" -> {
@@ -722,6 +757,23 @@ public final class InfiniteConquestGui extends JFrame {
         }
         for (GameEvent event : state.events()) {
             if (event.sequence() <= lastSystemEvent) continue;
+            if (event.type() == GameEvent.Type.OPPORTUNITY_ATTACK) {
+                String[] detail = event.detail().split("\\s+");
+                try {
+                    UUID attackerId = UUID.fromString(detail[0]);
+                    UUID moverId = UUID.fromString(detail[2]);
+                    BoardSnapshot attacker = before.get(attackerId);
+                    BoardSnapshot mover = before.get(moverId);
+                    if (attacker != null && mover != null) {
+                        String[] xy = detail[4].split(",");
+                        BoardPosition trigger = new BoardPosition(Integer.parseInt(xy[0]), Integer.parseInt(xy[1]));
+                        boolean destroyed = state.card(moverId).map(card -> card.zone() != Zone.BATTLEFIELD).orElse(true);
+                        badge(trigger, "FREE ATTACK • " + (destroyed ? "DESTROYED" : "BLOCKED"), "#ff7373");
+                        combatOverlay.animate(attacker.position(), trigger, ATTACK, false);
+                        SoundEffects.play(SoundEffects.Cue.MELEE);
+                    }
+                } catch (IllegalArgumentException ignored) { }
+            }
             if (event.type() != GameEvent.Type.CONQUEST_PRESSURE
                     && event.type() != GameEvent.Type.EXHAUSTION_DAMAGE) continue;
             try {
@@ -784,6 +836,7 @@ public final class InfiniteConquestGui extends JFrame {
                 case EXHAUSTION_DAMAGE -> friendlyCardDetail(event.detail(), " takes 1 exhaustion damage (empty deck)");
                 case CARD_DESTROYED -> friendlyCardDetail(event.detail(), " was destroyed");
                 case CAPITAL_PASSIVE_TRIGGERED -> "Capital passive — " + event.detail().replace('_', ' ').toLowerCase(Locale.ROOT);
+                case OPPORTUNITY_ATTACK -> friendlyOpportunityDetail(event.detail());
                 case GAME_OVER -> "GAME OVER — " + event.detail();
                 default -> null;
             };
@@ -807,6 +860,17 @@ public final class InfiniteConquestGui extends JFrame {
             }
         } catch (IllegalArgumentException ignored) { }
         return detail + suffix;
+    }
+
+    private String friendlyOpportunityDetail(String detail) {
+        String[] parts = detail.split("\\s+");
+        try {
+            String attacker = state.card(UUID.fromString(parts[0])).map(card -> card.definition().name()).orElse("Enemy");
+            String mover = state.card(UUID.fromString(parts[2])).map(card -> card.definition().name()).orElse("mover");
+            return attacker + " made a free opportunity attack against " + mover;
+        } catch (IllegalArgumentException exception) {
+            return "Opportunity attack resolved";
+        }
     }
 
     private void showPreview(CardInstance card) {
@@ -1020,19 +1084,35 @@ public final class InfiniteConquestGui extends JFrame {
 
     private final class CombatOverlay extends JComponent {
         private Animation animation;
+        private final ArrayDeque<Animation> queued = new ArrayDeque<>();
         private javax.swing.Timer timer;
 
         @Override public boolean contains(int x, int y) { return false; }
 
         void animate(BoardPosition from, BoardPosition to, Color color, boolean fromRules) {
-            animation = new Animation(from, to, color, fromRules, System.nanoTime());
-            if (timer != null) timer.stop();
+            Animation requested = new Animation(from, to, color, fromRules, 0L);
+            if (animation != null) {
+                queued.addLast(requested);
+                return;
+            }
+            start(requested);
+        }
+
+        private void start(Animation requested) {
+            animation = new Animation(requested.from(), requested.to(), requested.color(),
+                    requested.fromRules(), System.nanoTime());
             timer = new javax.swing.Timer(28, event -> {
                 repaint();
                 if (animation != null && animation.progress() >= 1f) {
-                    ((javax.swing.Timer) event.getSource()).stop();
-                    animation = null;
-                    repaint();
+                    if (queued.isEmpty()) {
+                        ((javax.swing.Timer) event.getSource()).stop();
+                        animation = null;
+                        repaint();
+                    } else {
+                        Animation next = queued.removeFirst();
+                        animation = new Animation(next.from(), next.to(), next.color(),
+                                next.fromRules(), System.nanoTime());
+                    }
                 }
             });
             timer.start();

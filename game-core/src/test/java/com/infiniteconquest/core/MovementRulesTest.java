@@ -37,4 +37,27 @@ class MovementRulesTest {
 
         assertFalse(new GameEngine().legalMovementDestinations(state, runner.instanceId()).contains(new BoardPosition(1, 1)));
     }
+
+    @Test void movementThroughEnemyRangeTriggersOneFreeAttackAndStopsWhenLethal() {
+        GameState state = new GameState(5L);
+        CardInstance runner = character(state, 3, new BoardPosition(0, 0));
+        CardDefinition sentryDefinition = new CardDefinition("sentry", "Sentry", CardType.CHARACTER,
+                "DEV", 0, 1, 1, 1, 1);
+        CardInstance sentry = new CardInstance(UUID.randomUUID(), sentryDefinition, 1, Zone.BATTLEFIELD);
+        state.register(sentry);
+        state.board().push(new BoardPosition(1, 1), sentry.instanceId());
+        GameEngine engine = new GameEngine();
+
+        var threats = engine.opportunityThreats(state, runner.instanceId(), new BoardPosition(2, 0));
+        assertEquals(1, threats.size());
+        assertTrue(threats.get(0).lethal());
+
+        ActionResult result = engine.apply(state,
+                new GameAction.MoveCharacter(0, runner.instanceId(), new BoardPosition(2, 0)));
+        assertTrue(result.accepted());
+        assertEquals(Zone.DISCARD, runner.zone());
+        assertEquals(1, state.events().stream()
+                .filter(event -> event.type() == GameEvent.Type.OPPORTUNITY_ATTACK).count());
+        assertFalse(sentry.attackedThisTurn(), "free attack must not consume the normal attack");
+    }
 }

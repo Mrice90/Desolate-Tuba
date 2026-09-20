@@ -31,23 +31,37 @@ public final class MovementRules {
     }
 
     public int shortestLegalDistance(GameState state, CardInstance character, BoardPosition destination) {
+        List<BoardPosition> path = shortestLegalPath(state, character, destination);
+        return path.isEmpty() ? -1 : path.size();
+    }
+
+    /** Returns each entered cell, excluding the origin and including the destination. */
+    public List<BoardPosition> shortestLegalPath(GameState state, CardInstance character, BoardPosition destination) {
         BoardPosition origin = state.board().positionOf(character.instanceId()).orElseThrow();
-        if (!legalDestinations(state, character).contains(destination)) return -1;
+        if (!legalDestinations(state, character).contains(destination)) return List.of();
 
         Map<BoardPosition, Integer> distance = new HashMap<>();
+        Map<BoardPosition, BoardPosition> previous = new HashMap<>();
         ArrayDeque<BoardPosition> queue = new ArrayDeque<>();
         distance.put(origin, 0);
         queue.add(origin);
         while (!queue.isEmpty()) {
             BoardPosition current = queue.removeFirst();
-            if (current.equals(destination)) return distance.get(current);
+            if (current.equals(destination)) {
+                LinkedList<BoardPosition> path = new LinkedList<>();
+                for (BoardPosition step = destination; !step.equals(origin); step = previous.get(step)) {
+                    path.addFirst(step);
+                }
+                return List.copyOf(path);
+            }
             for (BoardPosition next : neighbors(current)) {
                 if ((!state.board().isEmpty(next) && !next.equals(destination)) || distance.containsKey(next)) continue;
                 distance.put(next, distance.get(current) + 1);
+                previous.put(next, current);
                 queue.addLast(next);
             }
         }
-        return -1;
+        return List.of();
     }
 
     private List<BoardPosition> neighbors(BoardPosition position) {
