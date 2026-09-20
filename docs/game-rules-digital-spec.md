@@ -11,9 +11,12 @@ This document records implemented rules. Prototype card balance remains editable
 
 ## Turns and resources
 
-- Start Phase refreshes controlled cards, grants GP, and draws one card.
-- Normal maximum GP follows 1, 3, 5, 7, 9, 10 across personal turns so mid/high-cost cards enter play sooner.
-- Player 1 receives 5 GP on each of their first two personal turns and one extra opening card as prototype second-player advantages, then follows normal GP growth.
+- Before play, each player places their chosen Capital secretly on any cell of their own 4×3 plot.
+- A visible coin flip determines the starting player. The starting player opens with 10 GP and five cards; the second player opens with 12 GP and six cards.
+- GP is persistent and does not automatically refill or increase by turn number.
+- At the start of a player's turn, each Land and Structure they control generates 1 GP, then controlled cards refresh and the player draws one card.
+- Lands and Structures cost no GP. Their printed number is a development value: a value-1 card is legal from personal turn 1 onward, a value-3 card from personal turn 3 onward, and so on.
+- Characters and Spells retain their printed GP costs.
 - Empty-deck draws deal one exhaustion damage to each controlled Permanent.
 - Conquest Pressure deals 3 damage to each active player's Permanent at the start of turns 9–14, then 4 damage from turn 15 onward. From turns 9–22, each player receives exactly seven pressure pulses.
 

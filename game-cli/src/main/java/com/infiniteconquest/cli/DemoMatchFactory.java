@@ -32,11 +32,21 @@ public final class DemoMatchFactory {
     public GameState create(long seed, List<CardDefinition> playerZeroDeck,
                             List<CardDefinition> playerOneDeck,
                             CardDefinition playerZeroCapital, CardDefinition playerOneCapital) {
+        return create(seed, playerZeroDeck, playerOneDeck, playerZeroCapital, playerOneCapital,
+                new BoardPosition(1, 0), randomBotCapitalPosition(seed));
+    }
+
+    public GameState create(long seed, List<CardDefinition> playerZeroDeck,
+                            List<CardDefinition> playerOneDeck,
+                            CardDefinition playerZeroCapital, CardDefinition playerOneCapital,
+                            BoardPosition playerZeroCapitalPosition,
+                            BoardPosition playerOneCapitalPosition) {
         validateCapitalChoice(playerZeroDeck, playerZeroCapital);
         validateCapitalChoice(playerOneDeck, playerOneCapital);
         GameState state = new MatchFactory().create(
                 seed, MatchRules.current(), playerZeroDeck, playerOneDeck);
-        deployCapitals(state, seed, playerZeroCapital, playerOneCapital);
+        deployCapitals(state, seed, playerZeroCapital, playerOneCapital,
+                playerZeroCapitalPosition, playerOneCapitalPosition);
         return state;
     }
 
@@ -63,7 +73,8 @@ public final class DemoMatchFactory {
     }
 
     private void deployCapitals(GameState state, long seed,
-                                CardDefinition playerZeroCapital, CardDefinition playerOneCapital) {
+                                CardDefinition playerZeroCapital, CardDefinition playerOneCapital,
+                                BoardPosition playerZeroPosition, BoardPosition playerOnePosition) {
         CapitalDeployment deployment = new CapitalDeployment();
         for (int player = 0; player < 2; player++) {
             CardDefinition selected = player == 0 ? playerZeroCapital : playerOneCapital;
@@ -74,10 +85,15 @@ public final class DemoMatchFactory {
                     (seed + ":capital:" + player).getBytes(StandardCharsets.UTF_8));
             CardInstance capital = new CardInstance(id, definition, player, Zone.DECK);
             state.register(capital);
-            deployment.commit(player, capital,
-                    new BoardPosition(player == 0 ? 1 : 2, player == 0 ? 0 : 5));
+            deployment.commit(player, capital, player == 0 ? playerZeroPosition : playerOnePosition);
         }
         deployment.reveal(state.board());
         state.activateInitialCapitalPassive();
+    }
+
+    private BoardPosition randomBotCapitalPosition(long seed) {
+        java.util.Random random = new java.util.Random(seed ^ 0xB07CA917L);
+        return new BoardPosition(random.nextInt(BoardPosition.WIDTH),
+                3 + random.nextInt(BoardPosition.HEIGHT / 2));
     }
 }

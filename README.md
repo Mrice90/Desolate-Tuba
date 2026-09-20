@@ -22,7 +22,9 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 - Choose **Bot (watch match)** for Player 1 during setup to run a bot-versus-bot match.
 - Battlefield callouts, directional source-to-target animations, and distinct CC0 sound cues identify movement, melee, ranged attacks, spells, destruction, and rule damage. Damaged permanents display both remaining HP and accumulated damage. Audio provenance is documented in `game-gui/src/main/resources/audio/ATTRIBUTION.md`.
 
-The client includes the full 4×6 battlefield, unique generated prototype art for every card, real faction starter decks, GP and deck meters, automatic bot turns, reaction windows, and match results.
+The client includes the full 4×6 battlefield, pregame Capital placement, an animated initiative coin flip, unique generated prototype art for every card, real faction starter decks, persistent GP and deck meters, automatic bot turns, reaction windows, and match results.
+
+The initiative winner begins with 10 GP and five cards. The second player begins with 12 GP and six cards. Lands and Structures are free once their printed development turn has been reached; each controlled Land and Structure generates 1 GP at the start of its owner's turn. There is no automatic per-turn GP and no late-game pressure or turn deadline.
 
 Combat is simultaneous: attack equal to defense destroys a Character, and an in-range defending Character retaliates at the same time. A defender outside its own range cannot retaliate. Moving through an enemy Character's attack range grants that enemy one free opportunity attack per move; human players receive a route warning showing each threat and whether its attack is lethal.
 

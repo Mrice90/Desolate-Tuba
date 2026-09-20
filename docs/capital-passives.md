@@ -19,7 +19,7 @@ Every faction has three 20 HP Capital choices. Capitals remain outside the 40-ca
 | Athena | Acropolis Command | Aegis Formation | At the start of your turn, the first Vanguard Character gains +1 Defense for the turn. |
 | Athena | Aegis Archive | Archived Foresight | Draw one additional card every fourth personal turn. |
 | Athena | Owlwatch Fortress | Owlward | The first Vanguard Character attacked each turn gains +1 Defense until its owner's next turn. |
-| Hephaestus | The Great Forge | Forge Efficiency | The first Structure played each turn refunds 1 GP. |
+| Hephaestus | The Great Forge | Forge Efficiency | The first Structure played each turn generates 1 GP. |
 | Hephaestus | Volcanic Foundry | Salvage Fires | The first friendly Structure destroyed each turn heals the Capital for 2. |
 | Hephaestus | Bronze Heart | Bronze Regeneration | At the start of your turn, heal the Capital for 1. |
 

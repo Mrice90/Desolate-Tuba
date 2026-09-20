@@ -14,25 +14,23 @@ class TurnLoopTest {
         return cards;
     }
 
-    @Test void everyStartPhaseDrawsAndUsesDocumentedSecondPlayerGp() {
+    @Test void openingBonusFollowsCoinFlipOrder() {
         GameState state = new MatchFactory().create(9L, MatchRules.current(), validDeck("a"), validDeck("b"));
-        assertEquals(6, state.player(0).hand().size());
-        assertEquals(1, state.player(0).currentGp());
-        assertEquals(6, state.player(1).hand().size());
+        int first = state.startingPlayer();
+        int second = 1 - first;
+        assertEquals(6, state.player(first).hand().size(), "Five-card opener plus first-turn draw");
+        assertEquals(10, state.player(first).currentGp());
+        assertEquals(6, state.player(second).hand().size(), "Second player opens with six before their first draw");
+        assertEquals(12, state.player(second).currentGp());
 
-        assertTrue(new GameEngine().apply(state, new GameAction.EndTurn(0)).accepted());
-        assertEquals(1, state.activePlayer());
-        assertEquals(5, state.player(1).currentGp());
-        assertEquals(7, state.player(1).hand().size());
-
-        new GameEngine().apply(state, new GameAction.EndTurn(1));
-        new GameEngine().apply(state, new GameAction.EndTurn(0));
-        assertEquals(5, state.player(1).currentGp(), "Second player keeps the opening boost for two personal turns");
+        assertTrue(new GameEngine().apply(state, new GameAction.EndTurn(first)).accepted());
+        assertEquals(second, state.activePlayer());
+        assertEquals(7, state.player(second).hand().size());
     }
 
     @Test void eventSequenceIsOrderedAndRecordsPhaseChanges() {
         GameState state = new MatchFactory().create(11L, MatchRules.current(), validDeck("a"), validDeck("b"));
-        new GameEngine().apply(state, new GameAction.EndTurn(0));
+        new GameEngine().apply(state, new GameAction.EndTurn(state.activePlayer()));
         List<GameEvent> events = state.events();
         for (int i = 0; i < events.size(); i++) assertEquals(i, events.get(i).sequence());
         assertTrue(events.stream().anyMatch(e -> e.type() == GameEvent.Type.TURN_ENDED));
@@ -40,18 +38,18 @@ class TurnLoopTest {
         assertTrue(events.stream().anyMatch(e -> e.type() == GameEvent.Type.CARDS_UNTAPPED));
     }
 
-    @Test void gpGrowthCapsAtConfiguredMaximum() {
-        MatchRules rules = new MatchRules(0, 3, 1, 2, 2, 0);
+    @Test void gpPersistsAndDoesNotGrowWithoutDevelopment() {
+        MatchRules rules = new MatchRules(0, 10, 12, 0);
         GameState state = new GameState(4L, rules, false);
         state.initializeMatch();
         GameEngine engine = new GameEngine();
         for (int i = 0; i < 10; i++) assertTrue(engine.apply(state, new GameAction.EndTurn(state.activePlayer())).accepted());
-        assertTrue(state.player(0).maximumGp() <= 3);
-        assertTrue(state.player(1).maximumGp() <= 3);
+        assertEquals(10, state.player(0).currentGp());
+        assertEquals(12, state.player(1).currentGp());
     }
 
     @Test void failedDrawDamagesEveryControlledPermanent() {
-        MatchRules rules = new MatchRules(0, 10, 1, 2, 2, 1);
+        MatchRules rules = new MatchRules(0, 10, 12, 1);
         GameState state = new GameState(4L, rules, false);
         CardDefinition land = new CardDefinition("land", "Land", CardType.LAND, "DEV", 0, 0, 0, 0, 0);
         CardInstance permanent = new CardInstance(UUID.randomUUID(), land, 0, Zone.BATTLEFIELD);

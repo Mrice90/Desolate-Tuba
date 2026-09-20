@@ -13,6 +13,7 @@ public final class MatchFactory {
         validateDeck(playerOneDeck, 1);
 
         GameState state = new GameState(seed, rules, false);
+        state.setStartingPlayer(new Random(seed ^ 0xC01DF11FL).nextBoolean() ? 1 : 0);
         loadPlayerDeck(state, seed, 0, playerZeroDeck);
         loadPlayerDeck(state, seed, 1, playerOneDeck);
         state.drawInitialHands();

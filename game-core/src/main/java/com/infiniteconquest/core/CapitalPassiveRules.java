@@ -41,7 +41,7 @@ public final class CapitalPassiveRules {
             Map.entry(CapitalPassive.AEGIS_FORMATION, "Start of your turn: your first Vanguard Character gains +1 Defense this turn."),
             Map.entry(CapitalPassive.ARCHIVED_FORESIGHT, "Draw one additional card every fourth personal turn."),
             Map.entry(CapitalPassive.OWLWARD, "The first enemy attack on your Vanguard Character each turn grants +1 Defense until your next turn."),
-            Map.entry(CapitalPassive.FORGE_EFFICIENCY, "The first Structure you play each turn refunds 1 GP."),
+            Map.entry(CapitalPassive.FORGE_EFFICIENCY, "The first Structure you play each turn generates 1 GP."),
             Map.entry(CapitalPassive.SALVAGE_FIRES, "The first friendly Structure destroyed each turn heals your Capital for 2."),
             Map.entry(CapitalPassive.BRONZE_REGENERATION, "Start of your turn: heal your Capital for 1."));
 
