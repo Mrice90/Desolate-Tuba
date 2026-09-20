@@ -40,7 +40,6 @@ public final class BoardState {
         pop(position);
     }
     public void moveTop(BoardPosition from, BoardPosition to, UUID expected) {
-        if (!isEmpty(to)) throw new IllegalStateException("Movement destination must be empty");
         if (!topAt(from).orElseThrow().equals(expected)) throw new IllegalStateException("Only top card can move");
         pop(from);
         push(to, expected);

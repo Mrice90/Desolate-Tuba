@@ -114,6 +114,77 @@ class KeywordRulesTest {
                 new GameAction.Attack(0, attacker.instanceId(), target.instanceId())).accepted());
     }
 
+    @Test
+    void fastStrikePreventsRetaliationOnlyWhenItBreaksDefense() {
+        GameState state = new GameState(15L);
+        CardInstance striker = add(state, 0, character("striker", 4, 2, 1, Keyword.FAST_STRIKE),
+                Zone.BATTLEFIELD, new BoardPosition(0, 0));
+        CardInstance defender = add(state, 1, character("defender", 5, 3, 1),
+                Zone.BATTLEFIELD, new BoardPosition(0, 1));
+
+        assertTrue(new GameEngine().apply(state,
+                new GameAction.Attack(0, striker.instanceId(), defender.instanceId())).accepted());
+        assertEquals(Zone.BATTLEFIELD, striker.zone());
+        assertEquals(Zone.DISCARD, defender.zone());
+
+        GameState tied = new GameState(16L);
+        CardInstance tiedStriker = add(tied, 0, character("tied_striker", 3, 2, 1, Keyword.FAST_STRIKE),
+                Zone.BATTLEFIELD, new BoardPosition(0, 0));
+        CardInstance tiedDefender = add(tied, 1, character("tied_defender", 3, 3, 1),
+                Zone.BATTLEFIELD, new BoardPosition(0, 1));
+        assertTrue(new GameEngine().apply(tied,
+                new GameAction.Attack(0, tiedStriker.instanceId(), tiedDefender.instanceId())).accepted());
+        assertEquals(Zone.DISCARD, tiedStriker.zone());
+        assertEquals(Zone.DISCARD, tiedDefender.zone());
+    }
+
+    @Test
+    void siegeDealsDoubleDamageToPermanents() {
+        GameState state = new GameState(17L);
+        CardInstance siege = add(state, 0, character("siege", 3, 2, 2, Keyword.SIEGE),
+                Zone.BATTLEFIELD, new BoardPosition(0, 0));
+        CardInstance land = add(state, 1,
+                new CardDefinition("fort", "Fort", CardType.LAND, "DEV", 1, 0, 0, 0, 0, 8),
+                Zone.BATTLEFIELD, new BoardPosition(0, 2));
+        assertTrue(new GameEngine().apply(state,
+                new GameAction.Attack(0, siege.instanceId(), land.instanceId())).accepted());
+        assertEquals(6, land.damage());
+    }
+
+    @Test
+    void sharpShotGainsAttackAndRangeOnlyAboveStructureOrCapital() {
+        GameState state = new GameState(18L);
+        BoardPosition tower = new BoardPosition(0, 0);
+        add(state, 0, new CardDefinition("tower", "Tower", CardType.STRUCTURE, "DEV", 1, 0, 0, 0, 0, 8),
+                Zone.BATTLEFIELD, tower);
+        CardInstance marksman = add(state, 0, character("marksman", 2, 2, 1, Keyword.SHARP_SHOT),
+                Zone.BATTLEFIELD, tower);
+        CardInstance target = add(state, 1, character("target", 1, 3, 1),
+                Zone.BATTLEFIELD, new BoardPosition(0, 2));
+        GameEngine engine = new GameEngine();
+
+        assertEquals(3, engine.effectiveAttack(state, marksman));
+        assertEquals(2, engine.effectiveRange(state, marksman));
+        assertTrue(engine.apply(state, new GameAction.Attack(0, marksman.instanceId(), target.instanceId())).accepted());
+        assertEquals(Zone.DISCARD, target.zone());
+    }
+
+    @Test
+    void characterCanMoveOntoFriendlyPermanentStack() {
+        GameState state = new GameState(19L);
+        CardInstance runner = add(state, 0, character("runner", 2, 2, 1), Zone.BATTLEFIELD,
+                new BoardPosition(0, 0));
+        BoardPosition capital = new BoardPosition(1, 0);
+        CardInstance base = add(state, 0,
+                new CardDefinition("capital", "Capital", CardType.CAPITAL, "DEV", 0, 0, 0, 0, 0, 20),
+                Zone.BATTLEFIELD, capital);
+
+        assertTrue(new GameEngine().apply(state,
+                new GameAction.MoveCharacter(0, runner.instanceId(), capital)).accepted());
+        assertEquals(java.util.List.of(base.instanceId(), runner.instanceId()), state.board().stackAt(capital));
+        assertEquals(runner.instanceId(), state.board().topAt(capital).orElseThrow());
+    }
+
     private void assertBlocks(CardDefinition blocker) {
         GameState state = rangedLane(blocker);
         CardInstance attacker = state.board().topAt(new BoardPosition(0, 0)).flatMap(state::card).orElseThrow();

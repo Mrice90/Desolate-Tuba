@@ -21,9 +21,11 @@ public final class MovementRules {
             int nextDistance = distance.get(current) + 1;
             if (nextDistance > allowance) continue;
             for (BoardPosition next : neighbors(current)) {
-                if (!state.board().isEmpty(next) || distance.containsKey(next)) continue;
+                if (distance.containsKey(next)) continue;
+                boolean stackableDestination = canJoinFriendlyPermanent(state, character, next);
+                if (!state.board().isEmpty(next) && !stackableDestination) continue;
                 distance.put(next, nextDistance);
-                queue.addLast(next);
+                if (state.board().isEmpty(next)) queue.addLast(next);
             }
         }
         distance.remove(origin);
@@ -62,6 +64,16 @@ public final class MovementRules {
             }
         }
         return List.of();
+    }
+
+    private boolean canJoinFriendlyPermanent(GameState state, CardInstance character, BoardPosition position) {
+        if (state.board().isEmpty(position)) return false;
+        return state.board().stackAt(position).stream()
+                .map(id -> state.card(id).orElseThrow())
+                .allMatch(card -> card.owner() == character.owner())
+                && state.board().stackAt(position).stream()
+                .map(id -> state.card(id).orElseThrow())
+                .anyMatch(card -> card.definition().isPermanent());
     }
 
     private List<BoardPosition> neighbors(BoardPosition position) {

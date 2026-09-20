@@ -19,6 +19,8 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 - Right-click an occupied battlefield cell to inspect every card in its stack, shown top-first.
 - Open the **Action Log** tab to review the match in chronological order.
 - Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
+- Opening mulligans use two visual card trays, and enemy-turn reactions use a visual spell tray plus battlefield targeting instead of a text menu.
+- Choose **Deck Builder** to edit and save one local 40-card deck per faction; saved decks are loaded automatically for new matches.
 - Choose **Bot (watch match)** for Player 1 during setup to run a bot-versus-bot match.
 - Battlefield callouts, directional source-to-target animations, and distinct CC0 sound cues identify movement, melee, ranged attacks, spells, destruction, and rule damage. Damaged permanents display both remaining HP and accumulated damage. Audio provenance is documented in `game-gui/src/main/resources/audio/ATTRIBUTION.md`.
 
@@ -27,6 +29,8 @@ The client includes the full 4×6 battlefield, pregame Capital placement, an ani
 The initiative winner begins with 10 GP and five cards. The second player begins with 12 GP and six cards. Each player may keep up to three opening cards and replace the rest through the mulligan. Lands and Structures are free once their printed development turn has been reached and show their GP-per-turn output directly. Standard income rises from 1 GP on early development cards to 5 GP on turn-9/10 cards; cards with utility passives generally generate less. There is no automatic per-turn GP and no late-game pressure or turn deadline.
 
 Combat is simultaneous: attack equal to defense destroys a Character, and an in-range defending Character retaliates at the same time. A defender outside its own range cannot retaliate. Moving through an enemy Character's attack range grants that enemy one free opportunity attack per move; human players receive a route warning showing each threat and whether its attack is lethal.
+
+Characters may move onto a friendly Land, Structure, or Capital stack and become its top card. Only the top card of any stack may attack or be attacked. **Fast Strike** prevents retaliation when the attacker strictly exceeds the defender's Defense, **Siege** doubles Character damage to permanents, and **Sharp Shot** grants +1 Attack and +1 Range while its Character is on top of a friendly Structure or Capital.
 
 ## Play the command-line prototype
 
@@ -44,7 +48,7 @@ gradle :game-cli:run --args="42"
 
 ## Build a custom deck
 
-The editor starts with the demo deck. It supports 264 editable prototypes: 240 faction cards across regular, apex, and keyword tiers, plus 24 neutral/development cards. The 18 Capitals are selected separately and never count toward the 40-card deck.
+The graphical **Deck Builder** and command-line editor support 306 editable prototypes: 282 faction cards across regular, apex, keyword, tactical, and development tiers, plus 24 neutral/development cards. Each faction now has 47 choices, including 14 Lands/Structures; its starter uses all 14 developments and 26 action cards. The 18 Capitals are selected separately and never count toward the 40-card deck.
 
 ```bash
 gradle :game-cli:run --args="deck"
@@ -99,9 +103,9 @@ Ten repetitions produce 3,240 matches. Reports include faction and Capital win r
 - deterministic setup, hands, draws, GP, phases, and events
 - 4×6 battlefield with two 4×3 player plots and ordered stacks
 - movement, range, Capitals, deployment, combat, HP, destruction, and victory
-- Mole, Blink, Vanguard, line of sight, and typed Spell effects
+- Mole, Blink, Vanguard, Fast Strike, Siege, Sharp Shot, line of sight, and typed Spell effects
 - private local-player handoff, inspection, and legal-action hints
-- six 40-card faction pools with primary/secondary type and keyword identities, plus 24 neutral/development prototypes
+- six 47-card faction pools with 40-card starters, expanded development choices, and primary/secondary identities, plus 24 neutral/development prototypes
 - three separately selectable Capitals per faction, each with a unique implemented passive ability
 - executable active-turn and enemy-turn reaction Spells
 - validated JSON deck files and interactive deck editor

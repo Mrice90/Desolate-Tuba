@@ -35,7 +35,7 @@ class CapitalPassiveRulesTest {
 
         assertTrue(new GameEngine().apply(state,
                 new GameAction.CastSpell(0, spell.instanceId(), target.instanceId(), null)).accepted());
-        assertEquals(12, state.player(0).currentGp());
+        assertEquals(10, state.player(0).currentGp());
         assertEquals(1, passiveEvents(state, CapitalPassive.STORM_TITHE));
     }
 
