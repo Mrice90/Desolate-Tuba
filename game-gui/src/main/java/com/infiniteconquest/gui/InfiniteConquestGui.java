@@ -878,7 +878,7 @@ public final class InfiniteConquestGui extends JFrame {
         return new MouseAdapter() {
             @Override public void mousePressed(MouseEvent event) {
                 if (SwingUtilities.isRightMouseButton(event)) {
-                    if (source.position() != null) showStackInspector(source.position());
+                    if (source.position() != null) showStackContextMenu(event, source.position());
                     return;
                 }
                 if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
@@ -925,6 +925,42 @@ public final class InfiniteConquestGui extends JFrame {
                 }
             }
         };
+    }
+
+    private void showStackContextMenu(MouseEvent event, BoardPosition position) {
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem inspect = new JMenuItem("Inspect stack");
+        inspect.addActionListener(action -> showStackInspector(position));
+        menu.add(inspect);
+
+        state.board().topAt(position).flatMap(state::card).ifPresent(top -> {
+            if (top.definition().abilities().stream().anyMatch(ability -> ability.trigger() == AbilityTrigger.ACTIVATED)) {
+                JMenuItem activate = new JMenuItem(activationMenuText(top));
+                activate.setEnabled(canActivate(position));
+                activate.setToolTipText(activate.isEnabled()
+                        ? "Pay the listed GP cost and use this ability"
+                        : "This ability cannot be used now (check turn, owner, GP, and once-per-turn limit)");
+                activate.addActionListener(action -> executeHuman(activationCommand(position)));
+                menu.add(activate);
+            }
+        });
+        menu.show(event.getComponent(), event.getX(), event.getY());
+    }
+
+    private String activationCommand(BoardPosition position) {
+        return "activate " + position.x() + " " + position.y();
+    }
+
+    private boolean canActivate(BoardPosition position) {
+        if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() != Phase.PLAY) return false;
+        return hints.forActivePlayer(state, new GameEngine()).contains(activationCommand(position));
+    }
+
+    private String activationMenuText(CardInstance card) {
+        int cost = card.definition().abilities().stream()
+                .filter(ability -> ability.trigger() == AbilityTrigger.ACTIVATED)
+                .mapToInt(CardAbility::gpCost).sum();
+        return "Activate " + card.definition().name() + " (" + cost + " GP)";
     }
 
     private void executeDrop(DragSource source, BoardPosition destination) {
@@ -1253,12 +1289,44 @@ public final class InfiniteConquestGui extends JFrame {
                     CardArtFactory.iconFor(def, 140, 58), SwingConstants.LEFT);
             row.setForeground(Color.WHITE);
             row.setBorder(new EmptyBorder(7, 7, 7, 7));
+            if (i == stack.size() - 1 && def.abilities().stream()
+                    .anyMatch(ability -> ability.trigger() == AbilityTrigger.ACTIVATED)) {
+                row.setToolTipText("Right-click to activate this top card's ability");
+                row.addMouseListener(new MouseAdapter() {
+                    private void showAbilityMenu(MouseEvent event) {
+                        if (!event.isPopupTrigger()) return;
+                        JPopupMenu menu = new JPopupMenu();
+                        JMenuItem activate = new JMenuItem(activationMenuText(card));
+                        activate.setEnabled(canActivate(position));
+                        activate.setToolTipText(activate.isEnabled()
+                                ? "Use this ability now"
+                                : "Unavailable: it must be your turn and you need enough GP; each ability is once per turn");
+                        activate.addActionListener(action -> {
+                            Window inspector = SwingUtilities.getWindowAncestor(cards);
+                            if (inspector != null) inspector.dispose();
+                            SwingUtilities.invokeLater(() -> executeHuman(activationCommand(position)));
+                        });
+                        menu.add(activate);
+                        menu.show(event.getComponent(), event.getX(), event.getY());
+                    }
+
+                    @Override public void mousePressed(MouseEvent event) { showAbilityMenu(event); }
+                    @Override public void mouseReleased(MouseEvent event) { showAbilityMenu(event); }
+                });
+            }
             cards.add(row);
         }
         cards.setBackground(PANEL);
         JScrollPane scroll = new JScrollPane(cards);
         scroll.setPreferredSize(new Dimension(510, Math.min(420, 95 * stack.size())));
-        JOptionPane.showMessageDialog(this, scroll,
+        JPanel inspector = new JPanel(new BorderLayout(0, 8));
+        inspector.setBackground(PANEL);
+        inspector.add(scroll, BorderLayout.CENTER);
+        JLabel help = new JLabel("Top card acts first. Right-click its row to use an activated ability.");
+        help.setForeground(new Color(155, 231, 255));
+        help.setBorder(new EmptyBorder(2, 7, 2, 7));
+        inspector.add(help, BorderLayout.SOUTH);
+        JOptionPane.showMessageDialog(this, inspector,
                 "Stack at (" + position.x() + ", " + position.y() + ") — top first", JOptionPane.PLAIN_MESSAGE);
     }
 
@@ -1530,321 +1598,3 @@ public final class InfiniteConquestGui extends JFrame {
                 cell.setForeground(Color.WHITE); cell.setBackground(position.isOnPlayerSide(0) ? HUMAN_PLOT : BOT_PLOT);
                 state.board().topAt(position).flatMap(state::card)
                         .ifPresent(card -> cell.setIcon(CardArtFactory.iconFor(card.definition(), 72, 42)));
-                cell.setHorizontalTextPosition(SwingConstants.CENTER);
-                cell.setVerticalTextPosition(SwingConstants.BOTTOM);
-                cell.addActionListener(e -> chooseTarget(position));
-                cell.addMouseListener(new MouseAdapter() {
-                    @Override public void mouseReleased(MouseEvent e) { if (selectedHandIndex != null) chooseTarget(position); }
-                });
-                targets.put(position, cell); board.add(cell);
-            }
-            commands.stream().map(this::handIndex).distinct().forEach(index -> {
-                CardDefinition spell = state.card(state.player(reacting).hand().get(index)).orElseThrow().definition();
-                JButton card = visualChoiceCard(spell, 190, 170);
-                card.addActionListener(e -> selectSpell(index));
-                card.addMouseListener(new MouseAdapter() {
-                    @Override public void mousePressed(MouseEvent e) { selectSpell(index); }
-                    @Override public void mouseReleased(MouseEvent e) {
-                        Point point = SwingUtilities.convertPoint(card, e.getPoint(), board);
-                        targets.entrySet().stream().filter(entry -> entry.getValue().getBounds().contains(point))
-                                .map(Map.Entry::getKey).findFirst().ifPresent(VisualReactionDialog.this::chooseTarget);
-                    }
-                });
-                spellTray.add(card); spellTray.add(Box.createHorizontalStrut(8));
-            });
-            JButton pass = button("Pass Reaction", e -> dispose());
-            instruction.setForeground(Color.WHITE);
-            JPanel header = new JPanel(new BorderLayout()); header.setOpaque(false);
-            header.add(instruction, BorderLayout.CENTER); header.add(pass, BorderLayout.EAST);
-            JPanel content = panel(new BorderLayout(8, 8)); content.setBorder(new EmptyBorder(12, 12, 12, 12));
-            content.add(header, BorderLayout.NORTH);
-            content.add(board, BorderLayout.CENTER);
-            JScrollPane spells = new JScrollPane(spellTray, ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            spells.setBorder(new TitledBorder(new LineBorder(CAST, 2), "REACTION SPELLS", TitledBorder.LEFT,
-                    TitledBorder.TOP, getFont(), CAST));
-            spells.setPreferredSize(new Dimension(800, 220)); content.add(spells, BorderLayout.SOUTH);
-            setContentPane(content); setSize(900, 790); setLocationRelativeTo(InfiniteConquestGui.this);
-            setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); refreshTargets();
-        }
-
-        String choose() { setVisible(true); return result; }
-
-        private int handIndex(String command) { return Integer.parseInt(command.split("\\s+")[2]); }
-        private BoardPosition target(String command) {
-            String[] p = command.split("\\s+"); return new BoardPosition(Integer.parseInt(p[3]), Integer.parseInt(p[4]));
-        }
-        private void selectSpell(int index) {
-            selectedHandIndex = index;
-            CardDefinition spell = state.card(state.player(reacting).hand().get(index)).orElseThrow().definition();
-            instruction.setText("<html><b>" + html(spell.name()) + " selected.</b> Drop or click a gold target.</html>");
-            refreshTargets();
-        }
-        private void refreshTargets() {
-            targets.forEach((position, button) -> {
-                boolean legal = selectedHandIndex != null && commands.stream()
-                        .anyMatch(command -> handIndex(command) == selectedHandIndex && target(command).equals(position));
-                button.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED),
-                        new LineBorder(legal ? CAST : PANEL_LIGHT, legal ? 4 : 1, true)));
-                button.setEnabled(selectedHandIndex == null || legal);
-            });
-        }
-        private void chooseTarget(BoardPosition position) {
-            if (selectedHandIndex == null) return;
-            List<String> matches = commands.stream().filter(command -> handIndex(command) == selectedHandIndex
-                    && target(command).equals(position)).toList();
-            if (matches.isEmpty()) return;
-            if (matches.size() == 1) result = matches.get(0);
-            else result = chooseTeleportDestination(matches);
-            if (result != null) dispose();
-        }
-        private String chooseTeleportDestination(List<String> matches) {
-            JPanel grid = new JPanel(new GridLayout(BoardPosition.HEIGHT, BoardPosition.WIDTH, 4, 4));
-            grid.setBackground(PANEL);
-            final String[] selected = {null};
-            JDialog picker = new JDialog(this, "Choose teleport destination", true);
-            for (int y = BoardPosition.HEIGHT - 1; y >= 0; y--) for (int x = 0; x < BoardPosition.WIDTH; x++) {
-                BoardPosition position = new BoardPosition(x, y);
-                String match = matches.stream().filter(command -> {
-                    String[] p = command.split("\\s+");
-                    return Integer.parseInt(p[5]) == position.x() && Integer.parseInt(p[6]) == position.y();
-                }).findFirst().orElse(null);
-                JButton cell = new JButton(state.board().isEmpty(position) ? position.x() + "," + position.y() : "OCCUPIED");
-                cell.setEnabled(match != null); cell.setBackground(match == null ? PANEL_LIGHT : MOVE); cell.setForeground(Color.WHITE);
-                cell.addActionListener(e -> { selected[0] = match; picker.dispose(); }); grid.add(cell);
-            }
-            picker.setContentPane(grid); picker.setSize(620, 520); picker.setLocationRelativeTo(this); picker.setVisible(true);
-            return selected[0];
-        }
-        private String reactionCellText(BoardPosition position) {
-            Optional<UUID> top = state.board().topAt(position);
-            if (top.isEmpty()) return "<html>" + position.x() + "," + position.y() + "<br>EMPTY</html>";
-            CardDefinition card = state.card(top.get()).orElseThrow().definition();
-            return "<html>" + position.x() + "," + position.y() + " • " + card.type() + "<br><b>" + html(card.name()) + "</b></html>";
-        }
-    }
-
-    private final class VisualMulliganDialog extends JDialog {
-        private final List<MulliganChoice> choices;
-        private final Set<UUID> discarded = new LinkedHashSet<>();
-        private final JPanel handTray = new JPanel();
-        private final JPanel discardTray = new JPanel();
-        private final JLabel count = new JLabel();
-        private UUID dragging;
-
-        VisualMulliganDialog(List<MulliganChoice> choices) {
-            super(InfiniteConquestGui.this, "Opening Mulligan", true);
-            this.choices = choices;
-            handTray.setLayout(new BoxLayout(handTray, BoxLayout.X_AXIS));
-            discardTray.setLayout(new BoxLayout(discardTray, BoxLayout.X_AXIS));
-            handTray.setBackground(new Color(24, 72, 58));
-            discardTray.setBackground(new Color(78, 42, 50));
-            count.setForeground(Color.WHITE);
-            JButton confirm = button("Confirm Mulligan", e -> dispose());
-            JPanel content = panel(new BorderLayout(8, 8));
-            content.setBorder(new EmptyBorder(12, 12, 12, 12));
-            JLabel directions = new JLabel("<html><b>Choose up to 3 cards to discard and redraw.</b> Click a card or drag it between trays. Unselected cards stay in your hand.</html>");
-            directions.setForeground(Color.WHITE);
-            JPanel trays = new JPanel(new GridLayout(2, 1, 0, 10)); trays.setOpaque(false);
-            trays.add(tray("OPENING HAND — THESE CARDS STAY", handTray, new Color(104, 211, 139)));
-            trays.add(tray("DISCARD & REDRAW — UP TO 3", discardTray, new Color(239, 106, 122)));
-            JPanel footer = new JPanel(new BorderLayout()); footer.setOpaque(false);
-            footer.add(count, BorderLayout.WEST); footer.add(confirm, BorderLayout.EAST);
-            content.add(directions, BorderLayout.NORTH); content.add(trays, BorderLayout.CENTER); content.add(footer, BorderLayout.SOUTH);
-            setContentPane(content); setSize(1150, 610); setLocationRelativeTo(InfiniteConquestGui.this);
-            setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-            rebuild();
-        }
-
-        Set<UUID> choose() { setVisible(true); return Set.copyOf(discarded); }
-
-        private JPanel tray(String title, JPanel cards, Color color) {
-            JPanel result = new JPanel(new BorderLayout(5, 5)); result.setOpaque(false);
-            result.add(section(title, color), BorderLayout.NORTH);
-            JScrollPane scroll = new JScrollPane(cards, ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            scroll.setBorder(new LineBorder(color, 2, true)); result.add(scroll, BorderLayout.CENTER); return result;
-        }
-
-        private void rebuild() {
-            handTray.removeAll(); discardTray.removeAll();
-            for (MulliganChoice choice : choices) {
-                JPanel destination = discarded.contains(choice.id()) ? discardTray : handTray;
-                JButton card = visualChoiceCard(choice.card(), 180, 185);
-                card.addMouseListener(new MouseAdapter() {
-                    @Override public void mousePressed(MouseEvent e) { dragging = choice.id(); }
-                    @Override public void mouseReleased(MouseEvent e) {
-                        Point handPoint = SwingUtilities.convertPoint(card, e.getPoint(), handTray);
-                        Point discardPoint = SwingUtilities.convertPoint(card, e.getPoint(), discardTray);
-                        if (discardTray.contains(discardPoint)) moveToDiscard(choice.id());
-                        else if (handTray.contains(handPoint)) discarded.remove(choice.id());
-                        else toggle(choice.id());
-                        dragging = null; rebuild();
-                    }
-                });
-                destination.add(card); destination.add(Box.createHorizontalStrut(7));
-            }
-            count.setText("DISCARDING " + discarded.size() + "/3 • KEEPING " + (choices.size() - discarded.size()));
-            handTray.revalidate(); discardTray.revalidate(); handTray.repaint(); discardTray.repaint();
-        }
-
-        private void toggle(UUID id) { if (!discarded.remove(id)) moveToDiscard(id); }
-        private void moveToDiscard(UUID id) {
-            if (discarded.size() >= 3 && !discarded.contains(id)) { Toolkit.getDefaultToolkit().beep(); return; }
-            discarded.add(id);
-        }
-    }
-
-    private record MatchChoice(String humanFaction, CardDefinition humanCapital,
-                               String botFaction, CardDefinition botCapital, boolean playerOneBot,
-                               BoardPosition humanCapitalPosition) { }
-
-    private final class CapitalPlacementPicker extends JPanel {
-        private BoardPosition selected = new BoardPosition(1, 0);
-        private final Map<BoardPosition, JButton> cells = new LinkedHashMap<>();
-
-        CapitalPlacementPicker() {
-            super(new GridLayout(3, 4, 4, 4));
-            setOpaque(false);
-            for (int y = 2; y >= 0; y--) for (int x = 0; x < 4; x++) {
-                BoardPosition position = new BoardPosition(x, y);
-                JButton cell = new JButton((x + 1) + "," + (y + 1));
-                cell.setToolTipText("Your plot — column " + (x + 1) + ", row " + (y + 1));
-                cell.addActionListener(e -> { selected = position; refreshSelection(); });
-                cells.put(position, cell);
-                add(cell);
-            }
-            refreshSelection();
-        }
-
-        BoardPosition selected() { return selected; }
-
-        private void refreshSelection() {
-            cells.forEach((position, cell) -> {
-                boolean chosen = position.equals(selected);
-                cell.setText(chosen ? "CAPITAL" : (position.x() + 1) + "," + (position.y() + 1));
-                cell.setBackground(chosen ? DEPLOY : PANEL_LIGHT);
-                cell.setForeground(Color.WHITE);
-            });
-        }
-    }
-    private record DragSource(Integer handIndex, BoardPosition position) { }
-    private record EffectBadge(String text, String color) { }
-    private record BoardSnapshot(UUID id, BoardPosition position, int damage, int hitPoints,
-                                 int defense, String name, CardType type, boolean top) { }
-
-    private enum Intent {
-        MOVE("MOVE", InfiniteConquestGui.MOVE, "#48b5e6"),
-        ATTACK("ATTACK", InfiniteConquestGui.ATTACK, "#f45c5c"),
-        DEPLOY("PLACE ON TOP", InfiniteConquestGui.DEPLOY, "#68d38b"),
-        BURROW("BURROW BELOW TOP", InfiniteConquestGui.BURROW, "#be79eb"),
-        CAST("SPELL TARGET", InfiniteConquestGui.CAST, "#f6c24e"),
-        BLINK("BLINK", InfiniteConquestGui.SELECTED, "#5bd1ff"),
-        CHOOSE("CHOOSE ACTION", Color.WHITE, "#ffffff");
-
-        private final String label;
-        private final Color color;
-        private final String hex;
-        Intent(String label, Color color, String hex) { this.label = label; this.color = color; this.hex = hex; }
-        static Intent fromCommand(String command) {
-            return switch (command.substring(0, command.indexOf(' '))) {
-                case "move" -> MOVE; case "attack" -> ATTACK; case "burrow" -> BURROW;
-                case "cast" -> CAST; case "blink" -> BLINK; default -> DEPLOY;
-            };
-        }
-    }
-
-    private final class CombatOverlay extends JComponent {
-        private Animation animation;
-        private final ArrayDeque<Animation> queued = new ArrayDeque<>();
-        private javax.swing.Timer timer;
-
-        @Override public boolean contains(int x, int y) { return false; }
-
-        void animate(BoardPosition from, BoardPosition to, Color color, boolean fromRules) {
-            Animation requested = new Animation(from, to, color, fromRules, 0L);
-            if (animation != null) {
-                queued.addLast(requested);
-                return;
-            }
-            start(requested);
-        }
-
-        private void start(Animation requested) {
-            animation = new Animation(requested.from(), requested.to(), requested.color(),
-                    requested.fromRules(), System.nanoTime());
-            timer = new javax.swing.Timer(28, event -> {
-                repaint();
-                if (animation != null && animation.progress() >= 1f) {
-                    if (queued.isEmpty()) {
-                        ((javax.swing.Timer) event.getSource()).stop();
-                        animation = null;
-                        repaint();
-                    } else {
-                        Animation next = queued.removeFirst();
-                        animation = new Animation(next.from(), next.to(), next.color(),
-                                next.fromRules(), System.nanoTime());
-                    }
-                }
-            });
-            timer.start();
-            repaint();
-        }
-
-        @Override protected void paintComponent(Graphics graphics) {
-            if (animation == null) return;
-            JButton targetButton = boardButtons.get(animation.to());
-            if (targetButton == null || !targetButton.isShowing()) return;
-            Point target = SwingUtilities.convertPoint(targetButton,
-                    targetButton.getWidth() / 2, targetButton.getHeight() / 2, this);
-            Point source;
-            if (animation.fromRules()) {
-                source = new Point(target.x, 8);
-            } else if (animation.from() == null) {
-                source = SwingUtilities.convertPoint(handPanel,
-                        Math.max(20, handPanel.getWidth() / 2), 0, this);
-            } else {
-                JButton sourceButton = boardButtons.get(animation.from());
-                if (sourceButton == null || !sourceButton.isShowing()) return;
-                source = SwingUtilities.convertPoint(sourceButton,
-                        sourceButton.getWidth() / 2, sourceButton.getHeight() / 2, this);
-            }
-
-            float progress = animation.progress();
-            float fade = progress < .72f ? 1f : Math.max(0f, (1f - progress) / .28f);
-            Graphics2D g = (Graphics2D) graphics.create();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setComposite(AlphaComposite.SrcOver.derive(.85f * fade));
-            g.setColor(animation.color());
-            g.setStroke(new BasicStroke(5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            g.drawLine(source.x, source.y, target.x, target.y);
-
-            double angle = Math.atan2(target.y - source.y, target.x - source.x);
-            int arrow = 15;
-            Path2D head = new Path2D.Double();
-            head.moveTo(target.x, target.y);
-            head.lineTo(target.x - arrow * Math.cos(angle - .48), target.y - arrow * Math.sin(angle - .48));
-            head.lineTo(target.x - arrow * Math.cos(angle + .48), target.y - arrow * Math.sin(angle + .48));
-            head.closePath();
-            g.fill(head);
-
-            float travel = Math.min(1f, progress / .72f);
-            int orbX = Math.round(source.x + (target.x - source.x) * travel);
-            int orbY = Math.round(source.y + (target.y - source.y) * travel);
-            g.setColor(Color.WHITE);
-            g.fillOval(orbX - 7, orbY - 7, 14, 14);
-            g.setColor(animation.color());
-            g.setStroke(new BasicStroke(4f));
-            int pulse = 22 + Math.round(26 * progress);
-            g.drawOval(target.x - pulse / 2, target.y - pulse / 2, pulse, pulse);
-            g.dispose();
-        }
-    }
-
-    private record Animation(BoardPosition from, BoardPosition to, Color color,
-                             boolean fromRules, long startedAt) {
-        float progress() {
-            return Math.min(1f, (System.nanoTime() - startedAt) / 800_000_000f);
-        }
-    }
-}
