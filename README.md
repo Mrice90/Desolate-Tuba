@@ -49,7 +49,7 @@ gradle :game-cli:run --args="42"
 
 ## Build a custom deck
 
-The graphical **Deck Builder** and command-line editor support 306 editable prototypes: 282 faction cards across regular, apex, keyword, tactical, and development tiers, plus 24 neutral/development cards. Each faction now has 47 choices, including 14 Lands/Structures; its starter uses all 14 developments and 26 action cards. The 18 Capitals are selected separately and never count toward the 40-card deck.
+The graphical **Deck Builder** and command-line editor support 330 editable prototypes: 306 faction cards across regular, apex, keyword, tactical, and development tiers, plus 24 neutral/development cards. Each faction now has 51 choices and at least 18 Lands/Structures; its starter uses 18 developments and 22 action cards, including one Fast Strike, Siege, and Sharp Shot Character. The 18 Capitals are selected separately and never count toward the 40-card deck.
 
 ```bash
 gradle :game-cli:run --args="deck"
@@ -106,7 +106,7 @@ Ten repetitions produce 3,240 matches. Reports include faction and Capital win r
 - movement, range, Capitals, deployment, combat, HP, destruction, and victory
 - Mole, Blink, Vanguard, Fast Strike, Siege, Sharp Shot, line of sight, and typed Spell effects
 - private local-player handoff, inspection, and legal-action hints
-- six 47-card faction pools with 40-card starters, expanded development choices, and primary/secondary identities, plus 24 neutral/development prototypes
+- six 51-card faction pools with development-heavy 40-card starters, expanded Land/Structure choices, and primary/secondary identities, plus 24 neutral/development prototypes
 - three separately selectable Capitals per faction, each with a unique implemented passive ability
 - executable active-turn and enemy-turn reaction Spells
 - validated JSON deck files and interactive deck editor

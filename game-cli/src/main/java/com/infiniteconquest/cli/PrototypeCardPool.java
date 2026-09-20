@@ -18,6 +18,7 @@ public final class PrototypeCardPool {
         loaded.addAll(CardCatalog.loadResource("/cards/faction-apex-cards.json").definitions());
         loaded.addAll(CardCatalog.loadResource("/cards/faction-keyword-cards.json").definitions());
         loaded.addAll(CardCatalog.loadResource("/cards/faction-development-expansion.json").definitions());
+        loaded.addAll(CardCatalog.loadResource("/cards/faction-development-expansion-2.json").definitions());
         loaded.addAll(CardCatalog.loadResource("/cards/tactical-keyword-cards.json").definitions());
         Map<String, CardDefinition> indexed = new LinkedHashMap<>();
         for (CardDefinition card : loaded) {

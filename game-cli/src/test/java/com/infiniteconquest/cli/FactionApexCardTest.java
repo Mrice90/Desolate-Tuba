@@ -58,7 +58,7 @@ class FactionApexCardTest {
             Map<String, Long> copies = deck.stream()
                     .collect(Collectors.groupingBy(CardDefinition::id, Collectors.counting()));
             assertEquals(40, copies.size(), faction);
-            assertEquals(14, deck.stream().filter(card -> card.type() == CardType.LAND
+            assertEquals(18, deck.stream().filter(card -> card.type() == CardType.LAND
                     || card.type() == CardType.STRUCTURE).count(), faction);
         }
     }

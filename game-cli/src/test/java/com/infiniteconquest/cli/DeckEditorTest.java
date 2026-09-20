@@ -16,7 +16,7 @@ class DeckEditorTest {
     void expandedPoolProvidesMeaningfulChoicesAcrossPlayableTypes() {
         PrototypeCardPool pool = new PrototypeCardPool();
 
-        assertEquals(306, pool.cards().size());
+        assertEquals(330, pool.cards().size());
         assertTrue(pool.cards().stream().anyMatch(card -> card.id().equals("demo_burrower_mole")));
         assertTrue(pool.cards().stream().anyMatch(card -> card.id().equals("demo_skybridge")));
         assertTrue(pool.cards().stream().anyMatch(card -> card.id().equals("demo_shield_generator")));
