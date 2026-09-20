@@ -23,7 +23,7 @@ final class CardArtFactory {
 
     static ImageIcon boardIconFor(CardDefinition card) {
         String key = card.id() + ":board";
-        return CACHE.computeIfAbsent(key, unused -> render(card, 94, 48));
+        return CACHE.computeIfAbsent(key, unused -> render(card, 70, 34));
     }
 
     private static ImageIcon render(CardDefinition card, int width, int height) {

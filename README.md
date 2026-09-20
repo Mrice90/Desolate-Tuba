@@ -21,10 +21,11 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 - Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
 - Opening mulligans use two visual card trays, and enemy-turn reactions use a visual spell tray plus battlefield targeting instead of a text menu.
 - Choose **Deck Builder** to edit and save one local 40-card deck per faction; saved decks are loaded automatically for new matches.
+- The Deck Builder is always available from **Game → Deck Builder** (`Ctrl+D`), even when compact window sizing hides header controls.
 - Choose **Bot (watch match)** for Player 1 during setup to run a bot-versus-bot match.
 - Battlefield callouts, directional source-to-target animations, and distinct CC0 sound cues identify movement, melee, ranged attacks, spells, destruction, and rule damage. Damaged permanents display both remaining HP and accumulated damage. Audio provenance is documented in `game-gui/src/main/resources/audio/ATTRIBUTION.md`.
 
-The client includes the full 4×6 battlefield, pregame Capital placement, an animated initiative coin flip, unique generated prototype art for every card, real faction starter decks, persistent GP and deck meters, automatic bot turns, reaction windows, and match results.
+The client includes the full 4×6 battlefield, responsive square board tiles with scrolling fallback, pregame Capital placement, an animated graphical initiative coin, unique generated prototype art for every card, real faction starter decks, persistent GP and deck meters, automatic bot turns, reaction windows, and match results.
 
 The initiative winner begins with 10 GP and five cards. The second player begins with 12 GP and six cards. Each player may keep up to three opening cards and replace the rest through the mulligan. Lands and Structures are free once their printed development turn has been reached and show their GP-per-turn output directly. Standard income rises from 1 GP on early development cards to 5 GP on turn-9/10 cards; cards with utility passives generally generate less. There is no automatic per-turn GP and no late-game pressure or turn deadline.
 
