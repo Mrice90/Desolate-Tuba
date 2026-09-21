@@ -52,6 +52,7 @@ final class CardArtFactory {
             case CHARACTER -> "characters";
             case SPELL -> "spells";
             case LAND -> "lands";
+            case STRUCTURE -> "structures";
             default -> null;
         };
         if (folder == null) return null;

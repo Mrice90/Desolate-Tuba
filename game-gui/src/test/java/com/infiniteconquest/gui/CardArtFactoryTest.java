@@ -42,6 +42,11 @@ class CardArtFactoryTest {
             "zeus_throneward_conduit", "zeus_land_thunderstep_plateau", "zeus_land_aurora_reach",
             "zeus_ability_stormfront", "zeus_land_dawncloud_step", "zeus_land_empyrean_current",
             "zeus_apex_celestial_throne_grid");
+    private static final List<String> PAINTED_ZEUS_STRUCTURES = List.of(
+            "zeus_storm_relay_pylon", "zeus_cloudwall_bastion", "zeus_keraunos_charging_spire",
+            "zeus_zeus_command_nexus", "zeus_structure_stormglass_relay", "zeus_structure_cloud_archive",
+            "zeus_ability_oracle_spire", "zeus_structure_aegis_conductor",
+            "zeus_structure_oracle_of_storms", "zeus_apex_worldstorm_spire");
 
     @Test void packagesFactionWorldsAndRendersDistinctCardIllustrations() {
         assertNotNull(CardArtFactory.class.getResource("/art/faction-environments.png"));
@@ -117,6 +122,20 @@ class CardArtFactoryTest {
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
         assertEquals(190, CardArtFactory.iconFor(cloudbank, 190, 78).getIconWidth());
         assertEquals(56, CardArtFactory.boardIconFor(cloudbank).getIconHeight());
+    }
+
+    @Test void packagesThePaintedZeusStructureRollout() {
+        for (String id : PAINTED_ZEUS_STRUCTURES) {
+            assertNotNull(CardArtFactory.class.getResource("/art/structures/" + id + ".jpg"), id);
+        }
+        CardDefinition pylon = new CardDefinition("zeus_storm_relay_pylon", "Storm Relay Pylon",
+                CardType.STRUCTURE, "ZEUS", 1, 0, 0, 0, 0, 5);
+        CardDefinition awaitingArt = new CardDefinition("zeus_future_structure", "Future Structure",
+                CardType.STRUCTURE, "ZEUS", 1, 0, 0, 0, 0, 5);
+        assertTrue(CardArtFactory.hasPaintedArt(pylon));
+        assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
+        assertEquals(190, CardArtFactory.iconFor(pylon, 190, 78).getIconWidth());
+        assertEquals(56, CardArtFactory.boardIconFor(pylon).getIconHeight());
     }
 
     private int pixelHash(ImageIcon icon) {
