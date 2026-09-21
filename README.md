@@ -16,6 +16,7 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 
 - Drag a hand card or battlefield unit onto a gold-highlighted legal destination. Click selection plus the **Legal Moves** tab remains available as a keyboard-friendly fallback.
 - Use **Expand Hand** for an art-focused hand tray with substantially larger cards and high-resolution 3:2 artwork.
+- Right-click a card in either hand view and choose **View full card** to open its complete card-format inspection view.
 - Right-click an occupied battlefield cell to inspect every card in its stack, shown top-first. Right-click any card row in that inspector to open a large card-format view with art, current stats, keywords, and abilities.
 - Use **Board Fullscreen** for an unobstructed, scrollable battlefield with taller tiles and high-resolution artwork; it opens on the player territory while retaining enemy rows in the same continuous grid. Press `Esc` or its exit button to restore the full interface.
 - Open the **Action Log** tab to review the match in chronological order.

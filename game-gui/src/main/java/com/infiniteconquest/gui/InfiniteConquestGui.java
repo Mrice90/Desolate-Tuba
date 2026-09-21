@@ -992,6 +992,7 @@ public final class InfiniteConquestGui extends JFrame {
             @Override public void mousePressed(MouseEvent event) {
                 if (SwingUtilities.isRightMouseButton(event)) {
                     if (source.position() != null) showStackContextMenu(event, source.position());
+                    else if (source.handIndex() != null) showHandCardContextMenu(event, source.handIndex());
                     return;
                 }
                 if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
@@ -1025,6 +1026,16 @@ public final class InfiniteConquestGui extends JFrame {
             }
 
         };
+    }
+
+    private void showHandCardContextMenu(MouseEvent event, int handIndex) {
+        if (handIndex < 0 || handIndex >= state.player(0).hand().size()) return;
+        CardInstance card = state.card(state.player(0).hand().get(handIndex)).orElseThrow();
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem view = new JMenuItem("View full card");
+        view.addActionListener(action -> showFullCard(card));
+        menu.add(view);
+        menu.show(event.getComponent(), event.getX(), event.getY());
     }
 
     private void showStackContextMenu(MouseEvent event, BoardPosition position) {
