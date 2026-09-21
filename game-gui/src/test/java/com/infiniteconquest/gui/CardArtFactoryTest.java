@@ -57,7 +57,10 @@ class CardArtFactoryTest {
             "poseidon_keyword_reef_tunneler", "poseidon_triton_waveguard",
             "poseidon_delphic_sonar_adept", "poseidon_keyword_breakwater_hoplite",
             "poseidon_fast_razorfin_lancer", "poseidon_kraken_tendril_drone",
-            "poseidon_naiad_flowshaper", "poseidon_abyssal_molecrab");
+            "poseidon_naiad_flowshaper", "poseidon_abyssal_molecrab",
+            "poseidon_oceanid_pressure_mage", "poseidon_ability_reefwarden",
+            "poseidon_keyword_trench_stalker", "poseidon_sharp_tidewall_harpooner",
+            "poseidon_leviathan_wakeborn", "poseidon_keyword_maelstrom_bulwark");
 
     @Test void everyPlayableZeusCardHasPaintedArt() {
         List<CardDefinition> cards = new PrototypeCardPool().cardsForFaction("ZEUS");
@@ -155,7 +158,7 @@ class CardArtFactoryTest {
         assertEquals(56, CardArtFactory.boardIconFor(pylon).getIconHeight());
     }
 
-    @Test void packagesTheFirstPaintedPoseidonCharacterBatch() {
+    @Test void packagesPaintedPoseidonCharacterRollout() {
         for (String id : PAINTED_POSEIDON_CHARACTERS) {
             assertNotNull(CardArtFactory.class.getResource("/art/characters/" + id + ".jpg"), id);
             assertTrue(CardArtFactory.hasPaintedArt(new PrototypeCardPool().require(id)), id);
