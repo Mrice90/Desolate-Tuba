@@ -51,6 +51,13 @@ class CardArtFactoryTest {
             "zeus_structure_oracle_of_storms", "zeus_apex_worldstorm_spire",
             "zeus_tutor_structure_1", "zeus_tutor_structure_2", "zeus_tutor_structure_3",
             "zeus_tutor_structure_4", "zeus_tutor_structure_5");
+    private static final List<String> PAINTED_POSEIDON_CHARACTERS = List.of(
+            "poseidon_tidepool_surveyor", "poseidon_nereid_current_rider",
+            "poseidon_reefline_defender", "poseidon_undertow_stalker",
+            "poseidon_keyword_reef_tunneler", "poseidon_triton_waveguard",
+            "poseidon_delphic_sonar_adept", "poseidon_keyword_breakwater_hoplite",
+            "poseidon_fast_razorfin_lancer", "poseidon_kraken_tendril_drone",
+            "poseidon_naiad_flowshaper", "poseidon_abyssal_molecrab");
 
     @Test void everyPlayableZeusCardHasPaintedArt() {
         List<CardDefinition> cards = new PrototypeCardPool().cardsForFaction("ZEUS");
@@ -146,6 +153,19 @@ class CardArtFactoryTest {
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
         assertEquals(190, CardArtFactory.iconFor(pylon, 190, 78).getIconWidth());
         assertEquals(56, CardArtFactory.boardIconFor(pylon).getIconHeight());
+    }
+
+    @Test void packagesTheFirstPaintedPoseidonCharacterBatch() {
+        for (String id : PAINTED_POSEIDON_CHARACTERS) {
+            assertNotNull(CardArtFactory.class.getResource("/art/characters/" + id + ".jpg"), id);
+            assertTrue(CardArtFactory.hasPaintedArt(new PrototypeCardPool().require(id)), id);
+        }
+        CardDefinition surveyor = new PrototypeCardPool().require("poseidon_tidepool_surveyor");
+        CardDefinition awaitingArt = new CardDefinition("poseidon_future_character", "Future Character",
+                CardType.CHARACTER, "POSEIDON", 1, 1, 1, 1, 1);
+        assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
+        assertEquals(190, CardArtFactory.iconFor(surveyor, 190, 78).getIconWidth());
+        assertEquals(56, CardArtFactory.boardIconFor(surveyor).getIconHeight());
     }
 
     private int pixelHash(ImageIcon icon) {
