@@ -110,10 +110,10 @@ class CardArtFactoryTest {
         for (String id : PAINTED_ZEUS_SPELLS) {
             assertNotNull(CardArtFactory.class.getResource("/art/spells/" + id + ".jpg"), id);
         }
-        CardDefinition chainLightning = new CardDefinition("zeus_chain_lightning", "Chain Lightning",
-                CardType.SPELL, "ZEUS", 3, 0, 0, 0, 0);
+        CardDefinition chainLightning = new PrototypeCardPool().require("zeus_chain_lightning");
         CardDefinition awaitingArt = new CardDefinition("zeus_future_spell", "Future Spell",
-                CardType.SPELL, "ZEUS", 3, 0, 0, 0, 0);
+                CardType.SPELL, "ZEUS", chainLightning.cost(), 0, 0, 0, 0, 0,
+                chainLightning.keywords(), chainLightning.effects());
         assertTrue(CardArtFactory.hasPaintedArt(chainLightning));
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
         assertEquals(190, CardArtFactory.iconFor(chainLightning, 190, 78).getIconWidth());
