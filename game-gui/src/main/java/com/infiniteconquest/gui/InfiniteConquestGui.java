@@ -265,7 +265,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private JComponent buildActions() {
         JPanel side = panel(new BorderLayout(8, 8));
-        side.setPreferredSize(new Dimension(350, 100));
+        side.setPreferredSize(new Dimension(336, 390));
         JPanel status = new JPanel(new BorderLayout(0, 5));
         status.setOpaque(false);
         status.add(section("MATCH STATUS", GOLD), BorderLayout.NORTH);
@@ -322,7 +322,14 @@ public final class InfiniteConquestGui extends JFrame {
         bottom.add(messageLabel, BorderLayout.NORTH);
         bottom.add(controls, BorderLayout.SOUTH);
         side.add(bottom, BorderLayout.SOUTH);
-        return side;
+        JScrollPane sideScroll = new JScrollPane(side,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        sideScroll.setPreferredSize(new Dimension(350, 100));
+        sideScroll.setBorder(null);
+        sideScroll.getViewport().setBackground(PANEL);
+        sideScroll.getVerticalScrollBar().setUnitIncrement(20);
+        return sideScroll;
     }
 
     private JComponent buildHand() {
@@ -857,12 +864,13 @@ public final class InfiniteConquestGui extends JFrame {
             cell.setBackground(base);
             cell.setForeground(Color.WHITE);
             Intent intent = destinationIntent(position);
+            int tilePadding = boardFullScreen ? 3 : 7;
             cell.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED,
                     base.brighter(), base.brighter(), base.darker(), base.darker()), new CompoundBorder(
                     new LineBorder(Objects.equals(selectedCell, position) ? SELECTED
                             : intent != null ? intent.color : base.brighter(),
                             Objects.equals(selectedCell, position) || intent != null ? 4 : 1, true),
-                    new EmptyBorder(7, 7, 7, 7))));
+                    new EmptyBorder(tilePadding, tilePadding, tilePadding, tilePadding))));
             if (topId.isEmpty()) {
                 cell.setIcon(null);
                 cell.setHorizontalAlignment(SwingConstants.LEFT);
@@ -876,7 +884,7 @@ public final class InfiniteConquestGui extends JFrame {
             CardDefinition def = card.definition();
             cell.setBackground(blend(base, factionColor(def.faction()), .42f));
             cell.setIcon(boardFullScreen
-                    ? CardArtFactory.iconFor(def, 132, 68)
+                    ? CardArtFactory.iconFor(def, 164, 74)
                     : CardArtFactory.boardIconFor(def));
             cell.setHorizontalTextPosition(SwingConstants.RIGHT);
             cell.setVerticalTextPosition(SwingConstants.CENTER);
@@ -923,10 +931,10 @@ public final class InfiniteConquestGui extends JFrame {
         for (int index = 0; index < hand.size(); index++) {
             CardInstance card = state.card(hand.get(index)).orElseThrow();
             CardDefinition def = card.definition();
-            int cardWidth = handExpanded ? 270 : 208;
+            int cardWidth = handExpanded ? 330 : 208;
             int cardHeight = handExpanded ? Math.max(285, handArea.getPreferredSize().height - 58) : 145;
-            int artWidth = handExpanded ? 246 : 190;
-            int artHeight = handExpanded ? Math.min(220, Math.max(150, cardHeight / 2)) : 58;
+            int artWidth = handExpanded ? 306 : 190;
+            int artHeight = handExpanded ? Math.min(225, Math.max(185, cardHeight * 3 / 5)) : 58;
             JButton tile = new JButton(cardHtml(def), CardArtFactory.iconFor(def, artWidth, artHeight));
             Dimension cardSize = new Dimension(cardWidth, cardHeight);
             tile.setPreferredSize(cardSize);
@@ -2202,7 +2210,11 @@ public final class InfiniteConquestGui extends JFrame {
                         90+Math.round(progress*44),animation.color(),.68f*fade,progress*2.5);
             }
             if(animation.style()==AnimationStyle.DEPLOY){
-                g.setComposite(AlphaComposite.SrcOver.derive(.3f*fade));g.fillRoundRect(target.x-34,target.y-70,68,140,24,24);
+                int highlightWidth = Math.max(96, targetButton.getWidth() - 18);
+                int highlightHeight = Math.max(42, targetButton.getHeight() - 18);
+                g.setComposite(AlphaComposite.SrcOver.derive(.3f*fade));
+                g.fillRoundRect(target.x-highlightWidth/2,target.y-highlightHeight/2,
+                        highlightWidth,highlightHeight,24,24);
                 VisualEffects.draw(g,VisualEffects.Sprite.LIGHT,target.x,target.y,
                         100+Math.round(progress*30),animation.color(),.72f*fade,0);
             }
