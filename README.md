@@ -15,15 +15,16 @@ gradle :game-gui:run
 The graphical client uses the same tested engine as the CLI. Choose both factions and one of three Capitals per side before the match, with strategy and passive summaries shown in setup.
 
 - Drag a hand card or battlefield unit onto a gold-highlighted legal destination. Click selection plus the **Legal Moves** tab remains available as a keyboard-friendly fallback.
-- Hover over any card for a large, readable preview.
-- Right-click an occupied battlefield cell to inspect every card in its stack, shown top-first.
+- Use **Expand Hand** to enlarge the hand tray to half of the gameplay screen.
+- Right-click an occupied battlefield cell to inspect every card in its stack, shown top-first. Right-click any card row in that inspector to open a large card-format view with art, current stats, keywords, and abilities.
+- Use **Board Fullscreen** for an unobstructed battlefield; press `Esc` or its exit button to restore the full interface.
 - Open the **Action Log** tab to review the match in chronological order.
 - Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
 - Opening mulligans let you visually select up to three cards to discard and redraw, and enemy-turn reactions use a matching visual spell tray plus battlefield targeting instead of a text menu.
 - Choose **Deck Builder** to edit and save one local deck per faction; decks require at least 40 cards, starter decks contain 60, and saved decks load automatically for new matches.
 - The Deck Builder is always available from **Game → Deck Builder** (`Ctrl+D`), even when compact window sizing hides header controls.
 - Choose **Bot (watch match)** for Player 1 during setup to run a bot-versus-bot match.
-- Battlefield callouts, directional source-to-target animations, and distinct CC0 sound cues identify movement, melee, ranged attacks, spells, destruction, and rule damage. Damaged permanents display both remaining HP and accumulated damage. Audio provenance is documented in `game-gui/src/main/resources/audio/ATTRIBUTION.md`.
+- Battlefield callouts, directional source-to-target animations, and distinct CC0 sound cues identify movement, melee, ranged attacks, spells, destruction, and rule damage. The gameplay header's **Mute** button toggles those cues. Damaged permanents display both remaining HP and accumulated damage. Audio provenance is documented in `game-gui/src/main/resources/audio/ATTRIBUTION.md`.
 
 The client includes the full 4×6 battlefield, responsive square board tiles with scrolling fallback, pregame Capital placement, an animated graphical initiative coin, unique generated prototype art for every card, real faction starter decks, persistent GP and deck meters, automatic bot turns, reaction windows, and match results.
 

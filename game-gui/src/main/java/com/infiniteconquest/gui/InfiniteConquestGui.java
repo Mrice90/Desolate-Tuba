@@ -41,8 +41,6 @@ public final class InfiniteConquestGui extends JFrame {
     private final DefaultListModel<String> historyModel = new DefaultListModel<>();
     private final JList<String> historyList = new JList<>(historyModel);
     private final JTabbedPane actionTabs = new JTabbedPane();
-    private final JLabel previewArt = new JLabel();
-    private final JLabel previewText = new JLabel("<html><b>Hover over a card</b><br>Right-click a board stack to inspect it.</html>");
     private final Map<BoardPosition, JButton> boardButtons = new HashMap<>();
     private final Map<BoardPosition, EffectBadge> effectBadges = new HashMap<>();
     private final CombatOverlay combatOverlay = new CombatOverlay();
@@ -72,6 +70,15 @@ public final class InfiniteConquestGui extends JFrame {
     private boolean winnerSoundPlayed;
     private boolean victoryDialogShown;
     private boolean fullScreen;
+    private boolean boardFullScreen;
+    private boolean handExpanded;
+    private JPanel screenRoot;
+    private JComponent headerArea;
+    private JComponent actionArea;
+    private JComponent handArea;
+    private JButton muteButton;
+    private JButton boardFullScreenButton;
+    private JButton handExpandButton;
     private MatchChoice lastMatchChoice;
 
     public InfiniteConquestGui() {
@@ -95,14 +102,23 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private JComponent buildScreen() {
-        JPanel root = new JPanel(new BorderLayout(8, 8));
-        root.setBackground(INK);
-        root.setBorder(new EmptyBorder(8, 8, 8, 8));
-        root.add(buildHeader(), BorderLayout.NORTH);
-        root.add(buildBoard(), BorderLayout.CENTER);
-        root.add(buildActions(), BorderLayout.EAST);
-        root.add(buildHand(), BorderLayout.SOUTH);
-        return root;
+        screenRoot = new JPanel(new BorderLayout(8, 8));
+        screenRoot.setBackground(INK);
+        screenRoot.setBorder(new EmptyBorder(8, 8, 8, 8));
+        headerArea = buildHeader();
+        actionArea = buildActions();
+        handArea = buildHand();
+        screenRoot.add(headerArea, BorderLayout.NORTH);
+        screenRoot.add(buildBoard(), BorderLayout.CENTER);
+        screenRoot.add(actionArea, BorderLayout.EAST);
+        screenRoot.add(handArea, BorderLayout.SOUTH);
+        screenRoot.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), "exitBoardView");
+        screenRoot.getActionMap().put("exitBoardView", new AbstractAction() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent event) {
+                if (boardFullScreen) toggleBoardFullScreen();
+            }
+        });
+        return screenRoot;
     }
 
     private JComponent buildHeader() {
@@ -119,6 +135,8 @@ public final class InfiniteConquestGui extends JFrame {
 
         JButton deckBuilder = button("Deck Builder", e -> openDeckEditor());
         JButton newMatch = button("New Match", e -> newMatch());
+        muteButton = button("Mute", e -> toggleMute());
+        muteButton.setToolTipText("Mute sound effects");
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 2));
         left.setOpaque(false);
         left.add(title);
@@ -128,6 +146,7 @@ public final class InfiniteConquestGui extends JFrame {
         controls.setOpaque(false);
         controls.add(deckBuilder);
         controls.add(newMatch);
+        controls.add(muteButton);
         header.add(controls, BorderLayout.EAST);
         return header;
     }
@@ -165,6 +184,11 @@ public final class InfiniteConquestGui extends JFrame {
         JPanel surround = panel(new BorderLayout(0, 8));
         JLabel enemy = section("PLAYER 2 — BOT TERRITORY", new Color(239, 106, 122));
         JLabel human = section("PLAYER 1 — YOUR TERRITORY", new Color(87, 203, 234));
+        boardFullScreenButton = button("Board Fullscreen", e -> toggleBoardFullScreen());
+        JPanel boardHeader = new JPanel(new BorderLayout(8, 0));
+        boardHeader.setOpaque(false);
+        boardHeader.add(enemy, BorderLayout.WEST);
+        boardHeader.add(boardFullScreenButton, BorderLayout.EAST);
         boardPanel.setOpaque(false);
         boardPanel.setBorder(new EmptyBorder(8, 8, 8, 8));
         for (int y = BoardPosition.HEIGHT - 1; y >= 0; y--) {
@@ -182,7 +206,7 @@ public final class InfiniteConquestGui extends JFrame {
                 boardPanel.add(cell);
             }
         }
-        surround.add(enemy, BorderLayout.NORTH);
+        surround.add(boardHeader, BorderLayout.NORTH);
         boardStage.setOpaque(false);
         boardStage.add(boardPanel);
         boardScroll = new JScrollPane(boardStage,
@@ -199,6 +223,23 @@ public final class InfiniteConquestGui extends JFrame {
         surround.add(boardScroll, BorderLayout.CENTER);
         surround.add(human, BorderLayout.SOUTH);
         return surround;
+    }
+
+    private void toggleMute() {
+        SoundEffects.setMuted(!SoundEffects.isMuted());
+        muteButton.setText(SoundEffects.isMuted() ? "Unmute" : "Mute");
+        muteButton.setToolTipText(SoundEffects.isMuted() ? "Sound effects are muted" : "Mute sound effects");
+    }
+
+    private void toggleBoardFullScreen() {
+        boardFullScreen = !boardFullScreen;
+        headerArea.setVisible(!boardFullScreen);
+        actionArea.setVisible(!boardFullScreen);
+        handArea.setVisible(!boardFullScreen);
+        boardFullScreenButton.setText(boardFullScreen ? "Exit Board Fullscreen" : "Board Fullscreen");
+        screenRoot.revalidate();
+        screenRoot.repaint();
+        SwingUtilities.invokeLater(() -> fitBoardToViewport(boardScroll.getViewport().getExtentSize()));
     }
 
     private void fitBoardToViewport(Dimension available) {
@@ -228,21 +269,10 @@ public final class InfiniteConquestGui extends JFrame {
         status.add(meters, BorderLayout.CENTER);
         status.setPreferredSize(new Dimension(330, 91));
 
-        JPanel preview = new JPanel(new BorderLayout(8, 8));
-        preview.setOpaque(false);
-        preview.setPreferredSize(new Dimension(330, 105));
-        previewArt.setHorizontalAlignment(SwingConstants.CENTER);
-        previewText.setForeground(Color.WHITE);
-        previewText.setVerticalAlignment(SwingConstants.TOP);
-        preview.add(section("CARD INSPECTOR", GOLD), BorderLayout.NORTH);
-        preview.add(previewArt, BorderLayout.CENTER);
-        preview.add(previewText, BorderLayout.SOUTH);
         JPanel sideTop = new JPanel();
         sideTop.setOpaque(false);
         sideTop.setLayout(new BoxLayout(sideTop, BoxLayout.Y_AXIS));
         sideTop.add(status);
-        sideTop.add(Box.createVerticalStrut(7));
-        sideTop.add(preview);
         side.add(sideTop, BorderLayout.NORTH);
         actionList.setBackground(PANEL_LIGHT);
         actionList.setForeground(Color.WHITE);
@@ -292,7 +322,12 @@ public final class InfiniteConquestGui extends JFrame {
         JPanel area = panel(new BorderLayout(8, 8));
         area.setPreferredSize(new Dimension(100, 180));
         area.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new EmptyBorder(6, 6, 6, 6)));
-        area.add(section("YOUR HAND", new Color(87, 203, 234)), BorderLayout.NORTH);
+        JPanel handHeader = new JPanel(new BorderLayout(8, 0));
+        handHeader.setOpaque(false);
+        handHeader.add(section("YOUR HAND", new Color(87, 203, 234)), BorderLayout.WEST);
+        handExpandButton = button("Expand Hand", e -> toggleHandExpansion());
+        handHeader.add(handExpandButton, BorderLayout.EAST);
+        area.add(handHeader, BorderLayout.NORTH);
         handPanel.setLayout(new BoxLayout(handPanel, BoxLayout.X_AXIS));
         handPanel.setBackground(PANEL);
         JScrollPane scroll = new JScrollPane(handPanel,
@@ -302,6 +337,15 @@ public final class InfiniteConquestGui extends JFrame {
         scroll.getHorizontalScrollBar().setUnitIncrement(24);
         area.add(scroll, BorderLayout.CENTER);
         return area;
+    }
+
+    private void toggleHandExpansion() {
+        handExpanded = !handExpanded;
+        int height = handExpanded ? Math.max(360, screenRoot.getHeight() / 2) : 180;
+        handArea.setPreferredSize(new Dimension(100, height));
+        handExpandButton.setText(handExpanded ? "Collapse Hand" : "Expand Hand");
+        screenRoot.revalidate();
+        SwingUtilities.invokeLater(() -> fitBoardToViewport(boardScroll.getViewport().getExtentSize()));
     }
 
     private void newMatch() {
@@ -940,11 +984,6 @@ public final class InfiniteConquestGui extends JFrame {
                 selectedCell = source.position();
                 refreshBoard();
                 refreshActions();
-                if (source.handIndex() != null && source.handIndex() < state.player(0).hand().size()) {
-                    showPreview(state.card(state.player(0).hand().get(source.handIndex())).orElseThrow());
-                } else if (source.position() != null) {
-                    state.board().topAt(source.position()).flatMap(state::card).ifPresent(InfiniteConquestGui.this::showPreview);
-                }
             }
 
             @Override public void mouseReleased(MouseEvent event) {
@@ -962,14 +1001,6 @@ public final class InfiniteConquestGui extends JFrame {
                 executeDrop(original, destination);
             }
 
-            @Override public void mouseEntered(MouseEvent event) {
-                if (state == null) return;
-                if (source.handIndex() != null && source.handIndex() < state.player(0).hand().size()) {
-                    state.card(state.player(0).hand().get(source.handIndex())).ifPresent(InfiniteConquestGui.this::showPreview);
-                } else if (source.position() != null) {
-                    state.board().topAt(source.position()).flatMap(state::card).ifPresent(InfiniteConquestGui.this::showPreview);
-                }
-            }
         };
     }
 
@@ -1304,20 +1335,6 @@ public final class InfiniteConquestGui extends JFrame {
         }
     }
 
-    private void showPreview(CardInstance card) {
-        CardDefinition def = card.definition();
-        previewArt.setIcon(CardArtFactory.iconFor(def, 300, 88));
-        String stats = def.type() == CardType.CHARACTER
-                ? "ATK " + new GameEngine().effectiveAttack(state, card) + "  DEF " + card.effectiveDefense()
-                + "  MOVE " + def.movement() + "  RANGE " + new GameEngine().effectiveRange(state, card)
-                : def.isPermanent() ? "HP " + Math.max(0, def.hitPoints() - card.damage()) + "/" + def.hitPoints()
-                : effectLine(def);
-        previewText.setText("<html><b>" + html(def.name()) + "</b> — " + html(playRequirement(def)) + " " + title(def.type().name())
-                + "<br>" + html(stats) + (developmentText(def).isBlank() ? "" : "<br><font color='#67d890'><b>" + html(developmentText(def)) + "</b></font>")
-                + "<br><font color='#d9b95f'>" + html(keywordLine(def)) + "</font>"
-                + (abilityLine(def).isBlank() ? "" : "<br><font color='#9be7ff'>" + html(abilityLine(def)) + "</font>") + "</html>");
-    }
-
     private void showStackInspector(BoardPosition position) {
         List<UUID> stack = state.board().stackAt(position);
         if (stack.isEmpty()) {
@@ -1338,13 +1355,18 @@ public final class InfiniteConquestGui extends JFrame {
                     CardArtFactory.iconFor(def, 140, 58), SwingConstants.LEFT);
             row.setForeground(Color.WHITE);
             row.setBorder(new EmptyBorder(7, 7, 7, 7));
-            if (i == stack.size() - 1 && def.abilities().stream()
-                    .anyMatch(ability -> ability.trigger() == AbilityTrigger.ACTIVATED)) {
-                row.setToolTipText("Right-click to activate this top card's ability");
-                row.addMouseListener(new MouseAdapter() {
-                    private void showAbilityMenu(MouseEvent event) {
-                        if (!event.isPopupTrigger()) return;
-                        JPopupMenu menu = new JPopupMenu();
+            boolean topCard = i == stack.size() - 1;
+            row.setToolTipText("Right-click to view this card" + (topCard ? " or use its activated ability" : ""));
+            row.addMouseListener(new MouseAdapter() {
+                private void showCardMenu(MouseEvent event) {
+                    if (!event.isPopupTrigger()) return;
+                    JPopupMenu menu = new JPopupMenu();
+                    JMenuItem view = new JMenuItem("View full card");
+                    view.addActionListener(action -> showFullCard(card));
+                    menu.add(view);
+                    if (topCard && def.abilities().stream()
+                            .anyMatch(ability -> ability.trigger() == AbilityTrigger.ACTIVATED)) {
+                        menu.addSeparator();
                         JMenuItem activate = new JMenuItem(activationMenuText(card));
                         activate.setEnabled(canActivate(position));
                         activate.setToolTipText(activate.isEnabled()
@@ -1356,13 +1378,13 @@ public final class InfiniteConquestGui extends JFrame {
                             SwingUtilities.invokeLater(() -> executeHuman(activationCommand(position)));
                         });
                         menu.add(activate);
-                        menu.show(event.getComponent(), event.getX(), event.getY());
                     }
+                    menu.show(event.getComponent(), event.getX(), event.getY());
+                }
 
-                    @Override public void mousePressed(MouseEvent event) { showAbilityMenu(event); }
-                    @Override public void mouseReleased(MouseEvent event) { showAbilityMenu(event); }
-                });
-            }
+                @Override public void mousePressed(MouseEvent event) { showCardMenu(event); }
+                @Override public void mouseReleased(MouseEvent event) { showCardMenu(event); }
+            });
             cards.add(row);
         }
         cards.setBackground(PANEL);
@@ -1371,12 +1393,55 @@ public final class InfiniteConquestGui extends JFrame {
         JPanel inspector = new JPanel(new BorderLayout(0, 8));
         inspector.setBackground(PANEL);
         inspector.add(scroll, BorderLayout.CENTER);
-        JLabel help = new JLabel("Top card acts first. Right-click its row to use an activated ability.");
+        JLabel help = new JLabel("Top card acts first. Right-click any row for a full card view or available ability.");
         help.setForeground(new Color(155, 231, 255));
         help.setBorder(new EmptyBorder(2, 7, 2, 7));
         inspector.add(help, BorderLayout.SOUTH);
         JOptionPane.showMessageDialog(this, inspector,
                 "Stack at (" + position.x() + ", " + position.y() + ") — top first", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    private void showFullCard(CardInstance card) {
+        CardDefinition def = card.definition();
+        JPanel fullCard = new JPanel(new BorderLayout(0, 12));
+        fullCard.setBackground(blend(PANEL, factionColor(def.faction()), .28f));
+        fullCard.setBorder(new CompoundBorder(new LineBorder(factionColor(def.faction()), 4, true),
+                new EmptyBorder(18, 18, 18, 18)));
+
+        JLabel name = new JLabel(def.name(), SwingConstants.CENTER);
+        name.setForeground(Color.WHITE);
+        name.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 25));
+        fullCard.add(name, BorderLayout.NORTH);
+
+        JLabel art = new JLabel(CardArtFactory.iconFor(def, 420, 250));
+        art.setHorizontalAlignment(SwingConstants.CENTER);
+        art.setBorder(new LineBorder(new Color(218, 192, 113), 2, true));
+
+        String stats = def.type() == CardType.CHARACTER
+                ? "Attack " + new GameEngine().effectiveAttack(state, card)
+                + "   •   Defense " + card.defenseRemaining() + "/" + card.effectiveDefense()
+                + "   •   Move " + def.movement() + "   •   Range " + new GameEngine().effectiveRange(state, card)
+                : def.isPermanent() ? "HP " + Math.max(0, def.hitPoints() - card.damage()) + "/" + def.hitPoints()
+                : effectLine(def);
+        String details = "<html><div style='text-align:center'><b>" + html(title(def.faction())) + " "
+                + html(title(def.type().name())) + "</b> &nbsp; • &nbsp; " + html(playRequirement(def))
+                + "<br><br><b>" + html(stats) + "</b>"
+                + "<br><br><font color='#e8ca72'><b>" + html(keywordLine(def)) + "</b></font>"
+                + (developmentText(def).isBlank() ? "" : "<br><br><font color='#7be5a3'>" + html(developmentText(def)) + "</font>")
+                + (abilityLine(def).isBlank() ? "" : "<br><br><font color='#9be7ff'>" + html(abilityLine(def)) + "</font>")
+                + "</div></html>";
+        JLabel information = new JLabel(details, SwingConstants.CENTER);
+        information.setForeground(Color.WHITE);
+        information.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
+        information.setVerticalAlignment(SwingConstants.TOP);
+
+        JPanel body = new JPanel(new BorderLayout(0, 14));
+        body.setOpaque(false);
+        body.add(art, BorderLayout.NORTH);
+        body.add(information, BorderLayout.CENTER);
+        fullCard.add(body, BorderLayout.CENTER);
+        fullCard.setPreferredSize(new Dimension(470, 610));
+        JOptionPane.showMessageDialog(this, fullCard, def.name(), JOptionPane.PLAIN_MESSAGE);
     }
 
     private void addHistory(String actor, String action) {
