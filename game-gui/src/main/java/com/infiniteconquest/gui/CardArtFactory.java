@@ -50,6 +50,7 @@ final class CardArtFactory {
         String folder = switch (card.type()) {
             case CAPITAL -> "capitals";
             case CHARACTER -> "characters";
+            case SPELL -> "spells";
             default -> null;
         };
         if (folder == null) return null;

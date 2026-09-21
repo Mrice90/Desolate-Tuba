@@ -31,6 +31,12 @@ class CardArtFactoryTest {
             "zeus_siege_thunder_ram", "zeus_apex_keraunos_seraph",
             "zeus_keraunos_prime", "zeus_apex_skyfather_archon",
             "zeus_keyword_aetherbolt_avatar");
+    private static final List<String> PAINTED_ZEUS_SPELLS = List.of(
+            "zeus_chain_lightning", "zeus_skybreaker_bolt", "zeus_windstep_protocol",
+            "zeus_stormcharge", "zeus_aegis_of_the_sky",
+            "zeus_apex_thunder_gods_verdict", "zeus_apex_wrath_of_olympus",
+            "zeus_apex_divine_tailwind", "zeus_apex_crownstorm_ascendance",
+            "zeus_apex_imperial_sky_aegis");
 
     @Test void packagesFactionWorldsAndRendersDistinctCardIllustrations() {
         assertNotNull(CardArtFactory.class.getResource("/art/faction-environments.png"));
@@ -78,6 +84,20 @@ class CardArtFactoryTest {
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
         assertEquals(190, CardArtFactory.iconFor(courier, 190, 78).getIconWidth());
         assertEquals(56, CardArtFactory.boardIconFor(courier).getIconHeight());
+    }
+
+    @Test void packagesThePaintedZeusSpellRollout() {
+        for (String id : PAINTED_ZEUS_SPELLS) {
+            assertNotNull(CardArtFactory.class.getResource("/art/spells/" + id + ".jpg"), id);
+        }
+        CardDefinition chainLightning = new CardDefinition("zeus_chain_lightning", "Chain Lightning",
+                CardType.SPELL, "ZEUS", 3, 0, 0, 0, 0);
+        CardDefinition awaitingArt = new CardDefinition("zeus_future_spell", "Future Spell",
+                CardType.SPELL, "ZEUS", 3, 0, 0, 0, 0);
+        assertTrue(CardArtFactory.hasPaintedArt(chainLightning));
+        assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
+        assertEquals(190, CardArtFactory.iconFor(chainLightning, 190, 78).getIconWidth());
+        assertEquals(56, CardArtFactory.boardIconFor(chainLightning).getIconHeight());
     }
 
     private int pixelHash(ImageIcon icon) {
