@@ -37,6 +37,11 @@ class CardArtFactoryTest {
             "zeus_apex_thunder_gods_verdict", "zeus_apex_wrath_of_olympus",
             "zeus_apex_divine_tailwind", "zeus_apex_crownstorm_ascendance",
             "zeus_apex_imperial_sky_aegis");
+    private static final List<String> PAINTED_ZEUS_LANDS = List.of(
+            "zeus_olympian_cloudbank", "zeus_ionized_skyway", "zeus_eagles_perch_array",
+            "zeus_throneward_conduit", "zeus_land_thunderstep_plateau", "zeus_land_aurora_reach",
+            "zeus_ability_stormfront", "zeus_land_dawncloud_step", "zeus_land_empyrean_current",
+            "zeus_apex_celestial_throne_grid");
 
     @Test void packagesFactionWorldsAndRendersDistinctCardIllustrations() {
         assertNotNull(CardArtFactory.class.getResource("/art/faction-environments.png"));
@@ -98,6 +103,20 @@ class CardArtFactoryTest {
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
         assertEquals(190, CardArtFactory.iconFor(chainLightning, 190, 78).getIconWidth());
         assertEquals(56, CardArtFactory.boardIconFor(chainLightning).getIconHeight());
+    }
+
+    @Test void packagesThePaintedZeusLandRollout() {
+        for (String id : PAINTED_ZEUS_LANDS) {
+            assertNotNull(CardArtFactory.class.getResource("/art/lands/" + id + ".jpg"), id);
+        }
+        CardDefinition cloudbank = new CardDefinition("zeus_olympian_cloudbank", "Olympian Cloudbank",
+                CardType.LAND, "ZEUS", 0, 0, 0, 0, 0, 5);
+        CardDefinition awaitingArt = new CardDefinition("zeus_future_land", "Future Land",
+                CardType.LAND, "ZEUS", 0, 0, 0, 0, 0, 5);
+        assertTrue(CardArtFactory.hasPaintedArt(cloudbank));
+        assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
+        assertEquals(190, CardArtFactory.iconFor(cloudbank, 190, 78).getIconWidth());
+        assertEquals(56, CardArtFactory.boardIconFor(cloudbank).getIconHeight());
     }
 
     private int pixelHash(ImageIcon icon) {
