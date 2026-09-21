@@ -249,8 +249,8 @@ public final class InfiniteConquestGui extends JFrame {
     private void fitBoardToViewport(Dimension available) {
         int usableWidth = Math.max(640, available.width - 22);
         int tileWidth = Math.max(160, usableWidth / BoardPosition.WIDTH);
-        int visibleRows = boardFullScreen ? BoardPosition.HEIGHT : 3;
-        int minimumHeight = boardFullScreen ? 76 : 96;
+        int visibleRows = boardFullScreen ? 4 : 3;
+        int minimumHeight = boardFullScreen ? 116 : 96;
         int tileHeight = Math.max(minimumHeight,
                 Math.min(170, Math.max(1, available.height - 18) / visibleRows));
         Dimension boardSize = new Dimension(tileWidth * BoardPosition.WIDTH,
@@ -355,7 +355,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void toggleHandExpansion() {
         handExpanded = !handExpanded;
-        int height = handExpanded ? Math.max(360, screenRoot.getHeight() / 2) : 180;
+        int height = handExpanded ? Math.max(430, screenRoot.getHeight() * 3 / 5) : 180;
         handArea.setPreferredSize(new Dimension(100, height));
         handExpandButton.setText(handExpanded ? "Collapse Hand" : "Expand Hand");
         refreshHand();
@@ -884,7 +884,7 @@ public final class InfiniteConquestGui extends JFrame {
             CardDefinition def = card.definition();
             cell.setBackground(blend(base, factionColor(def.faction()), .42f));
             cell.setIcon(boardFullScreen
-                    ? CardArtFactory.iconFor(def, 164, 74)
+                    ? CardArtFactory.iconFor(def, 190, 104)
                     : CardArtFactory.boardIconFor(def));
             cell.setHorizontalTextPosition(SwingConstants.RIGHT);
             cell.setVerticalTextPosition(SwingConstants.CENTER);
@@ -931,10 +931,10 @@ public final class InfiniteConquestGui extends JFrame {
         for (int index = 0; index < hand.size(); index++) {
             CardInstance card = state.card(hand.get(index)).orElseThrow();
             CardDefinition def = card.definition();
-            int cardWidth = handExpanded ? 330 : 208;
+            int cardWidth = handExpanded ? 420 : 208;
             int cardHeight = handExpanded ? Math.max(285, handArea.getPreferredSize().height - 58) : 145;
-            int artWidth = handExpanded ? 306 : 190;
-            int artHeight = handExpanded ? Math.min(225, Math.max(185, cardHeight * 3 / 5)) : 58;
+            int artWidth = handExpanded ? 396 : 190;
+            int artHeight = handExpanded ? Math.min(280, Math.max(235, cardHeight * 2 / 3)) : 58;
             JButton tile = new JButton(cardHtml(def), CardArtFactory.iconFor(def, artWidth, artHeight));
             Dimension cardSize = new Dimension(cardWidth, cardHeight);
             tile.setPreferredSize(cardSize);

@@ -15,9 +15,9 @@ gradle :game-gui:run
 The graphical client uses the same tested engine as the CLI. Choose both factions and one of three Capitals per side before the match, with strategy and passive summaries shown in setup.
 
 - Drag a hand card or battlefield unit onto a gold-highlighted legal destination. Click selection plus the **Legal Moves** tab remains available as a keyboard-friendly fallback.
-- Use **Expand Hand** to enlarge the hand tray to half of the gameplay screen; cards become taller and use larger artwork in this view.
+- Use **Expand Hand** for an art-focused hand tray with substantially larger cards and high-resolution 3:2 artwork.
 - Right-click an occupied battlefield cell to inspect every card in its stack, shown top-first. Right-click any card row in that inspector to open a large card-format view with art, current stats, keywords, and abilities.
-- Use **Board Fullscreen** for an unobstructed six-row battlefield with enlarged tile artwork; press `Esc` or its exit button to restore the full interface.
+- Use **Board Fullscreen** for an unobstructed, scrollable battlefield with taller tiles and high-resolution artwork; it opens on the player territory while retaining enemy rows in the same continuous grid. Press `Esc` or its exit button to restore the full interface.
 - Open the **Action Log** tab to review the match in chronological order.
 - Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
 - Opening mulligans let you visually select up to three cards to discard and redraw, and enemy-turn reactions use a matching visual spell tray plus battlefield targeting instead of a text menu.
