@@ -24,7 +24,7 @@ At the end of the apex phase, each faction owned 35 unique cards:
 - the previous 25-card faction pool;
 - ten apex cards.
 
-Later keyword, tactical, ability, and development expansions increased every faction pool to 94 cards. Current faction starters contain 60 unique cards; see `faction-card-set.md`.
+Later keyword, tactical, ability, development, and tutor expansions increased every faction pool to 64 cards. Current faction starters contain 60 cards; see `faction-card-set.md`.
 
 ## Balance principles
 

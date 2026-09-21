@@ -55,18 +55,16 @@ public final class FactionDecks {
         List<CardDefinition> factionCards = pool.cardsForFaction(faction);
         List<CardDefinition> developments = new ArrayList<>();
         for (CardType type : List.of(CardType.LAND, CardType.STRUCTURE)) {
-            for (int tier = 1; tier <= 10; tier++) {
-                int requiredTier = tier;
-                factionCards.stream()
-                        .filter(card -> card.type() == type && card.cost() == requiredTier)
-                        .filter(card -> card.id().contains("_ramp_"))
-                        .min(Comparator.comparing(CardDefinition::name))
-                        .ifPresent(developments::add);
-            }
-            factionCards.stream()
-                    .filter(card -> card.type() == type && !card.id().contains("_ramp_"))
+            List<CardDefinition> available = factionCards.stream()
+                    .filter(card -> card.type() == type)
                     .sorted(Comparator.comparingInt(CardDefinition::cost).thenComparing(CardDefinition::name))
-                    .limit(8).forEach(developments::add);
+                    .toList();
+            if (available.isEmpty()) throw new IllegalStateException(faction + " has no " + type + " cards");
+            for (int index = 0; developments.stream().filter(card -> card.type() == type).count() < 18; index++) {
+                CardDefinition candidate = available.get(index % available.size());
+                long copies = developments.stream().filter(card -> card.id().equals(candidate.id())).count();
+                if (copies < DeckValidator.MAX_COPIES) developments.add(candidate);
+            }
         }
         List<CardDefinition> actions = factionCards.stream()
                 .filter(card -> card.type() != CardType.LAND && card.type() != CardType.STRUCTURE)

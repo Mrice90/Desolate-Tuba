@@ -21,7 +21,6 @@ public final class PrototypeCardPool {
         loaded.addAll(CardCatalog.loadResource("/cards/faction-development-expansion-2.json").definitions());
         loaded.addAll(CardCatalog.loadResource("/cards/tactical-keyword-cards.json").definitions());
         loaded.addAll(CardCatalog.loadResource("/cards/faction-ability-cards.json").definitions());
-        loaded.addAll(FactionRampExpansion.cards());
         loaded.addAll(FactionTutorExpansion.cards());
         Map<String, CardDefinition> indexed = new LinkedHashMap<>();
         for (CardDefinition card : loaded) {

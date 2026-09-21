@@ -1,10 +1,10 @@
 # Neo-Olympus faction card set
 
-The current playable pool contains 54 prototype deck-building choices per faction across Characters, Lands, Structures, Spells, apex cards, keyword tiers, and triggered-ability cards. Each faction has a distinct two-keyword pairing and examples of enter-play, destroyed, start-of-turn passive, and paid activated effects.
+The current playable pool contains 64 prototype deck-building choices per faction across Characters, Lands, Structures, Spells, apex cards, keyword tiers, tutor developments, and triggered-ability cards. Each faction has a distinct two-keyword pairing and examples of enter-play, destroyed, start-of-turn passive, and paid activated effects.
 
 Each faction starter contains 60 cards: 18 Lands, 18 Structures, and 24 Characters/Spells. Custom decks must contain at least 40 cards and may contain no more than four copies of one card.
 
-Every faction has two Lands and two Structures at each turn value from 1 through 10. Ramp Lands have an activated ability that searches the deck for a Structure; ramp Structures search for a Character. Only one Land and one Structure may be played each turn, tracked separately.
+Every faction has five tutor Lands and five tutor Structures at costs 2, 4, 6, 8, and 10. Tutor Lands have an activated ability that draws a random Structure; tutor Structures draw a random Character. Only one Land and one Structure may be played each turn, tracked separately.
 
 | Faction | Identity | Stat and keyword emphasis |
 |---|---|---|
@@ -21,8 +21,8 @@ Every faction has two Lands and two Structures at each turn value from 1 through
 - Character Attack does not exceed cost + 1.
 - Character Defense does not exceed cost + 2.
 - Range stays between 1–3 and movement between 1–4.
-- Lands have 5–10 HP.
-- Structures have 5–13 HP.
+- Core Lands have 5–10 HP; tutor Lands reach 22 HP.
+- Core Structures have 5–13 HP; tutor Structures reach 26 HP.
 - Higher mobility, range, or keywords are offset through lower raw combat statistics.
 - All values and names remain `PROTOTYPE` content and can change after match telemetry and playtesting.
 

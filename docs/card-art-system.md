@@ -4,7 +4,7 @@
 
 The Character art rollout now covers all 24 Zeus Characters. The first six-card benchmark established mobility, defense, spellcasting, ranged combat, creatures, and apex scale; the second 12-card batch completed the low- and mid-cost roster; and the final six-card batch completed the high-cost roster from Thunderhead Guardian through Aetherbolt Avatar. Characters in factions awaiting their rollout continue to use the procedural compositor.
 
-The Spell art rollout covers all 10 Zeus Spells: five core tactical effects and their five apex-scale counterparts. The Land rollout covers all 10 Zeus Lands, from the modest Dawncloud Step foothold through the apex Celestial Throne Grid. The Structure rollout covers all 10 Zeus Structures, completing bespoke art for every currently listed Zeus card.
+The Spell art rollout covers all 10 Zeus Spells: five core tactical effects and their five apex-scale counterparts. The Land rollout covers all 15 playable Zeus Lands, including the five retained tutor developments. The Structure rollout likewise covers all 15 playable Zeus Structures. Together with 24 Characters, this completes bespoke art for all 64 playable Zeus deck cards; its three Capitals are also fully illustrated.
 
 ## Painted Capitals
 

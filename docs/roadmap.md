@@ -17,7 +17,7 @@
 
 - [x] Versioned JSON loader and stable IDs
 - [x] Import current Drive Characters as editable prototype content
-- [x] Six lore-driven 94-card faction pools plus neutral/development prototypes
+- [x] Six lore-driven 64-card faction pools plus neutral/development prototypes
 - [x] Primary/secondary type identities and 60 late-game apex cards
 - [x] Primary/secondary implemented-keyword identities and 30 tiered keyword cards
 - [x] Three selectable Capitals per faction

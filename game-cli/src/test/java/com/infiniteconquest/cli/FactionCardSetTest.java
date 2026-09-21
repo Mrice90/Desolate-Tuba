@@ -19,15 +19,15 @@ class FactionCardSetTest {
     void everyFactionHasAnExpandedUniquePlayablePool() {
         PrototypeCardPool pool = new PrototypeCardPool();
 
-        assertEquals(648, pool.cards().size());
+        assertEquals(408, pool.cards().size());
         for (String faction : FactionDecks.FACTIONS) {
             List<CardDefinition> cards = pool.cardsForFaction(faction);
-            assertEquals(104, cards.size(), faction);
-            assertEquals(104, cards.stream().map(CardDefinition::id).distinct().count(), faction);
+            assertEquals(64, cards.size(), faction);
+            assertEquals(64, cards.stream().map(CardDefinition::id).distinct().count(), faction);
 
             Map<CardType, Long> types = cards.stream()
                     .collect(Collectors.groupingBy(CardDefinition::type, Collectors.counting()));
-            assertEquals(104L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
+            assertEquals(64L, types.values().stream().mapToLong(Long::longValue).sum(), faction);
         }
     }
 
@@ -46,37 +46,15 @@ class FactionCardSetTest {
                     assertTrue(card.range() >= 1 && card.range() <= 3, card.id() + " range");
                     assertTrue(card.movement() >= 1 && card.movement() <= 4, card.id() + " movement");
                 } else if (card.type() == CardType.LAND) {
-                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_ramp_") ? 27
+                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_tutor_") ? 22
                             : card.id().contains("_apex_") ? 19
                             : card.id().contains("_land_") ? 22 : 10), card.id() + " HP");
                 } else if (card.type() == CardType.STRUCTURE) {
-                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_ramp_") ? 29
+                    assertTrue(card.hitPoints() >= 5 && card.hitPoints() <= (card.id().contains("_tutor_") ? 26
                             : card.id().contains("_apex_") ? 24
                             : card.id().contains("_structure_") ? 26 : 13), card.id() + " HP");
                 }
             }
-        }
-    }
-
-    @Test
-    void everyFactionGetsTwoTypedDrawDevelopmentsAtEveryTurnValue() {
-        PrototypeCardPool pool = new PrototypeCardPool();
-        for (String faction : FactionDecks.FACTIONS) {
-            List<CardDefinition> ramp = pool.cardsForFaction(faction).stream()
-                    .filter(card -> card.id().contains("_ramp_")).toList();
-            assertEquals(40, ramp.size(), faction);
-            for (int tier = 1; tier <= 10; tier++) {
-                int requiredTier = tier;
-                List<CardDefinition> tierCards = ramp.stream().filter(card -> card.cost() == requiredTier).toList();
-                assertEquals(2, tierCards.stream().filter(card -> card.type() == CardType.LAND).count(), faction + " Land " + tier);
-                assertEquals(2, tierCards.stream().filter(card -> card.type() == CardType.STRUCTURE).count(), faction + " Structure " + tier);
-            }
-            ramp.forEach(card -> {
-                assertEquals(1, card.abilities().size(), card.id());
-                assertEquals(AbilityTrigger.ACTIVATED, card.abilities().get(0).trigger(), card.id());
-                assertEquals(card.type() == CardType.LAND ? AbilityEffectType.DRAW_STRUCTURE
-                        : AbilityEffectType.DRAW_CHARACTER, card.abilities().get(0).effect(), card.id());
-            });
         }
     }
 

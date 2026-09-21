@@ -1,5 +1,6 @@
 package com.infiniteconquest.gui;
 
+import com.infiniteconquest.cli.PrototypeCardPool;
 import com.infiniteconquest.core.CardDefinition;
 import com.infiniteconquest.core.CardType;
 import org.junit.jupiter.api.Test;
@@ -41,12 +42,21 @@ class CardArtFactoryTest {
             "zeus_olympian_cloudbank", "zeus_ionized_skyway", "zeus_eagles_perch_array",
             "zeus_throneward_conduit", "zeus_land_thunderstep_plateau", "zeus_land_aurora_reach",
             "zeus_ability_stormfront", "zeus_land_dawncloud_step", "zeus_land_empyrean_current",
-            "zeus_apex_celestial_throne_grid");
+            "zeus_apex_celestial_throne_grid", "zeus_tutor_land_1", "zeus_tutor_land_2",
+            "zeus_tutor_land_3", "zeus_tutor_land_4", "zeus_tutor_land_5");
     private static final List<String> PAINTED_ZEUS_STRUCTURES = List.of(
             "zeus_storm_relay_pylon", "zeus_cloudwall_bastion", "zeus_keraunos_charging_spire",
             "zeus_zeus_command_nexus", "zeus_structure_stormglass_relay", "zeus_structure_cloud_archive",
             "zeus_ability_oracle_spire", "zeus_structure_aegis_conductor",
-            "zeus_structure_oracle_of_storms", "zeus_apex_worldstorm_spire");
+            "zeus_structure_oracle_of_storms", "zeus_apex_worldstorm_spire",
+            "zeus_tutor_structure_1", "zeus_tutor_structure_2", "zeus_tutor_structure_3",
+            "zeus_tutor_structure_4", "zeus_tutor_structure_5");
+
+    @Test void everyPlayableZeusCardHasPaintedArt() {
+        List<CardDefinition> cards = new PrototypeCardPool().cardsForFaction("ZEUS");
+        assertEquals(64, cards.size());
+        cards.forEach(card -> assertTrue(CardArtFactory.hasPaintedArt(card), card.id()));
+    }
 
     @Test void packagesFactionWorldsAndRendersDistinctCardIllustrations() {
         assertNotNull(CardArtFactory.class.getResource("/art/faction-environments.png"));

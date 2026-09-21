@@ -51,11 +51,11 @@ gradle :game-cli:run --args="42"
 
 ## Build a custom deck
 
-The graphical **Deck Builder** and command-line editor support 648 editable prototypes: 624 faction cards across regular, apex, keyword, tactical, development, ramp, tutor, and triggered-ability tiers, plus 24 neutral/development cards. Each faction now has 104 choices, including five new Lands that draw random Structures and five new Structures that draw random Characters. Its 60-card starter uses 18 Lands, 18 Structures, and 24 action cards centered on a unique two-keyword identity. Custom decks require at least 40 cards and allow no more than four copies of one card. The 18 Capitals are selected separately and never count toward the deck.
+The graphical **Deck Builder** and command-line editor support 408 editable prototypes: 384 faction cards across regular, apex, keyword, tactical, development, tutor, and triggered-ability tiers, plus 24 neutral/development cards. Each faction has 64 choices, including five Lands that draw random Structures and five Structures that draw random Characters. Its 60-card starter uses 18 Lands, 18 Structures, and 24 action cards centered on a unique two-keyword identity. Custom decks require at least 40 cards and allow no more than four copies of one card. The 18 Capitals are selected separately and never count toward the deck.
 
 Lands, Structures, and Characters can now carry data-driven abilities with four timing windows: **When this enters play**, **When this is destroyed**, **Start of your turn** passive effects, and once-per-turn **Activated** effects with a printed GP cost. The current effect set supports card draw, GP gain, self-repair, Capital repair, temporary self Attack/Defense bonuses, and direct enemy-Capital damage. Select the top card of a stack and use its highlighted **Activate** legal action to pay for an activated ability.
 
-All 18 Capitals have unique painterly environment illustrations built for their name, faction, and strategic identity. Every Zeus Character now has a unique painted illustration, completing the first faction's 24-card Character rollout across its full cost and role range. The remaining deck-building cards use deterministic illustrations combining faction environments, card type, name-derived symbols, mechanics, and stable seeded composition; missing painted resources safely fall back to that renderer. See [the card-art system](docs/card-art-system.md) for its visual vocabulary and asset provenance.
+All 18 Capitals have unique painterly environment illustrations built for their name, faction, and strategic identity. Every playable Zeus card now has a unique painted illustration across Characters, Spells, Lands, and Structures. The remaining factions use deterministic illustrations combining faction environments, card type, name-derived symbols, mechanics, and stable seeded composition; missing painted resources safely fall back to that renderer. See [the card-art system](docs/card-art-system.md) for its visual vocabulary and asset provenance.
 The renderer keeps board thumbnails fast by caching each completed image for reuse during the match.
 
 Board actions use distinct animated effects for movement, Blink, melee, ranged projectiles, Spells, deployment, and rules damage. Completed matches open an animated result screen with the winning Capital, match summary, and direct choices to rematch with the same settings, change match settings, or review the final battlefield.
@@ -117,7 +117,7 @@ Ten repetitions produce 3,240 matches. Reports include faction and Capital win r
 - movement, range, Capitals, deployment, combat, HP, destruction, and victory
 - Mole, Blink, Vanguard, Fast Strike, Siege, Sharp Shot, line of sight, and typed Spell effects
 - private local-player handoff, inspection, and legal-action hints
-- six 94-card faction pools with development-heavy 60-card starters, full turn 1–10 Land/Structure curves, typed draw abilities, and primary/secondary identities, plus 24 neutral/development prototypes
+- six 64-card faction pools with development-heavy 60-card starters, tutor developments, typed draw abilities, and primary/secondary identities, plus 24 neutral/development prototypes
 - three separately selectable Capitals per faction, each with a unique implemented passive ability
 - executable active-turn and enemy-turn reaction Spells
 - validated JSON deck files and interactive deck editor
