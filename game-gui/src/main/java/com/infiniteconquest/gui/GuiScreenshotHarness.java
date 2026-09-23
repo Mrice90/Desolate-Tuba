@@ -19,6 +19,7 @@ public final class GuiScreenshotHarness {
         }
         captureMotion(outputDirectory, "deployment-motion", 145);
         captureMotion(outputDirectory, "invalid-drop-motion", 90);
+        captureMotion(outputDirectory, "board-movement", 160);
     }
 
     private static void capture(Path outputDirectory, String scenario) {

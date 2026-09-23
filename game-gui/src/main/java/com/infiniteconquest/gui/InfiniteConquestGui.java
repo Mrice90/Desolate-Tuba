@@ -173,6 +173,12 @@ public final class InfiniteConquestGui extends JFrame {
             interaction.selectHand(0);
             animateInvalidDrop(new DragSource(0, null), new BoardPosition(0, BoardPosition.HEIGHT - 1));
         }
+        if ("board-movement".equals(scenario)) {
+            String command = legalCommands().stream()
+                    .filter(value -> value.matches("(move|blink) \\d+ \\d+ \\d+ \\d+"))
+                    .findFirst().orElseThrow(() -> new IllegalStateException("No board movement available for fixture"));
+            executeHuman(command);
+        }
     }
 
     private void saveDebugScreenshot() {
@@ -1343,14 +1349,20 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private Set<BoardPosition> maskedDestinations(PresentationSnapshot resolution) {
-        if (!resolution.command().startsWith("play ")) return Set.of();
-        return resolution.changes().stream()
-                .filter(change -> change.change() == PresentationSnapshot.Change.ENTERED_BATTLEFIELD)
-                .map(PresentationSnapshot.CardChange::after)
-                .filter(Objects::nonNull)
-                .map(PresentationSnapshot.CardVisual::position)
-                .filter(Objects::nonNull)
-                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        if (resolution.command().startsWith("play ")) {
+            return resolution.changes().stream()
+                    .filter(change -> change.change() == PresentationSnapshot.Change.ENTERED_BATTLEFIELD)
+                    .map(PresentationSnapshot.CardChange::after)
+                    .filter(Objects::nonNull)
+                    .map(PresentationSnapshot.CardVisual::position)
+                    .filter(Objects::nonNull)
+                    .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        }
+        if (resolution.command().startsWith("move ") || resolution.command().startsWith("blink ")) {
+            String[] parts = resolution.command().split("\\s+");
+            return Set.of(position(parts, 3));
+        }
+        return Set.of();
     }
 
     private void renderPresentation(PresentationSnapshot resolution) {
@@ -1361,9 +1373,20 @@ public final class InfiniteConquestGui extends JFrame {
             case "move", "blink" -> {
                 BoardPosition from = position(p, 1);
                 BoardPosition to = position(p, 3);
-                badge(to, p[0].equals("blink") ? "BLINK" : "MOVE", "#71d7ff");
-                combatOverlay.animate(from, to, new Color(91, 209, 255), false,
-                        p[0].equals("blink") ? AnimationStyle.BLINK : AnimationStyle.MOVE);
+                boolean blink = p[0].equals("blink");
+                badge(to, blink ? "BLINK" : "MOVE", "#71d7ff");
+                PresentationSnapshot.CardVisual moving = before.cards().values().stream()
+                        .filter(value -> Objects.equals(value.position(), from) && value.top())
+                        .findFirst().orElse(null);
+                CardDefinition definition = moving == null ? null
+                        : state.card(moving.id()).map(CardInstance::definition).orElse(null);
+                if (definition != null) {
+                    combatOverlay.animateBoardCard(definition, moving.owner(), from, to,
+                            new Color(91, 209, 255), blink ? AnimationStyle.BLINK : AnimationStyle.MOVE);
+                } else {
+                    combatOverlay.animate(from, to, new Color(91, 209, 255), false,
+                            blink ? AnimationStyle.BLINK : AnimationStyle.MOVE);
+                }
                 SoundEffects.play(SoundEffects.Cue.MOVE);
             }
             case "play", "burrow" -> {
@@ -2356,6 +2379,16 @@ public final class InfiniteConquestGui extends JFrame {
             Animation requested = new Animation(attempted, returnBoard, ATTACK, false,
                     AnimationStyle.SNAP_BACK, 0L, image, false, 180_000_000L,
                     returnBoard == null, true);
+            if (animation != null) queued.addLast(requested);
+            else start(requested);
+        }
+
+        void animateBoardCard(CardDefinition card, int owner, BoardPosition from, BoardPosition to,
+                              Color color, AnimationStyle style) {
+            if (!sequenceOpen) throw new IllegalStateException("Animations require an open presentation sequence");
+            Image image = CardArtFactory.iconFor(card, 190, 100).getImage();
+            Animation requested = new Animation(from, to, color, false, style, 0L,
+                    image, owner == 1, 320_000_000L, false, false);
             if (animation != null) queued.addLast(requested);
             else start(requested);
         }
