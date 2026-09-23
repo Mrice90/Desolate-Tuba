@@ -1053,7 +1053,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private boolean matchesSelection(String command) {
         if (selectedHand != null) {
-            return command.matches("(play|burrow|cast) " + selectedHand + "( |$)");
+            return command.matches("(play|burrow|cast) " + selectedHand + "( .*)?");
         }
         if (selectedCell != null) {
             String xy = selectedCell.x() + " " + selectedCell.y();
