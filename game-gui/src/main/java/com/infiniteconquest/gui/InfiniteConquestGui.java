@@ -25,7 +25,7 @@ public final class InfiniteConquestGui extends JFrame {
     private final JLabel messageLabel = new JLabel("Select a card or unit, then choose a legal action.");
     private final GridLayout boardLayout = new GridLayout(BoardPosition.HEIGHT, BoardPosition.WIDTH, TILE_GAP, TILE_GAP);
     private final JPanel boardPanel = new JPanel(boardLayout);
-    private final JPanel boardStage = new JPanel(new GridBagLayout());
+    private final JPanel boardStage = new JPanel(new BorderLayout());
     private JScrollPane boardScroll;
     private final JPanel handPanel = new JPanel();
     private final DefaultListModel<ActionOption> actionModel = new DefaultListModel<>();
@@ -72,6 +72,9 @@ public final class InfiniteConquestGui extends JFrame {
     private JButton muteButton;
     private JButton boardFullScreenButton;
     private JButton handExpandButton;
+    private JButton endTurnButton;
+    private final JLabel recentAction = new JLabel("Recent actions appear here — open History for the complete record.");
+    private JDialog actionDialog;
     private MatchChoice lastMatchChoice;
 
     public InfiniteConquestGui() {
@@ -82,9 +85,9 @@ public final class InfiniteConquestGui extends JFrame {
         super("Infinite Conquest");
         presentationQueue = new PresentationQueue(this::playPresentation);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(1280, 860));
+        setMinimumSize(new Dimension(1100, 700));
         setSize(1500, 980);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        if (!screenshotMode) setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
         installTheme();
         setJMenuBar(buildMenuBar());
@@ -109,7 +112,6 @@ public final class InfiniteConquestGui extends JFrame {
         handArea = buildHand();
         screenRoot.add(headerArea, BorderLayout.NORTH);
         screenRoot.add(buildBoard(), BorderLayout.CENTER);
-        screenRoot.add(actionArea, BorderLayout.EAST);
         screenRoot.add(handArea, BorderLayout.SOUTH);
         screenRoot.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), "exitBoardView");
         screenRoot.getActionMap().put("exitBoardView", new AbstractAction() {
@@ -150,6 +152,20 @@ public final class InfiniteConquestGui extends JFrame {
 
     void prepareScreenshotScenario(String scenario) {
         interaction.clearSelection();
+        if ("crowded-board".equals(scenario)) {
+            List<CardDefinition> characters = matchFactory.pool().cardsForFaction("ZEUS").stream()
+                    .filter(card -> card.type() == CardType.CHARACTER).toList();
+            int index = 0;
+            for (BoardPosition position : state.board().positions()) {
+                int owner = position.isOnPlayerSide(0) ? 0 : 1;
+                for (int layer = 0; layer < 2; layer++) {
+                    CardInstance card = new CardInstance(UUID.nameUUIDFromBytes(("fixture-" + index).getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+                            characters.get(index++ % characters.size()), owner, Zone.BATTLEFIELD);
+                    state.register(card);
+                    state.board().push(position, card.instanceId());
+                }
+            }
+        }
         if ("selected-hand".equals(scenario)) {
             List<String> legal = legalCommands();
             for (int index = 0; index < state.player(0).hand().size(); index++) {
@@ -220,8 +236,60 @@ public final class InfiniteConquestGui extends JFrame {
         controls.add(deckBuilder);
         controls.add(newMatch);
         controls.add(muteButton);
+        controls.add(button("Actions", e -> openActionPanel(0)));
+        controls.add(button("History", e -> openActionPanel(1)));
+        endTurnButton = button("End Turn", e -> executeHuman("end"));
+        controls.add(endTurnButton);
         header.add(controls, BorderLayout.EAST);
+        JPanel information = new JPanel(new BorderLayout(8, 3));
+        information.setOpaque(false);
+        JPanel players = new JPanel(new GridLayout(1, 2, 12, 0));
+        players.setOpaque(false);
+        players.add(humanLabel);
+        players.add(botLabel);
+        information.add(players, BorderLayout.CENTER);
+        recentAction.setForeground(Color.WHITE);
+        recentAction.setPreferredSize(new Dimension(200, 22));
+        information.add(recentAction, BorderLayout.SOUTH);
+        header.add(information, BorderLayout.SOUTH);
         return header;
+    }
+
+    void prepareCaptureSize(int width, int height, boolean requireFullBoard) {
+        // Render a deterministic client area even when the host window manager clamps the frame.
+        getRootPane().setSize(width, height);
+        layoutTree(getRootPane());
+        fitBoardToViewport(boardScroll.getViewport().getExtentSize());
+        layoutTree(getRootPane());
+        if (requireFullBoard) {
+            Rectangle view = boardScroll.getViewport().getViewRect();
+            for (JButton cell : boardButtons.values()) {
+                Rectangle bounds = SwingUtilities.convertRectangle(cell.getParent(), cell.getBounds(), boardStage);
+                if (!view.contains(bounds)) throw new IllegalStateException("Battlefield cell clipped: " + bounds);
+            }
+            if (!endTurnButton.isShowing()) throw new IllegalStateException("End Turn is hidden");
+        }
+    }
+
+    private static void layoutTree(Container container) {
+        container.doLayout();
+        for (Component child : container.getComponents()) {
+            if (child instanceof Container nested) layoutTree(nested);
+        }
+    }
+
+    private void openActionPanel(int tab) {
+        if (actionDialog == null) {
+            actionDialog = new JDialog(this, "Actions and history", false);
+            actionDialog.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+            actionDialog.add(actionArea);
+            actionDialog.setSize(440, 480);
+        }
+        actionTabs.setSelectedIndex(tab);
+        actionArea.setVisible(true);
+        actionDialog.setLocationRelativeTo(this);
+        actionDialog.setVisible(true);
+        if (tab == 0) actionList.requestFocusInWindow();
     }
 
     private JMenuBar buildMenuBar() {
@@ -236,7 +304,14 @@ public final class InfiniteConquestGui extends JFrame {
         JMenuItem fullscreen = new JMenuItem("Toggle Full Screen");
         fullscreen.setAccelerator(KeyStroke.getKeyStroke("F11"));
         fullscreen.addActionListener(event -> toggleFullScreen());
-        game.add(decks); game.addSeparator(); game.add(newGame); game.add(fullscreen); bar.add(game);
+        JMenuItem actions = new JMenuItem("Legal Actions");
+        actions.setAccelerator(KeyStroke.getKeyStroke("F2"));
+        actions.addActionListener(event -> openActionPanel(0));
+        JMenuItem history = new JMenuItem("Action History");
+        history.setAccelerator(KeyStroke.getKeyStroke("F3"));
+        history.addActionListener(event -> openActionPanel(1));
+        game.add(decks); game.addSeparator(); game.add(newGame); game.add(fullscreen);
+        game.add(actions); game.add(history); bar.add(game);
         return bar;
     }
 
@@ -267,7 +342,7 @@ public final class InfiniteConquestGui extends JFrame {
         for (int y = BoardPosition.HEIGHT - 1; y >= 0; y--) {
             for (int x = 0; x < BoardPosition.WIDTH; x++) {
                 BoardPosition position = new BoardPosition(x, y);
-                JButton cell = new JButton();
+                JButton cell = new BattlefieldCell();
                 cell.setVerticalAlignment(SwingConstants.TOP);
                 cell.setHorizontalAlignment(SwingConstants.LEFT);
                 cell.setFocusPainted(false);
@@ -321,40 +396,19 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void fitBoardToViewport(Dimension available) {
-        int usableWidth = Math.max(640, available.width - 22);
-        int tileWidth = Math.max(160, usableWidth / BoardPosition.WIDTH);
-        int visibleRows = boardFullScreen ? 4 : 3;
-        int minimumHeight = boardFullScreen ? 116 : 96;
-        int tileHeight = Math.max(minimumHeight,
-                Math.min(170, Math.max(1, available.height - 18) / visibleRows));
-        Dimension boardSize = new Dimension(tileWidth * BoardPosition.WIDTH,
-                tileHeight * BoardPosition.HEIGHT);
+        Dimension boardSize = new Dimension(Math.max(640, available.width - 4),
+                Math.max(330, available.height - 4));
         boardPanel.setPreferredSize(boardSize);
         boardPanel.setMinimumSize(boardSize);
         boardPanel.setMaximumSize(boardSize);
+        boardStage.setPreferredSize(boardSize);
         boardStage.revalidate();
-        SwingUtilities.invokeLater(() -> boardScroll.getVerticalScrollBar()
-                .setValue(boardScroll.getVerticalScrollBar().getMaximum()));
+        if (state != null) refreshBoard();
     }
 
     private JComponent buildActions() {
         JPanel side = panel(new BorderLayout(8, 8));
         side.setPreferredSize(new Dimension(336, 390));
-        JPanel status = new JPanel(new BorderLayout(0, 5));
-        status.setOpaque(false);
-        status.add(section("MATCH STATUS", GOLD), BorderLayout.NORTH);
-        JPanel meters = new JPanel(new GridLayout(2, 1, 4, 4));
-        meters.setOpaque(false);
-        meters.add(humanLabel);
-        meters.add(botLabel);
-        status.add(meters, BorderLayout.CENTER);
-        status.setPreferredSize(new Dimension(330, 91));
-
-        JPanel sideTop = new JPanel();
-        sideTop.setOpaque(false);
-        sideTop.setLayout(new BoxLayout(sideTop, BoxLayout.Y_AXIS));
-        sideTop.add(status);
-        side.add(sideTop, BorderLayout.NORTH);
         actionList.setBackground(PANEL_LIGHT);
         actionList.setForeground(Color.WHITE);
         actionList.setSelectionBackground(new Color(48, 112, 137));
@@ -362,6 +416,10 @@ public final class InfiniteConquestGui extends JFrame {
         actionList.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         actionList.setCellRenderer(new ActionOptionRenderer());
         actionList.setBorder(new EmptyBorder(5, 5, 5, 5));
+        actionList.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "executeAction");
+        actionList.getActionMap().put("executeAction", new AbstractAction() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent event) { executeSelectedAction(); }
+        });
         actionList.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) executeSelectedAction();
@@ -409,7 +467,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private JComponent buildHand() {
         JPanel area = panel(new BorderLayout(8, 8));
-        area.setPreferredSize(new Dimension(100, 180));
+        area.setPreferredSize(new Dimension(100, 170));
         area.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new EmptyBorder(6, 6, 6, 6)));
         JPanel handHeader = new JPanel(new BorderLayout(8, 0));
         handHeader.setOpaque(false);
@@ -430,7 +488,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void toggleHandExpansion() {
         handExpanded = !handExpanded;
-        int height = handExpanded ? Math.max(430, screenRoot.getHeight() * 3 / 5) : 180;
+        int height = handExpanded ? Math.max(430, screenRoot.getHeight() * 3 / 5) : 170;
         handArea.setPreferredSize(new Dimension(100, height));
         handExpandButton.setText(handExpanded ? "Collapse Hand" : "Expand Hand");
         refreshHand();
@@ -848,6 +906,7 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void clearSelection() {
+        if (!canAcceptHumanInput()) return;
         interaction.clearSelection();
         refresh();
     }
@@ -922,7 +981,7 @@ public final class InfiniteConquestGui extends JFrame {
             BotPlayer.Decision reaction = bot.react(state, commands, reacting);
             if (reaction != null) {
                 showResolution(PresentationSnapshot.between(reaction.command(), before, state));
-                addHistory(reacting == 0 ? "Bot 1" : "Bot 2", describe(reaction.command()));
+                addHistory(reacting == 0 ? "Bot 1" : "Bot 2", "Reaction — " + describe(reaction.command()));
             }
             return;
         }
@@ -935,7 +994,7 @@ public final class InfiniteConquestGui extends JFrame {
                 PresentationSnapshot.Frame before = PresentationSnapshot.capture(state);
                 message(commands.execute(chosen));
                 showResolution(PresentationSnapshot.between(chosen, before, state));
-                addHistory("You", describe(chosen));
+                addHistory("You", "Reaction — " + describe(chosen));
                 refresh();
             }
         } finally {
@@ -949,11 +1008,14 @@ public final class InfiniteConquestGui extends JFrame {
         PlayerState human = state.player(0);
         PlayerState enemy = state.player(1);
         humanLabel.setText("<html><b>" + (playerOneBot ? "BOT 1" : "YOU") + " • " + humanFaction
-                + "</b><br>GP " + human.currentGp() + "  (+" + state.gpIncomePerTurn(0) + "/turn)"
+                + " • " + html(humanCapital.name()) + "</b><br>GP held " + human.currentGp() + "  (income +" + state.gpIncomePerTurn(0) + "/turn)"
                 + " • Deck " + human.deck().size() + " • Discard " + human.discard().size() + "</html>");
-        botLabel.setText("<html><b>BOT 2 • " + botFaction + "</b><br>GP " + enemy.currentGp()
+        botLabel.setText("<html><b>BOT 2 • " + botFaction + " • " + html(botCapital.name()) + "</b><br>GP held " + enemy.currentGp()
                 + "  (+" + state.gpIncomePerTurn(1) + "/turn) • Hand " + enemy.hand().size()
                 + " • Deck " + enemy.deck().size() + "</html>");
+        humanLabel.setIcon(CardArtFactory.iconFor(humanCapital, 54, 32));
+        botLabel.setIcon(CardArtFactory.iconFor(botCapital, 54, 32));
+        endTurnButton.setEnabled(canAcceptHumanInput() && state.phase() == Phase.PLAY);
         refreshBoard();
         refreshHand();
         refreshActions();
@@ -971,9 +1033,9 @@ public final class InfiniteConquestGui extends JFrame {
             Color surface = intent == null ? base : blend(base, intent.color, TARGET_TINT);
             cell.setBackground(surface);
             cell.setForeground(Color.WHITE);
-            int tilePadding = boardFullScreen ? COMPACT_TILE_PADDING : TILE_PADDING;
+            int tilePadding = 1;
             Color outline = selected ? SELECTED : intent != null ? intent.color : base.brighter();
-            int outlineWidth = selected || intent != null ? EMPHASIS_BORDER : IDLE_BORDER;
+            int outlineWidth = selected || intent != null ? 3 : IDLE_BORDER;
             cell.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED,
                     surface.brighter(), surface.brighter(), surface.darker(), surface.darker()), new CompoundBorder(
                     new LineBorder(outline, outlineWidth, true),
@@ -991,9 +1053,7 @@ public final class InfiniteConquestGui extends JFrame {
             CardDefinition def = card.definition();
             Color occupiedSurface = blend(base, factionColor(def.faction()), .42f);
             cell.setBackground(intent == null ? occupiedSurface : blend(occupiedSurface, intent.color, TARGET_TINT));
-            cell.setIcon(boardFullScreen
-                    ? CardArtFactory.iconFor(def, 190, 104)
-                    : CardArtFactory.boardIconFor(def));
+            cell.setIcon(CardArtFactory.iconFor(def, 64, 32));
             cell.setHorizontalTextPosition(SwingConstants.RIGHT);
             cell.setVerticalTextPosition(SwingConstants.CENTER);
             cell.setIconTextGap(7);
@@ -1008,10 +1068,10 @@ public final class InfiniteConquestGui extends JFrame {
                     + (card.damage() > 0 ? "  <font color='#ff9b73'>DMG " + card.damage() + "</font>" : "");
             EffectBadge badge = effectBadges.get(position);
             cell.setText("<html><font size='-2' color='#aebdd0'>" + position.x() + "," + position.y()
-                    + " • " + compactType(def.type()) + (stack > 1 ? " • S" + stack : "") + "</font><br>"
+                    + " • P" + (card.owner() + 1) + " • " + compactType(def.type()) + (stack > 1 ? " • S" + stack : "") + "</font><br>"
                     + "<b>" + html(compactName(def.name(), 20)) + "</b><br><font size='-2'>" + stats + "</font>"
-                    + (badge == null ? "" : "<br><b><font color='" + badge.color() + "'>" + html(badge.text()) + "</font></b>")
-                    + (intent == null ? "" : "<br><b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
+                    + (badge == null ? "" : " <b><font color='" + badge.color() + "'>" + html(badge.text()) + "</font></b>")
+                    + (intent == null ? "" : " <b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
             cell.setToolTipText("<html><b>" + html(def.name()) + "</b><br>" + html(keywordLine(def))
                     + (developmentText(def).isBlank() ? "" : "<br>" + html(developmentText(def)))
                     + (abilityLine(def).isBlank() ? "" : "<br>" + html(abilityLine(def)))
@@ -1028,6 +1088,24 @@ public final class InfiniteConquestGui extends JFrame {
         };
     }
 
+    private static final class BattlefieldCell extends JButton {
+        BattlefieldCell() { setContentAreaFilled(false); }
+
+        @Override protected void paintComponent(Graphics graphics) {
+            Graphics2D g = (Graphics2D) graphics.create();
+            Color base = getBackground();
+            g.setPaint(new GradientPaint(0, 0, base.brighter(), getWidth(), getHeight(), base));
+            g.fillRect(0, 0, getWidth(), getHeight());
+            if (getIcon() == null) {
+                g.setColor(new Color(255, 255, 255, 9));
+                for (int x = -getHeight(); x < getWidth(); x += 32)
+                    g.drawLine(x, getHeight(), x + getHeight(), 0);
+            }
+            g.dispose();
+            super.paintComponent(graphics);
+        }
+    }
+
     private String compactName(String name, int maximum) {
         return name.length() <= maximum ? name : name.substring(0, maximum - 1) + "…";
     }
@@ -1040,9 +1118,9 @@ public final class InfiniteConquestGui extends JFrame {
             CardInstance card = state.card(hand.get(index)).orElseThrow();
             CardDefinition def = card.definition();
             int cardWidth = handExpanded ? 420 : 208;
-            int cardHeight = handExpanded ? Math.max(285, handArea.getPreferredSize().height - 58) : 112;
+            int cardHeight = handExpanded ? Math.max(285, handArea.getPreferredSize().height - 58) : 88;
             int artWidth = handExpanded ? 396 : 190;
-            int artHeight = handExpanded ? Math.min(280, Math.max(235, cardHeight * 2 / 3)) : 48;
+            int artHeight = handExpanded ? Math.min(280, Math.max(235, cardHeight * 2 / 3)) : 26;
             JButton tile = new JButton(handCardHtml(def), CardArtFactory.iconFor(def, artWidth, artHeight));
             Dimension cardSize = new Dimension(cardWidth, cardHeight);
             tile.setPreferredSize(cardSize);
@@ -1063,8 +1141,8 @@ public final class InfiniteConquestGui extends JFrame {
                     + (abilityLine(def).isBlank() ? "" : "<br>" + html(abilityLine(def))) + "</html>");
             tile.setBorder(new CompoundBorder(
                     new LineBorder(selected ? SELECTED : factionColor(def.faction()),
-                            selected ? EMPHASIS_BORDER : IDLE_BORDER, true),
-                    new EmptyBorder(HAND_PADDING, HAND_PADDING, HAND_PADDING, HAND_PADDING)));
+                            selected ? 3 : IDLE_BORDER, true),
+                    new EmptyBorder(3, 3, 3, 3)));
             final int selectedIndex = index;
             tile.addMouseListener(dragListener(new DragSource(selectedIndex, null)));
             tile.setEnabled(canAcceptHumanInput());
@@ -1407,6 +1485,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void playPresentation(PresentationSnapshot resolution, Runnable completion) {
         interaction.lockPresentation();
+        endTurnButton.setEnabled(false);
         Set<BoardPosition> masked = maskedDestinations(resolution);
         maskedBoardCells.addAll(masked);
         refreshBoard();
@@ -1609,7 +1688,9 @@ public final class InfiniteConquestGui extends JFrame {
                     : event.playerId() == 1 ? "Bot 2" : "Rules";
             String detail = switch (event.type()) {
                 case EXHAUSTION_DAMAGE -> friendlyCardDetail(event.detail(), " takes 1 exhaustion damage (empty deck)");
-                case GP_GENERATED -> event.detail();
+                case GP_GENERATED -> "+ Income — " + event.detail();
+                case GP_SPENT -> "− GP spent — " + event.detail();
+                case TURN_STARTED -> "↻ Turn " + event.turnNumber();
                 case CARD_DESTROYED -> friendlyCardDetail(event.detail(), " was destroyed");
                 case CAPITAL_PASSIVE_TRIGGERED -> "Capital passive — " + event.detail().replace('_', ' ').toLowerCase(Locale.ROOT);
                 case DEVELOPMENT_PASSIVE_TRIGGERED -> friendlyDevelopmentPassive(event.detail());
@@ -1784,6 +1865,8 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void addHistory(String actor, String action) {
         historyModel.addElement(String.format("%02d  %s: %s", ++historyNumber, actor, action));
+        recentAction.setText(ActionSummary.label(action) + " · " + actor + ": " + action);
+        recentAction.setToolTipText(actor + ": " + action);
         int last = historyModel.size() - 1;
         if (last >= 0) historyList.ensureIndexIsVisible(last);
     }
@@ -1905,6 +1988,8 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void message(String text) {
         messageLabel.setText("<html>" + html(text).replace("&lt;b&gt;", "<b>").replace("&lt;/b&gt;", "</b>") + "</html>");
+        recentAction.setText("› " + text);
+        recentAction.setToolTipText(text);
     }
 
     private String handCardHtml(CardDefinition def) {

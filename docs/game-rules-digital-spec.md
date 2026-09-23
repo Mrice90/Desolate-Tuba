@@ -6,7 +6,7 @@ This document records implemented rules. Prototype card balance remains editable
 
 - Two players share a 4×6 battlefield.
 - Player 0 controls rows 0–2; player 1 controls rows 3–5.
-- Player 0 draws five opening cards; Player 1 draws six as a second-player advantage.
+- The initiative winner draws five opening cards; the other player draws six.
 - Capitals are committed secretly and revealed simultaneously.
 
 ## Turns and resources
@@ -14,7 +14,7 @@ This document records implemented rules. Prototype card balance remains editable
 - Before play, each player places their chosen Capital secretly on any cell of their own 4×3 plot.
 - A visible coin flip determines the starting player. Player 1 begins with 0 GP and Player 2 with 1 GP. The initiative winner opens with five cards; the other player opens with six.
 - The starting player skips the normal draw on the first global turn; all later turns draw normally.
-- Before the first action, each player may keep up to three opening cards. Every unkept card is discarded and replaced one-for-one from the deck.
+- Before the first action, each player may discard and redraw up to three opening cards.
 - GP is persistent and does not automatically refill or increase by turn number.
 - At the start of a player's turn, each Land and Structure they control generates its printed GP income, then controlled cards refresh and the player draws one card.
 - Lands and Structures cost no GP. Their printed number is a development value: a value-1 card is legal from personal turn 1 onward, a value-3 card from personal turn 3 onward, and so on.
@@ -22,7 +22,7 @@ This document records implemented rules. Prototype card balance remains editable
 - Standard development income follows a visible curve: turns 1–2 generate 1 GP, 3–4 generate 2 GP, 5–6 generate 3 GP, 7–8 generate 4 GP, and 9–10 generate 5 GP. Utility passives normally reduce that income by 1 or more.
 - Characters and Spells retain their printed GP costs.
 - Empty-deck draws deal one exhaustion damage to each controlled Permanent.
-- Conquest Pressure deals 3 damage to each active player's Permanent at the start of turns 9–14, then 4 damage from turn 15 onward. From turns 9–22, each player receives exactly seven pressure pulses.
+- There is no Conquest Pressure or forced turn deadline. Empty-deck exhaustion still applies.
 
 ## Deployment and stacks
 
@@ -47,11 +47,11 @@ This document records implemented rules. Prototype card balance remains editable
 - Range uses diagonal distance.
 - Structures, Capitals, and top Characters with Vanguard block line of sight through their cell.
 - The attack target does not block its own line of sight.
-- Characters are destroyed only when Attack is strictly greater than Defense.
+- Character damage accumulates against Defense during the active turn; damage equal to remaining Defense destroys the Character. Marked Character damage clears on turn change. In-range defenders retaliate simultaneously, except when Fast Strike prevents retaliation by strictly exceeding the defender's Defense.
 - Permanents accumulate Attack as damage and are destroyed at their HP threshold.
 
 ## Victory
 
 - Lands, Structures, and Capitals are Permanents.
 - A player loses immediately after their final Permanent is destroyed.
-- If neither player has won by the end of turn 22, the player with more surviving Permanents wins. If tied, total remaining Permanent HP breaks the tie; equal HP produces a draw.
+- Play continues beyond turn 22 if neither player has won. The simulator's emergency cap is a testing safeguard, not a match rule.

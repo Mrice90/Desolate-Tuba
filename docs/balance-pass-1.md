@@ -1,5 +1,7 @@
 # Balance pass 1 — tempo and initiative
 
+Historical experiment: the pressure and turn-deadline mechanics below were subsequently removed. These results do not describe current balance. See the [current rules](game-rules-digital-spec.md).
+
 All comparisons use 3,240 deterministic bot matches (seed 42), covering every ordered faction matchup and Capital pairing ten times.
 
 | Metric | Baseline | Pass 1 | Prototype goal |

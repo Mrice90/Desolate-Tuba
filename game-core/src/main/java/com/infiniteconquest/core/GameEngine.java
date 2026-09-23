@@ -40,7 +40,7 @@ public final class GameEngine {
         if (source.abilityUsedThisTurn()) return ActionResult.rejected("Ability already used this turn");
         int totalCost = abilities.stream().mapToInt(CardAbility::gpCost).sum();
         if (state.player(action.playerId()).currentGp() < totalCost) return ActionResult.rejected("Not enough GP");
-        state.player(action.playerId()).spendGp(totalCost);
+        state.spendGp(action.playerId(), totalCost, source.definition().name() + " ability");
         source.markAbilityUsed();
         abilities.forEach(ability -> cardAbilityRules.resolve(state, source, ability));
         return ActionResult.accepted("Activated ability resolved");
@@ -418,7 +418,7 @@ public final class GameEngine {
         state.player(card.owner()).removeFromHand(card.instanceId());
     }
     private void payAndRemoveFromHand(GameState state, CardInstance card) {
-        state.player(card.owner()).spendGp(card.definition().cost());
+        state.spendGp(card.owner(), card.definition().cost(), card.definition().name());
         state.player(card.owner()).removeFromHand(card.instanceId());
     }
 }
