@@ -3,6 +3,8 @@ package com.infiniteconquest.gui;
 import com.infiniteconquest.cli.*;
 import com.infiniteconquest.core.*;
 
+import static com.infiniteconquest.gui.UiTheme.*;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -17,24 +19,11 @@ import java.util.List;
 import java.util.*;
 
 public final class InfiniteConquestGui extends JFrame {
-    private static final Color INK = new Color(14, 20, 31);
-    private static final Color PANEL = new Color(25, 35, 52);
-    private static final Color PANEL_LIGHT = new Color(36, 49, 70);
-    private static final Color GOLD = new Color(240, 191, 73);
-    private static final Color HUMAN_PLOT = new Color(28, 62, 76);
-    private static final Color BOT_PLOT = new Color(69, 38, 50);
-    private static final Color SELECTED = new Color(91, 209, 255);
-    private static final Color MOVE = new Color(72, 181, 230);
-    private static final Color ATTACK = new Color(244, 92, 92);
-    private static final Color DEPLOY = new Color(104, 211, 139);
-    private static final Color BURROW = new Color(190, 121, 235);
-    private static final Color CAST = new Color(246, 194, 78);
-
     private final JLabel turnLabel = new JLabel();
     private final JLabel humanLabel = new JLabel();
     private final JLabel botLabel = new JLabel();
     private final JLabel messageLabel = new JLabel("Select a card or unit, then choose a legal action.");
-    private final GridLayout boardLayout = new GridLayout(BoardPosition.HEIGHT, BoardPosition.WIDTH, 6, 6);
+    private final GridLayout boardLayout = new GridLayout(BoardPosition.HEIGHT, BoardPosition.WIDTH, TILE_GAP, TILE_GAP);
     private final JPanel boardPanel = new JPanel(boardLayout);
     private final JPanel boardStage = new JPanel(new GridBagLayout());
     private JScrollPane boardScroll;
@@ -110,9 +99,9 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private JComponent buildScreen() {
-        screenRoot = new JPanel(new BorderLayout(8, 8));
+        screenRoot = new JPanel(new BorderLayout(SCREEN_GAP, SCREEN_GAP));
         screenRoot.setBackground(INK);
-        screenRoot.setBorder(new EmptyBorder(8, 8, 8, 8));
+        screenRoot.setBorder(new EmptyBorder(SCREEN_GAP, SCREEN_GAP, SCREEN_GAP, SCREEN_GAP));
         headerArea = buildHeader();
         actionArea = buildActions();
         handArea = buildHand();
@@ -270,12 +259,14 @@ public final class InfiniteConquestGui extends JFrame {
             }
         }
         surround.add(boardHeader, BorderLayout.NORTH);
-        boardStage.setOpaque(false);
+        boardStage.setOpaque(true);
+        boardStage.setBackground(BOARD_STAGE);
         boardStage.add(boardPanel);
         boardScroll = new JScrollPane(boardStage,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        boardScroll.setBorder(null);
+        boardScroll.setBorder(new LineBorder(BOARD_STAGE_EDGE, 1));
+        boardScroll.getViewport().setBackground(BOARD_STAGE);
         boardScroll.getVerticalScrollBar().setUnitIncrement(24);
         boardScroll.getHorizontalScrollBar().setUnitIncrement(24);
         boardScroll.getViewport().addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -942,28 +933,31 @@ public final class InfiniteConquestGui extends JFrame {
             JButton cell = boardButtons.get(position);
             Optional<UUID> topId = state.board().topAt(position);
             Color base = position.isOnPlayerSide(0) ? HUMAN_PLOT : BOT_PLOT;
-            cell.setBackground(base);
-            cell.setForeground(Color.WHITE);
             Intent intent = destinationIntent(position);
-            int tilePadding = boardFullScreen ? 3 : 7;
+            boolean selected = Objects.equals(selectedCell, position);
+            Color surface = intent == null ? base : blend(base, intent.color, TARGET_TINT);
+            cell.setBackground(surface);
+            cell.setForeground(Color.WHITE);
+            int tilePadding = boardFullScreen ? COMPACT_TILE_PADDING : TILE_PADDING;
+            Color outline = selected ? SELECTED : intent != null ? intent.color : base.brighter();
+            int outlineWidth = selected || intent != null ? EMPHASIS_BORDER : IDLE_BORDER;
             cell.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED,
-                    base.brighter(), base.brighter(), base.darker(), base.darker()), new CompoundBorder(
-                    new LineBorder(Objects.equals(selectedCell, position) ? SELECTED
-                            : intent != null ? intent.color : base.brighter(),
-                            Objects.equals(selectedCell, position) || intent != null ? 4 : 1, true),
+                    surface.brighter(), surface.brighter(), surface.darker(), surface.darker()), new CompoundBorder(
+                    new LineBorder(outline, outlineWidth, true),
                     new EmptyBorder(tilePadding, tilePadding, tilePadding, tilePadding))));
             if (topId.isEmpty()) {
                 cell.setIcon(null);
                 cell.setHorizontalAlignment(SwingConstants.LEFT);
                 cell.setVerticalAlignment(SwingConstants.TOP);
                 cell.setText("<html><font color='#78899d'>" + position.x() + "," + position.y() + "</font>"
-                        + (intent == null ? "" : "<br><b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
+                        + (intent == null ? "" : "<br><b><font color='" + intent.hex + "'>◆ " + intent.label + " HERE</font></b>") + "</html>");
                 cell.setToolTipText("Empty cell " + position.x() + "," + position.y() + " — drop a legal card or unit here");
                 continue;
             }
             CardInstance card = state.card(topId.orElseThrow()).orElseThrow();
             CardDefinition def = card.definition();
-            cell.setBackground(blend(base, factionColor(def.faction()), .42f));
+            Color occupiedSurface = blend(base, factionColor(def.faction()), .42f);
+            cell.setBackground(intent == null ? occupiedSurface : blend(occupiedSurface, intent.color, TARGET_TINT));
             cell.setIcon(boardFullScreen
                     ? CardArtFactory.iconFor(def, 190, 104)
                     : CardArtFactory.boardIconFor(def));
@@ -1026,12 +1020,14 @@ public final class InfiniteConquestGui extends JFrame {
             tile.setHorizontalTextPosition(SwingConstants.CENTER);
             tile.setVerticalTextPosition(SwingConstants.BOTTOM);
             tile.setForeground(Color.WHITE);
-            tile.setBackground(blend(PANEL_LIGHT, factionColor(def.faction()), .36f));
+            boolean selected = Objects.equals(selectedHand, index);
+            Color handSurface = blend(PANEL_LIGHT, factionColor(def.faction()), .36f);
+            tile.setBackground(selected ? blend(handSurface, SELECTED, SELECTED_TINT) : handSurface);
             tile.setFocusPainted(false);
             tile.setBorder(new CompoundBorder(
-                    new LineBorder(Objects.equals(selectedHand, index) ? SELECTED : factionColor(def.faction()),
-                            Objects.equals(selectedHand, index) ? 4 : 1, true),
-                    new EmptyBorder(7, 7, 7, 7)));
+                    new LineBorder(selected ? SELECTED : factionColor(def.faction()),
+                            selected ? EMPHASIS_BORDER : IDLE_BORDER, true),
+                    new EmptyBorder(HAND_PADDING, HAND_PADDING, HAND_PADDING, HAND_PADDING)));
             final int selectedIndex = index;
             tile.addMouseListener(dragListener(new DragSource(selectedIndex, null)));
             tile.setEnabled(!playerOneBot && !botRunning && state.activePlayer() == 0 && state.phase() != Phase.GAME_OVER);
