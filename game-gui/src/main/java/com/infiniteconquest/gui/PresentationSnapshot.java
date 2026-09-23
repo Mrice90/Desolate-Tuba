@@ -10,7 +10,7 @@ final class PresentationSnapshot {
         ENTERED_BATTLEFIELD, MOVED, DAMAGED, DESTROYED, ZONE_CHANGED, UNCHANGED
     }
 
-    record CardVisual(UUID id, BoardPosition position, Zone zone, int damage,
+    record CardVisual(UUID id, int owner, BoardPosition position, Zone zone, int damage,
                       int hitPoints, int defense, String name, CardType type, boolean top) {
         CardVisual {
             Objects.requireNonNull(id);
@@ -88,7 +88,7 @@ final class PresentationSnapshot {
             CardInstance card = state.card(id).orElse(null);
             if (card == null) continue;
             CardDefinition definition = card.definition();
-            cards.put(id, new CardVisual(id, positions.get(id), card.zone(), card.damage(),
+            cards.put(id, new CardVisual(id, card.owner(), positions.get(id), card.zone(), card.damage(),
                     definition.hitPoints(), card.effectiveDefense(), definition.name(),
                     definition.type(), topCards.contains(id)));
         }

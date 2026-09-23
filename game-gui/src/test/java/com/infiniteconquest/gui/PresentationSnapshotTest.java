@@ -68,7 +68,7 @@ class PresentationSnapshotTest {
     }
 
     private PresentationSnapshot.CardVisual visual(BoardPosition position, Zone zone, int damage) {
-        return new PresentationSnapshot.CardVisual(CARD, position, zone, damage,
+        return new PresentationSnapshot.CardVisual(CARD, 0, position, zone, damage,
                 8, 5, "Snapshot Unit", CardType.CHARACTER, zone == Zone.BATTLEFIELD);
     }
 }

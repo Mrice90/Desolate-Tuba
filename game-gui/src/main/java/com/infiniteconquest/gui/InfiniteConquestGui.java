@@ -35,6 +35,7 @@ public final class InfiniteConquestGui extends JFrame {
     private final JTabbedPane actionTabs = new JTabbedPane();
     private final Map<BoardPosition, JButton> boardButtons = new HashMap<>();
     private final Map<BoardPosition, EffectBadge> effectBadges = new HashMap<>();
+    private final Set<BoardPosition> maskedBoardCells = new HashSet<>();
     private final CombatOverlay combatOverlay = new CombatOverlay();
     private final PresentationQueue presentationQueue;
     private final List<JButton> handButtons = new ArrayList<>();
@@ -161,6 +162,12 @@ public final class InfiniteConquestGui extends JFrame {
         if ("expanded-hand".equals(scenario) && !handExpanded) toggleHandExpansion();
         refresh();
         validate();
+        if ("deployment-motion".equals(scenario)) {
+            String command = legalCommands().stream()
+                    .filter(value -> value.matches("play \\d+ \\d+ \\d+"))
+                    .findFirst().orElseThrow(() -> new IllegalStateException("No deployment available for fixture"));
+            executeHuman(command);
+        }
     }
 
     private void saveDebugScreenshot() {
@@ -942,7 +949,8 @@ public final class InfiniteConquestGui extends JFrame {
     private void refreshBoard() {
         for (BoardPosition position : state.board().positions()) {
             JButton cell = boardButtons.get(position);
-            Optional<UUID> topId = state.board().topAt(position);
+            Optional<UUID> topId = maskedBoardCells.contains(position)
+                    ? Optional.empty() : state.board().topAt(position);
             Color base = position.isOnPlayerSide(0) ? HUMAN_PLOT : BOT_PLOT;
             Intent intent = destinationIntent(position);
             boolean selected = Objects.equals(interaction.boardPosition(), position);
@@ -1288,7 +1296,11 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void playPresentation(PresentationSnapshot resolution, Runnable completion) {
         interaction.lockPresentation();
+        Set<BoardPosition> masked = maskedDestinations(resolution);
+        maskedBoardCells.addAll(masked);
+        refreshBoard();
         combatOverlay.beginSequence(() -> {
+            maskedBoardCells.removeAll(masked);
             interaction.finishPresentation();
             completion.run();
             refresh();
@@ -1298,6 +1310,17 @@ public final class InfiniteConquestGui extends JFrame {
         } finally {
             combatOverlay.finishSequence();
         }
+    }
+
+    private Set<BoardPosition> maskedDestinations(PresentationSnapshot resolution) {
+        if (!resolution.command().startsWith("play ")) return Set.of();
+        return resolution.changes().stream()
+                .filter(change -> change.change() == PresentationSnapshot.Change.ENTERED_BATTLEFIELD)
+                .map(PresentationSnapshot.CardChange::after)
+                .filter(Objects::nonNull)
+                .map(PresentationSnapshot.CardVisual::position)
+                .filter(Objects::nonNull)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
     private void renderPresentation(PresentationSnapshot resolution) {
@@ -1315,9 +1338,21 @@ public final class InfiniteConquestGui extends JFrame {
             }
             case "play", "burrow" -> {
                 BoardPosition to = position(p, 2);
-                badge(to, p[0].equals("burrow") ? "BURROWED BELOW TOP" : "PLACED ON TOP", "#78e29a");
-                combatOverlay.animate(null, to, p[0].equals("burrow") ? BURROW : DEPLOY, false,
-                        AnimationStyle.DEPLOY);
+                boolean burrow = p[0].equals("burrow");
+                badge(to, burrow ? "BURROWED BELOW TOP" : "PLACED ON TOP", "#78e29a");
+                PresentationSnapshot.CardVisual deployed = resolution.changes().stream()
+                        .filter(change -> change.change() == PresentationSnapshot.Change.ENTERED_BATTLEFIELD)
+                        .map(PresentationSnapshot.CardChange::after)
+                        .filter(Objects::nonNull)
+                        .filter(card -> Objects.equals(card.position(), to))
+                        .findFirst().orElse(null);
+                CardDefinition definition = deployed == null ? null
+                        : state.card(deployed.id()).map(CardInstance::definition).orElse(null);
+                if (definition != null) {
+                    combatOverlay.animateCard(definition, deployed.owner(), to, burrow ? BURROW : DEPLOY);
+                } else {
+                    combatOverlay.animate(null, to, burrow ? BURROW : DEPLOY, false, AnimationStyle.DEPLOY);
+                }
                 SoundEffects.play(SoundEffects.Cue.DEPLOY);
             }
             case "attack" -> {
@@ -2276,6 +2311,15 @@ public final class InfiniteConquestGui extends JFrame {
             if (animation == null && queued.isEmpty()) completeSequence();
         }
 
+        void animateCard(CardDefinition card, int owner, BoardPosition to, Color color) {
+            if (!sequenceOpen) throw new IllegalStateException("Animations require an open presentation sequence");
+            Image image = CardArtFactory.iconFor(card, 190, 100).getImage();
+            Animation requested = new Animation(null, to, color, false, AnimationStyle.DEPLOY, 0L,
+                    image, owner == 1, 300_000_000L);
+            if (animation != null) queued.addLast(requested);
+            else start(requested);
+        }
+
         void animate(BoardPosition from, BoardPosition to, Color color, boolean fromRules) {
             animate(from, to, color, fromRules, fromRules ? AnimationStyle.RULES
                     : from == null ? AnimationStyle.SPELL : AnimationStyle.MOVE);
@@ -2283,7 +2327,8 @@ public final class InfiniteConquestGui extends JFrame {
 
         void animate(BoardPosition from, BoardPosition to, Color color, boolean fromRules, AnimationStyle style) {
             if (!sequenceOpen) throw new IllegalStateException("Animations require an open presentation sequence");
-            Animation requested = new Animation(from, to, color, fromRules, style, 0L);
+            Animation requested = new Animation(from, to, color, fromRules, style, 0L,
+                    null, false, 800_000_000L);
             if (animation != null) {
                 queued.addLast(requested);
                 return;
@@ -2293,7 +2338,8 @@ public final class InfiniteConquestGui extends JFrame {
 
         private void start(Animation requested) {
             animation = new Animation(requested.from(), requested.to(), requested.color(),
-                    requested.fromRules(), requested.style(), System.nanoTime());
+                    requested.fromRules(), requested.style(), System.nanoTime(),
+                    requested.cardImage(), requested.opponentSource(), requested.durationNanos());
             timer = new javax.swing.Timer(28, event -> {
                 repaint();
                 if (animation != null && animation.progress() >= 1f) {
@@ -2305,7 +2351,8 @@ public final class InfiniteConquestGui extends JFrame {
                     } else {
                         Animation next = queued.removeFirst();
                         animation = new Animation(next.from(), next.to(), next.color(),
-                                next.fromRules(), next.style(), System.nanoTime());
+                                next.fromRules(), next.style(), System.nanoTime(),
+                                next.cardImage(), next.opponentSource(), next.durationNanos());
                     }
                 }
             });
@@ -2329,8 +2376,10 @@ public final class InfiniteConquestGui extends JFrame {
             if (animation.fromRules()) {
                 source = new Point(target.x, 8);
             } else if (animation.from() == null) {
-                source = SwingUtilities.convertPoint(handPanel,
-                        Math.max(20, handPanel.getWidth() / 2), 0, this);
+                source = animation.opponentSource()
+                        ? new Point(target.x, 8)
+                        : SwingUtilities.convertPoint(handPanel,
+                                Math.max(20, handPanel.getWidth() / 2), 0, this);
             } else {
                 JButton sourceButton = boardButtons.get(animation.from());
                 if (sourceButton == null || !sourceButton.isShowing()) return;
@@ -2344,9 +2393,34 @@ public final class InfiniteConquestGui extends JFrame {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setComposite(AlphaComposite.SrcOver.derive(.88f * fade));
             g.setColor(animation.color());
-            float travel = ease(Math.min(1f, progress / .72f));
+            float travel = ease(animation.cardImage() == null ? Math.min(1f, progress / .72f) : progress);
             int orbX = Math.round(source.x + (target.x - source.x) * travel);
             int orbY = Math.round(source.y + (target.y - source.y) * travel);
+            if (animation.cardImage() != null) {
+                int arc = Math.max(34, Math.abs(target.x - source.x) / 7 + 24);
+                float inverse = 1f - travel;
+                orbX = Math.round(inverse * inverse * source.x
+                        + 2 * inverse * travel * ((source.x + target.x) / 2f)
+                        + travel * travel * target.x);
+                orbY = Math.round(inverse * inverse * source.y
+                        + 2 * inverse * travel * (Math.min(source.y, target.y) - arc)
+                        + travel * travel * target.y);
+                int width = Math.round(190 - 62 * travel);
+                int height = Math.round(100 - 34 * travel);
+                g.setComposite(AlphaComposite.SrcOver.derive(.30f));
+                g.setColor(Color.BLACK);
+                g.fillRoundRect(orbX - width / 2 + 6, orbY - height / 2 + 8, width, height, 16, 16);
+                g.setComposite(AlphaComposite.SrcOver);
+                g.drawImage(animation.cardImage(), orbX - width / 2, orbY - height / 2,
+                        width, height, null);
+                g.setColor(animation.color());
+                g.setStroke(new BasicStroke(4f));
+                g.drawRoundRect(orbX - width / 2, orbY - height / 2, width, height, 14, 14);
+                VisualEffects.draw(g, VisualEffects.Sprite.LIGHT, orbX, orbY,
+                        Math.max(width, height), animation.color(), .36f, progress);
+                g.dispose();
+                return;
+            }
             VisualEffects.Sprite traveling = switch (animation.style()) {
                 case MOVE -> VisualEffects.Sprite.TRACE;
                 case BLINK, SPELL -> VisualEffects.Sprite.MAGIC;
@@ -2422,9 +2496,10 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private record Animation(BoardPosition from, BoardPosition to, Color color,
-                             boolean fromRules, AnimationStyle style, long startedAt) {
+                             boolean fromRules, AnimationStyle style, long startedAt,
+                             Image cardImage, boolean opponentSource, long durationNanos) {
         float progress() {
-            return Math.min(1f, (System.nanoTime() - startedAt) / 800_000_000f);
+            return Math.min(1f, (System.nanoTime() - startedAt) / (float) durationNanos);
         }
     }
 }
