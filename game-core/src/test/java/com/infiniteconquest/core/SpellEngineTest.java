@@ -50,6 +50,8 @@ class SpellEngineTest {
         assertEquals(5, defender.effectiveDefense());
         assertEquals(Zone.DISCARD, reaction.zone());
         assertEquals(1, state.player(1).currentGp());
+        assertTrue(state.events().stream().anyMatch(event -> event.type() == GameEvent.Type.GP_SPENT
+                && event.playerId() == 1 && event.detail().equals("2 for Reaction")));
 
         engine.apply(state, new GameAction.EndTurn(0));
         assertEquals(2, defender.effectiveDefense(), "buff expires at start of controller's next turn");

@@ -41,6 +41,11 @@ class CardAbilityRulesTest {
         assertEquals(0, state.player(0).currentGp());
         assertFalse(new GameEngine().apply(state,
                 new GameAction.ActivateAbility(0, repair.instanceId())).accepted());
+        List<GameEvent> spending = state.events().stream()
+                .filter(event -> event.type() == GameEvent.Type.GP_SPENT).toList();
+        assertEquals(1, spending.size(), "Rejected repeat activation must not create a spending event");
+        assertEquals("2 for repair ability", spending.get(0).detail());
+        assertEquals(0, spending.get(0).playerId());
         assertEquals(Zone.BATTLEFIELD, home.zone());
     }
 

@@ -1,5 +1,7 @@
 # Balance pass 2 — faction spread and initiative
 
+Historical experiment: the pressure and turn-deadline mechanics below were subsequently removed. These results do not describe current balance. See the [current rules](game-rules-digital-spec.md).
+
 Results use 3,240 deterministic bot matches (seed 42), covering every ordered faction matchup and Capital pairing ten times.
 
 | Metric | Baseline | Pass 1 | Pass 2 | Prototype goal |

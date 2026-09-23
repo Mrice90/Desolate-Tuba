@@ -18,8 +18,9 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 - Use **Expand Hand** for an art-focused hand tray with substantially larger cards and high-resolution 3:2 artwork.
 - Right-click a card in either hand view and choose **View full card** to open its complete card-format inspection view.
 - Right-click an occupied battlefield cell to inspect every card in its stack, shown top-first. Right-click any card row in that inspector to open a large card-format view with art, current stats, keywords, and abilities.
-- Use **Board Fullscreen** for an unobstructed, scrollable battlefield with taller tiles and high-resolution artwork; it opens on the player territory while retaining enemy rows in the same continuous grid. Press `Esc` or its exit button to restore the full interface.
-- Open the **Action Log** tab to review the match in chronological order.
+- The compact overview shows all 24 battlefield cells at a 1366×768 client area. Smaller windows may scroll. **Board Fullscreen** gives the battlefield more space; `Esc` restores the interface.
+- Both players' Capital art, faction, GP held, and recurring income appear in the top HUD alongside End Turn. Income is based on currently controlled cards, not guaranteed future income.
+- **Actions** (`F2`) opens the legal-action window; use arrow keys and Enter to execute. **History** (`F3`) opens the chronological log. A compact icon-and-text strip shows the most recent entry, including income, spending, and reactions.
 - Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
 - Opening mulligans let you visually select up to three cards to discard and redraw, and enemy-turn reactions use a matching visual spell tray plus battlefield targeting instead of a text menu.
 - Choose **Deck Builder** to edit and save one local deck per faction; decks require at least 40 cards, starter decks contain 60, and saved decks load automatically for new matches.
@@ -92,6 +93,8 @@ All imported and development cards remain editable prototype content rather than
 ```bash
 gradle test
 ```
+
+Build an extract-and-run desktop archive with `gradle :game-gui:distZip`. It includes dependencies and requires Java 17 on the target machine. See the [desktop release checklist](docs/desktop-release-checklist.md) for first-run instructions, screenshot sizes, and outstanding human release checks.
 
 ## Run automated balance simulations
 

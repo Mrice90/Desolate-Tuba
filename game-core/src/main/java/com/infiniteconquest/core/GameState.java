@@ -139,6 +139,11 @@ public final class GameState {
         applyDevelopmentDeployPassive(card);
         cardAbilityRules.resolve(this, card, AbilityTrigger.ENTERS_PLAY);
     }
+
+    void spendGp(int playerId, int amount, String reason) {
+        player(playerId).spendGp(amount);
+        if (amount > 0) emit(GameEvent.Type.GP_SPENT, playerId, amount + " for " + reason);
+    }
     void recordCharacterMoved(CardInstance card, BoardPosition from, BoardPosition to, int distance) {
         mulliganWindowOpen = false;
         emit(GameEvent.Type.CHARACTER_MOVED, card.owner(), card.instanceId() + " " + from + " -> " + to + " cost " + distance);

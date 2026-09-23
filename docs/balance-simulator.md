@@ -15,7 +15,7 @@ gradle :game-cli:run --args="simulate"
 gradle :game-cli:run --args="simulate 10 42 reports/balance.json"
 ```
 
-The engine resolves surviving matches at the end of turn 22. The simulator retains a 120-turn emergency cap and a 200-action-per-turn safety cap; a match that somehow reaches the emergency cap is recorded as a draw rather than hanging. Seeds are derived deterministically from the supplied base seed, so the same content and arguments reproduce the same results.
+The engine has no forced turn deadline. The simulator retains a 120-turn emergency cap and a 200-action-per-turn safety cap; a match that reaches the emergency cap is recorded as a draw rather than hanging. These caps are simulation safeguards, not game rules. Seeds are derived deterministically from the supplied base seed, so the same content and arguments reproduce the same results.
 
 ## Report fields
 
