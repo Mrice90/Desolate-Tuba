@@ -176,6 +176,9 @@ public final class InfiniteConquestGui extends JFrame {
         if ("board-movement".equals(scenario)) {
             previewBoardMovement();
         }
+        if ("melee-lunge".equals(scenario)) {
+            previewMeleeLunge();
+        }
     }
 
     private void saveDebugScreenshot() {
@@ -1226,6 +1229,30 @@ public final class InfiniteConquestGui extends JFrame {
         executeHuman(choice.command());
     }
 
+    private void previewMeleeLunge() {
+        PresentationSnapshot.CardVisual attacker = PresentationSnapshot.capture(state).cards().values().stream()
+                .filter(card -> card.owner() == 0 && card.zone() == Zone.BATTLEFIELD
+                        && card.top() && card.position() != null)
+                .findFirst().orElseThrow(() -> new IllegalStateException("No attacker available for fixture"));
+        CardDefinition definition = state.card(attacker.id()).map(CardInstance::definition).orElseThrow();
+        BoardPosition from = attacker.position();
+        int targetY = from.y() < BoardPosition.HEIGHT - 1 ? from.y() + 1 : from.y() - 1;
+        BoardPosition target = new BoardPosition(from.x(), targetY);
+        interaction.lockPresentation();
+        maskedBoardCells.add(from);
+        refreshBoard();
+        combatOverlay.beginSequence(() -> {
+            maskedBoardCells.remove(from);
+            interaction.finishPresentation();
+            refresh();
+        });
+        try {
+            combatOverlay.animateMeleeCard(definition, attacker.owner(), from, target);
+        } finally {
+            combatOverlay.finishSequence();
+        }
+    }
+
     private void previewBoardMovement() {
         PresentationSnapshot.CardVisual moving = PresentationSnapshot.capture(state).cards().values().stream()
                 .filter(card -> card.owner() == 0 && card.zone() == Zone.BATTLEFIELD
@@ -1385,6 +1412,12 @@ public final class InfiniteConquestGui extends JFrame {
             String[] parts = resolution.command().split("\\s+");
             return Set.of(position(parts, 3));
         }
+        if (resolution.command().startsWith("attack ")) {
+            String[] parts = resolution.command().split("\\s+");
+            BoardPosition from = position(parts, 1);
+            BoardPosition target = position(parts, 3);
+            return from.distanceTo(target) <= 1 ? Set.of(from) : Set.of();
+        }
         return Set.of();
     }
 
@@ -1436,10 +1469,17 @@ public final class InfiniteConquestGui extends JFrame {
                 BoardPosition target = position(p, 3);
                 boolean ranged = from.distanceTo(target) > 1;
                 showTargetResult(target, resolution, ranged ? "RANGED" : "MELEE", ranged ? "#ffb45b" : "#ff7373");
-                combatOverlay.animate(from, target, ranged ? new Color(255, 180, 91) : ATTACK, false,
-                        ranged ? AnimationStyle.RANGED : AnimationStyle.MELEE);
                 PresentationSnapshot.CardVisual originalAttacker = before.cards().values().stream()
-                        .filter(value -> value.position().equals(from) && value.top()).findFirst().orElse(null);
+                        .filter(value -> Objects.equals(value.position(), from) && value.top())
+                        .findFirst().orElse(null);
+                CardDefinition attackerDefinition = originalAttacker == null ? null
+                        : state.card(originalAttacker.id()).map(CardInstance::definition).orElse(null);
+                if (!ranged && attackerDefinition != null) {
+                    combatOverlay.animateMeleeCard(attackerDefinition, originalAttacker.owner(), from, target);
+                } else {
+                    combatOverlay.animate(from, target, ranged ? new Color(255, 180, 91) : ATTACK, false,
+                            ranged ? AnimationStyle.RANGED : AnimationStyle.MELEE);
+                }
                 if (originalAttacker != null) {
                     PresentationSnapshot.CardVisual surviving = resolution.after().card(originalAttacker.id());
                     if (surviving == null || surviving.zone() != Zone.BATTLEFIELD) {
@@ -2406,6 +2446,15 @@ public final class InfiniteConquestGui extends JFrame {
             else start(requested);
         }
 
+        void animateMeleeCard(CardDefinition card, int owner, BoardPosition from, BoardPosition target) {
+            if (!sequenceOpen) throw new IllegalStateException("Animations require an open presentation sequence");
+            Image image = CardArtFactory.iconFor(card, 190, 100).getImage();
+            Animation requested = new Animation(from, target, ATTACK, false, AnimationStyle.MELEE, 0L,
+                    image, owner == 1, 360_000_000L, false, false);
+            if (animation != null) queued.addLast(requested);
+            else start(requested);
+        }
+
         void animateBoardCard(CardDefinition card, int owner, BoardPosition from, BoardPosition to,
                               Color color, AnimationStyle style) {
             if (!sequenceOpen) throw new IllegalStateException("Animations require an open presentation sequence");
@@ -2488,12 +2537,14 @@ public final class InfiniteConquestGui extends JFrame {
             }
 
             float progress = animation.progress();
-            float fade = progress < .72f ? 1f : Math.max(0f, (1f - progress) / .28f);
+            boolean cardLunge = animation.cardImage() != null && animation.style() == AnimationStyle.MELEE;
+            float fade = cardLunge ? 1f : progress < .72f ? 1f : Math.max(0f, (1f - progress) / .28f);
             Graphics2D g = (Graphics2D) graphics.create();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setComposite(AlphaComposite.SrcOver.derive(.88f * fade));
             g.setColor(animation.color());
-            float travel = animation.spring() ? spring(progress)
+            float travel = cardLunge ? (float) Math.sin(Math.PI * progress) * .72f
+                    : animation.spring() ? spring(progress)
                     : ease(animation.cardImage() == null ? Math.min(1f, progress / .72f) : progress);
             int orbX = Math.round(source.x + (target.x - source.x) * travel);
             int orbY = Math.round(source.y + (target.y - source.y) * travel);
@@ -2519,6 +2570,11 @@ public final class InfiniteConquestGui extends JFrame {
                 g.drawRoundRect(orbX - width / 2, orbY - height / 2, width, height, 14, 14);
                 VisualEffects.draw(g, VisualEffects.Sprite.LIGHT, orbX, orbY,
                         Math.max(width, height), animation.color(), .36f, progress);
+                if (cardLunge && progress > .34f && progress < .68f) {
+                    float strikeAlpha = 1f - Math.abs(progress - .51f) / .17f;
+                    VisualEffects.draw(g, VisualEffects.Sprite.SLASH, target.x, target.y, 104,
+                            Color.WHITE, Math.max(0f, strikeAlpha), Math.atan2(target.y - source.y, target.x - source.x));
+                }
                 g.dispose();
                 return;
             }
