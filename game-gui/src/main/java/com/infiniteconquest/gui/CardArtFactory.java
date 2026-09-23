@@ -16,7 +16,12 @@ import java.util.*;
 /** Painted card art with a deterministic procedural renderer for cards awaiting bespoke art. */
 final class CardArtFactory {
     private static final Map<String, ImageIcon> CACHE = new HashMap<>();
-    private static final Map<String, BufferedImage> PAINTED_ART = new HashMap<>();
+    /** Keep a small working set of full-resolution paintings as the faction art library grows. */
+    private static final Map<String, BufferedImage> PAINTED_ART = new LinkedHashMap<>(32, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<String, BufferedImage> eldest) {
+            return size() > 16;
+        }
+    };
     private static final BufferedImage WORLDS = loadWorlds();
     private static final Map<String,Integer> WORLD = Map.of(
             "ZEUS",0,"POSEIDON",1,"HADES",2,"ARES",3,"ATHENA",4,"HEPHAESTUS",5);
