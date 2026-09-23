@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -200,7 +201,6 @@ class CardArtFactoryTest {
         assertEquals(19, lands.size());
         for (CardDefinition land : lands) {
             assertNotNull(CardArtFactory.class.getResource("/art/lands/" + land.id() + ".jpg"), land.id());
-            assertTrue(CardArtFactory.hasPaintedArt(land), land.id());
         }
         CardDefinition tidelands = new PrototypeCardPool().require("poseidon_neon_tidelands");
         assertTrue(CardArtFactory.hasPaintedArt(tidelands));
@@ -209,6 +209,13 @@ class CardArtFactoryTest {
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
         assertEquals(190, CardArtFactory.iconFor(tidelands, 190, 78).getIconWidth());
         assertEquals(56, CardArtFactory.boardIconFor(tidelands).getIconHeight());
+    }
+
+    @TestFactory Stream<DynamicTest> decodesEachPoseidonLandPainting() {
+        return new PrototypeCardPool().cardsForFaction("POSEIDON").stream()
+                .filter(card -> card.type() == CardType.LAND)
+                .map(card -> DynamicTest.dynamicTest(card.id(),
+                        () -> assertTrue(CardArtFactory.hasPaintedArt(card), card.id())));
     }
 
     @Test void everyPlayablePoseidonCharacterHasPaintedArt() {
