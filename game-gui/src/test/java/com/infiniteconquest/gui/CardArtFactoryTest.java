@@ -4,6 +4,8 @@ import com.infiniteconquest.cli.PrototypeCardPool;
 import com.infiniteconquest.core.CardDefinition;
 import com.infiniteconquest.core.CardType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.DynamicTest;
 
 import javax.swing.*;
 import java.awt.image.BufferedImage;
