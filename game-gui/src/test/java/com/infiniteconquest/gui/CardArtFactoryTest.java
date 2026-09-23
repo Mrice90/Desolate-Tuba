@@ -55,6 +55,10 @@ class CardArtFactoryTest {
             "poseidon_crushing_depths", "poseidon_erode_foundation",
             "poseidon_restorative_tide", "poseidon_undertow_recall",
             "poseidon_tidal_armor", "poseidon_apex_maelstrom_verdict");
+    private static final List<String> PAINTED_POSEIDON_FOUNDATIONAL_LANDS = List.of(
+            "poseidon_neon_tidelands", "poseidon_coral_data_reef",
+            "poseidon_abyssal_pressure_trench", "poseidon_palace_of_tides_approach",
+            "poseidon_ability_healing_shoal");
     private static final List<String> PAINTED_POSEIDON_CHARACTERS = List.of(
             "poseidon_tidepool_surveyor", "poseidon_nereid_current_rider",
             "poseidon_reefline_defender", "poseidon_undertow_stalker",
@@ -179,6 +183,19 @@ class CardArtFactoryTest {
                 crushingDepths.keywords(), crushingDepths.effects());
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
         assertEquals(190, CardArtFactory.iconFor(crushingDepths, 190, 78).getIconWidth());
+    }
+
+    @Test void packagesThePaintedPoseidonFoundationalLandBatch() {
+        for (String id : PAINTED_POSEIDON_FOUNDATIONAL_LANDS) {
+            assertNotNull(CardArtFactory.class.getResource("/art/lands/" + id + ".jpg"), id);
+            assertTrue(CardArtFactory.hasPaintedArt(new PrototypeCardPool().require(id)), id);
+        }
+        CardDefinition tidelands = new PrototypeCardPool().require("poseidon_neon_tidelands");
+        CardDefinition awaitingArt = new CardDefinition("poseidon_future_land", "Future Land",
+                CardType.LAND, "POSEIDON", tidelands.cost(), 0, 0, 0, 0, tidelands.hitPoints());
+        assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
+        assertEquals(190, CardArtFactory.iconFor(tidelands, 190, 78).getIconWidth());
+        assertEquals(56, CardArtFactory.boardIconFor(tidelands).getIconHeight());
     }
 
     @Test void everyPlayablePoseidonCharacterHasPaintedArt() {
