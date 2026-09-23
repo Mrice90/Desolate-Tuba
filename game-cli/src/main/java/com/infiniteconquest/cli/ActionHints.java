@@ -118,7 +118,7 @@ public final class ActionHints {
                 .map(id -> state.card(id).orElseThrow())
                 .allMatch(card -> card.owner() == player);
         boolean besidePermanent = state.board().isEmpty(destination) && state.board().positions().stream()
-                .filter(destination::adjacentTo)
+                .filter(p -> state.rules().geometry().adjacent(destination, p))
                 .flatMap(position -> state.board().stackAt(position).stream())
                 .map(id -> state.card(id).orElseThrow())
                 .anyMatch(card -> card.owner() == player && card.definition().isPermanent());

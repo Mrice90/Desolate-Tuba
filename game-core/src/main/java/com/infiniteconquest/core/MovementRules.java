@@ -20,7 +20,7 @@ public final class MovementRules {
             BoardPosition current = queue.removeFirst();
             int nextDistance = distance.get(current) + 1;
             if (nextDistance > allowance) continue;
-            for (BoardPosition next : neighbors(current)) {
+            for (BoardPosition next : state.rules().geometry().neighbors(current)) {
                 if (distance.containsKey(next)) continue;
                 boolean stackableDestination = canJoinFriendlyStack(state, character, next);
                 if (!state.board().isEmpty(next) && !stackableDestination) continue;
@@ -56,7 +56,7 @@ public final class MovementRules {
                 }
                 return List.copyOf(path);
             }
-            for (BoardPosition next : neighbors(current)) {
+            for (BoardPosition next : state.rules().geometry().neighbors(current)) {
                 if ((!state.board().isEmpty(next) && !next.equals(destination)) || distance.containsKey(next)) continue;
                 distance.put(next, distance.get(current) + 1);
                 previous.put(next, current);
@@ -73,16 +73,4 @@ public final class MovementRules {
                 .allMatch(card -> card.owner() == character.owner());
     }
 
-    private List<BoardPosition> neighbors(BoardPosition position) {
-        List<BoardPosition> result = new ArrayList<>();
-        for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) {
-            if (dx == 0 && dy == 0) continue;
-            int x = position.x() + dx;
-            int y = position.y() + dy;
-            if (x >= 0 && x < BoardPosition.WIDTH && y >= 0 && y < BoardPosition.HEIGHT) {
-                result.add(new BoardPosition(x, y));
-            }
-        }
-        return result;
-    }
 }

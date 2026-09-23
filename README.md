@@ -1,10 +1,10 @@
 # Infinite Conquest
 
-Infinite Conquest is a tactical card game combining deck construction, a shared 4×6 battlefield, spatial combat, stacking, and faction-driven strategies.
+Infinite Conquest is a tactical card game combining deck construction, a shared 24-hex battlefield, spatial combat, stacking, and faction-driven strategies.
 
 This repository was rebuilt from the former Medieval Duel prototype. The original project remains recoverable through Git history. The separate `Mrice90/Creepy-Tomatoe` Ninja vs Zombies repository is not touched by this work.
 
-## Play the graphical prototype
+## Play the graphical game (Hex & Allies 0.2)
 
 Requires JDK 17, Gradle 8+, and a desktop environment.
 
@@ -12,7 +12,7 @@ Requires JDK 17, Gradle 8+, and a desktop environment.
 gradle :game-gui:run
 ```
 
-The graphical client uses the same tested engine as the CLI. Choose both factions and one of three Capitals per side before the match, with strategy and passive summaries shown in setup.
+The graphical client now runs playable hex matches with allied decks and shareable deck codes. See [Hex & Allies](docs/hex-allies-playable.md) for migration, controls and compatibility. The graphical client uses the same tested engine as the CLI. Choose both factions and one of three Capitals per side before the match, with strategy and passive summaries shown in setup.
 
 - Drag a hand card or battlefield unit onto a gold-highlighted legal destination. Click selection plus the **Legal Moves** tab remains available as a keyboard-friendly fallback.
 - Use **Expand Hand** for an art-focused hand tray with substantially larger cards and high-resolution 3:2 artwork.
@@ -23,12 +23,12 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 - **Actions** (`F2`) opens the legal-action window; use arrow keys and Enter to execute. **History** (`F3`) opens the chronological log. A compact icon-and-text strip shows the most recent entry, including income, spending, and reactions.
 - Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
 - Opening mulligans let you visually select up to three cards to discard and redraw, and enemy-turn reactions use a matching visual spell tray plus battlefield targeting instead of a text menu.
-- Choose **Deck Builder** to edit and save one local deck per faction; decks require at least 40 cards, starter decks contain 60, and saved decks load automatically for new matches.
+- Choose **Deck Builder** for primary faction → optional ally → Capital → cards. Inspect complete card rules and use **Share deck / Import deck code** to exchange builds. Save one local deck per primary faction; decks require at least 40 cards, starter decks contain 60, and saved decks load automatically for new matches.
 - The Deck Builder is always available from **Game → Deck Builder** (`Ctrl+D`), even when compact window sizing hides header controls.
 - Choose **Bot (watch match)** for Player 1 during setup to run a bot-versus-bot match.
 - Battlefield callouts, directional source-to-target animations, and distinct CC0 sound cues identify movement, melee, ranged attacks, spells, destruction, and rule damage. The gameplay header's **Mute** button toggles those cues. Damaged permanents display both remaining HP and accumulated damage. Audio provenance is documented in `game-gui/src/main/resources/audio/ATTRIBUTION.md`.
 
-The client includes the full 4×6 battlefield, responsive square board tiles with scrolling fallback, pregame Capital placement, an animated graphical initiative coin, unique generated prototype art for every card, real faction starter decks, persistent GP and deck meters, automatic bot turns, reaction windows, and match results.
+The client includes the full 4×6 battlefield, responsive hex board tiles with scrolling fallback, pregame Capital placement, an animated graphical initiative coin, unique generated prototype art for every card, real faction starter decks, persistent GP and deck meters, automatic bot turns, reaction windows, and match results.
 
 Player 1 begins with 0 GP and Player 2 begins with 1 GP. The initiative winner opens with five cards; the other player opens with six. Every surviving Capital generates 1 GP at the start of its owner's turn. Each player may discard and redraw up to three opening cards. Lands and Structures are free once their printed development turn has been reached and show their GP-per-turn output directly. Standard income rises from 1 GP on early development cards to 5 GP on turn-9/10 cards; cards with utility passives generally generate less. There is no automatic GP beyond controlled permanents, and no late-game pressure or turn deadline.
 
@@ -69,7 +69,7 @@ Professional transparent VFX sprites from Kenney's CC0 Particle Pack are composi
 gradle :game-cli:run --args="deck"
 ```
 
-Use `factions`, `pool <faction>`, or `reset <faction>` to explore a 60-card starter. Use `swap <remove-id> <add-id>`, then `save my-deck.json`. A deck saves when it contains at least 40 cards and no card has more than four copies.
+Use `factions`, `pool <faction>`, or `reset <faction>` to explore a 60-card starter. Use `identity ZEUS POSEIDON` to add one optional ally after resetting to that primary faction; `capital <id>` chooses its Capital. Use `share` or `import <code>` to exchange builds. Use `swap <remove-id> <add-id>`, then `save my-deck.json`. A deck saves when it contains at least 40 cards and no card has more than four copies.
 
 Play using a saved human deck against a saved bot deck:
 

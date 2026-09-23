@@ -30,6 +30,9 @@ public final class DeckFileStore {
     public List<CardDefinition> load(Path path, PrototypeCardPool pool) {
         final DeckDocument document;
         try {
+            if (json.readTree(path.toFile()).path("schemaVersion").asInt() == 2) {
+                return new DeckBuildStore(pool, new CapitalRoster()).load(path).cards();
+            }
             document = json.readValue(path.toFile(), DeckDocument.class);
         } catch (IOException exception) {
             throw new IllegalArgumentException("Could not load deck: " + path, exception);

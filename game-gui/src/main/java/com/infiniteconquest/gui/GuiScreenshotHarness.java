@@ -24,6 +24,14 @@ public final class GuiScreenshotHarness {
         captureMotion(outputDirectory, "board-movement", 160);
         captureMotion(outputDirectory, "melee-lunge", 180);
         captureMotion(outputDirectory, "card-destruction", 150);
+        SwingUtilities.invokeAndWait(() -> {
+            InfiniteConquestGui gui = new InfiniteConquestGui(true);
+            try {
+                var factory = new com.infiniteconquest.cli.DemoMatchFactory();
+                var build = new com.infiniteconquest.core.DeckBuild("Review", "ZEUS", "POSEIDON", factory.capitals().forFaction("ZEUS").get(0), new com.infiniteconquest.cli.FactionDecks(factory.pool()).starter("ZEUS"));
+                for (int step=0;step<4;step++) new DeckBuilderDialog(gui,factory.pool(),factory.capitals(),build).captureForReview(step,outputDirectory.resolve("deck-builder-step-"+step+".png"));
+            } finally { gui.dispose(); }
+        });
         System.exit(0);
     }
 

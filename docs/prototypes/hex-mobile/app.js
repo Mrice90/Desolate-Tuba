@@ -147,7 +147,7 @@
   $('clearDeck').onclick=()=>{state.counts={};renderDeck();};
  }
  $('back').onclick=()=>{state.step=Math.max(0,state.step-1);renderDeck();};
- $('next').onclick=()=>{if(state.step<3){state.step++;renderDeck();return;}if(deckErrors().length)return;const draft={kind:'infinite-conquest-design-draft',schemaVersion:2,name:title(state.primary)+' alliance',primaryFaction:state.primary,allyFaction:state.ally,capitalId:state.capital,cards:Object.entries(state.counts).map(([id,copies])=>({id,copies}))};try{localStorage.setItem('infinite-conquest-hex-deck-draft',JSON.stringify(draft));sheet('Draft saved','<p>Your '+deckSize()+'-card draft is saved in this browser.</p><p>This is a design prototype; the desktop game cannot import this format yet.</p>');}catch(e){sheet('Storage unavailable','<p>Your browser blocked local storage. The draft remains available in this open page.</p>');}};
+ $('next').onclick=()=>{if(state.step<3){state.step++;renderDeck();return;}if(deckErrors().length)return;const draft={kind:'infinite-conquest-design-draft',schemaVersion:2,name:title(state.primary)+' alliance',primaryFaction:state.primary,allyFaction:state.ally,capitalId:state.capital,cards:Object.entries(state.counts).map(([id,copies])=>({id,copies}))};try{localStorage.setItem('infinite-conquest-hex-deck-draft',JSON.stringify(draft));sheet('Draft saved','<p>Your '+deckSize()+'-card draft is saved in this browser.</p><p>Use Share deck to transfer this build into the desktop Hex &amp; Allies game.</p>');}catch(e){sheet('Storage unavailable','<p>Your browser blocked local storage. The draft remains available in this open page.</p>');}};
 
  const words = text => String(text).toLowerCase().replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
  function cardStats(card) {
@@ -176,7 +176,7 @@
  $('shareDeck').onclick=()=>{
   const errors=deckErrors();if(errors.length){sheet('Finish your deck first','<p>'+esc(errors.join(' '))+'</p>');return;}
   const code=ICDeckCode.encode(state);
-  sheet('Share your deck','<p>This code recreates your faction, ally, Capital and every card. Share the whole code.</p><label for="deckCode">Deck code</label><textarea id="deckCode" readonly spellcheck="false"></textarea><button id="copyCode">Copy deck code</button><p id="copyStatus" role="status"></p><p>Works in this prototype. Desktop game import is not available yet.</p>');
+  sheet('Share your deck','<p>This code recreates your faction, ally, Capital and every card. Share the whole code.</p><label for="deckCode">Deck code</label><textarea id="deckCode" readonly spellcheck="false"></textarea><button id="copyCode">Copy deck code</button><p id="copyStatus" role="status"></p><p>Import this code in the desktop Hex &amp; Allies 0.2 Deck Builder.</p>');
   $('deckCode').value=code;
   $('copyCode').onclick=async()=>{try{await navigator.clipboard.writeText(code);$('copyStatus').textContent='Deck code copied.';}catch{$('deckCode').focus();$('deckCode').select();$('copyStatus').textContent='Code selected. Use Copy on your device.';}};
  };

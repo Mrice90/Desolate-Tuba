@@ -1,6 +1,6 @@
 # Infinite Conquest: hex battlefield, phone release, and allied decks
 
-Status: visual direction and deck-building flow approved for development, 23 September 2026. The user approved the current prototype direction, with a final readability correction for Capital passives. This approval does not change the current implemented square-board rules. The accompanying interactive prototype is in `prototypes/hex-mobile/index.html`.
+Status: visual direction and deck-building flow approved for development, 23 September 2026. The user approved the current prototype direction, with a final readability correction for Capital passives. The playable desktop implementation is now tracked in [Hex & Allies](hex-allies-playable.md); desktop matches use hex geometry while legacy square fixtures remain compatible. The accompanying interactive prototype is in `prototypes/hex-mobile/index.html`.
 
 ## Confirmed direction
 
@@ -17,7 +17,7 @@ Working interpretation: the single Capital belongs to the primary faction. This 
 
 The browser prototype offers two visual directions, each with opening and crowded positions, desktop and portrait-phone views, card/stack inspection, and a four-step deck-builder concept. It reuses existing repository artwork. Stormfront places translucent hexes over painted scenery; Obsidian Table uses restrained stone surfaces and stronger outlines. Neither runs combat or replaces the desktop game. Geometry highlights show neighboring hexes, not legal engine moves.
 
-The deck-builder uses 348 existing JSON-defined cards and all 18 Capitals. The 60 dynamically generated tutor cards are deliberately absent from this design sample. Sample decks validate composition but are not strategically balanced starters. Drafts save in the browser under a prototype-specific key; the current game's deck loader does not accept them. All six factions are visible for design evaluation; this is not an entitlement or base-roster decision.
+The deck-builder uses 348 existing JSON-defined cards and all 18 Capitals. The 60 dynamically generated tutor cards are deliberately absent from this design sample. Sample decks validate composition but are not strategically balanced starters. Drafts save locally in the browser under a prototype-specific key; exported ICD1 codes now import into the desktop game. All six factions are visible for design evaluation; this is not an entitlement or base-roster decision.
 
 ## Visual direction and platform behavior
 
@@ -82,9 +82,9 @@ Changing faction or ally after adding cards must show which cards become ineligi
 
 ### Persistence and compatibility work
 
-Proposed production deck schema v2: `schemaVersion`, `name`, `primaryFaction`, nullable `allyFaction`, `capitalId`, and `{id,copies}` entries. Keep store ownership separate from the deck definition. The prototype adds a `kind` marker to make accidental game import unambiguous.
+Implemented production deck schema v2: `schemaVersion`, `name`, `primaryFaction`, nullable `allyFaction`, `capitalId`, and `{id,copies}` entries. Keep store ownership separate from the deck definition. The prototype adds a `kind` marker to make accidental game import unambiguous.
 
-Current `DeckValidator` only checks size/copy/distinct limits. Current `DeckFileStore` schema v1 saves a name and cards, with no explicit primary/ally/Capital. `DemoMatchFactory` only enforces Capital matching when it sees exactly one non-neutral faction. These are implementation gaps, not permission to accept arbitrary mixed decks.
+Original baseline before 0.2: `DeckValidator` only checked size/copy/distinct limits. The production `DeckBuild` now adds explicit faction/ally/Capital validation; `DeckBuildStore` handles v2 files and ICD1 codes. The legacy `DeckFileStore` API and raw-list match factory remain for old demo fixtures. Playable desktop and file-based CLI matches use validated `DeckBuild` metadata; they do not accept arbitrary mixed decks.
 
 Migration: infer a primary only when there is exactly one unambiguous non-neutral faction. For a legacy mixed or neutral-only deck, ask the player to assign primary and optional ally; preserve the original file. Validate Capital choice and every card before saving or starting a match. Loading, editing, importing, CLI play, bot setup, and GUI play must share the same validator.
 
@@ -123,4 +123,4 @@ These sources support the purchase-type design, not a revenue forecast or approv
 6. Balance alliances and hexes separately, then together. Compare no-ally baselines, every ordered faction pair, each primary Capital, mirror matches, first-player advantage, stalemates, and match duration. Bot results need human confirmation.
 7. Integrate real store entitlements only after the roster and platform are selected; verify restore, interruptions, refunds, and offline behavior in store sandboxes. Finish physical-device, accessibility, and new-player testing before release.
 
-The prototype is the approved presentation reference. Production work starts with explicit deck metadata and shared validation, then hex geometry and a playable renderer. Payment integration remains a later phase after roster and platform decisions.
+The prototype is the approved presentation reference. Explicit deck metadata, shared validation, hex geometry and the desktop renderer are implemented in 0.2. Phone runtime work and broader balance validation follow. Payment integration remains a later phase after roster and platform decisions.

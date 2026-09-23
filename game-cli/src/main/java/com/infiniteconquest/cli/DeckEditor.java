@@ -8,6 +8,23 @@ import java.util.*;
 public final class DeckEditor {
     private final PrototypeCardPool pool;
     private final List<CardDefinition> cards;
+    private String primary, ally;
+    private CardDefinition capital;
+
+    public void identity(String primary, String ally, CardDefinition capital) {
+        if (!com.infiniteconquest.core.DeckBuild.FACTIONS.contains(primary)
+                || (ally != null && (!com.infiniteconquest.core.DeckBuild.FACTIONS.contains(ally) || ally.equals(primary)))
+                || capital.type() != com.infiniteconquest.core.CardType.CAPITAL || !capital.faction().equals(primary))
+            throw new IllegalArgumentException("Choose a primary faction, at most one different ally, and a primary Capital");
+        if (cards.stream().anyMatch(c -> !com.infiniteconquest.core.DeckBuild.eligible(c, primary, ally)))
+            throw new IllegalArgumentException("Existing cards do not match this identity; reset to a faction starter first");
+        this.primary=primary;this.ally=ally;this.capital=capital;
+    }
+    public com.infiniteconquest.core.DeckBuild build() {
+        if (primary == null) throw new IllegalArgumentException("Choose identity <primary> [ally] before sharing");
+        return new com.infiniteconquest.core.DeckBuild("Custom Deck",primary,ally,capital,cards);
+    }
+    public boolean hasIdentity(){return primary!=null;}
 
     public DeckEditor(PrototypeCardPool pool, List<CardDefinition> startingDeck) {
         this.pool = Objects.requireNonNull(pool);
@@ -19,6 +36,7 @@ public final class DeckEditor {
     public void reset(List<CardDefinition> replacement) {
         cards.clear();
         cards.addAll(Objects.requireNonNull(replacement));
+        primary=null;ally=null;capital=null;
     }
 
     public Map<String, Long> counts() {
@@ -29,6 +47,7 @@ public final class DeckEditor {
 
     public void add(String id) {
         CardDefinition card = pool.require(id);
+        if (primary != null && !com.infiniteconquest.core.DeckBuild.eligible(card,primary,ally)) throw new IllegalArgumentException("Card is outside your primary/ally factions");
         long copies = cards.stream().filter(existing -> existing.id().equals(id)).count();
         if (copies >= DeckValidator.MAX_COPIES) {
             throw new IllegalArgumentException(id + " already has four copies");
@@ -45,6 +64,7 @@ public final class DeckEditor {
 
     public void swap(String removeId, String addId) {
         pool.require(addId);
+        if (primary != null && !com.infiniteconquest.core.DeckBuild.eligible(pool.require(addId),primary,ally)) throw new IllegalArgumentException("Card is outside your primary/ally factions");
         long addCopies = cards.stream().filter(card -> card.id().equals(addId)).count();
         if (addCopies >= DeckValidator.MAX_COPIES) {
             throw new IllegalArgumentException(addId + " already has four copies");
@@ -56,6 +76,7 @@ public final class DeckEditor {
     }
 
     public List<String> validationErrors() {
+        if(primary!=null)return com.infiniteconquest.core.DeckBuild.errors(primary,ally,capital,cards);
         return new DeckValidator().validate(cards);
     }
 }

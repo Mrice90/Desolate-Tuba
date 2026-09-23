@@ -4,6 +4,10 @@ import com.infiniteconquest.data.Keyword;
 
 public final class LineOfSightRules {
     public boolean hasLineOfSight(GameState state, BoardPosition from, BoardPosition to) {
+        if (state.rules().geometry() == BoardGeometry.HEX) {
+            return java.util.stream.DoubleStream.of(0.000001, -0.000001).anyMatch(nudge ->
+                    BoardGeometry.HEX.hexTrace(from, to, nudge).stream().noneMatch(p -> blocksSight(state, p)));
+        }
         int x = from.x();
         int y = from.y();
         int dx = Math.abs(to.x() - x);

@@ -60,14 +60,15 @@ public final class InfiniteConquestCli {
             if (args.length < 3 || args.length > 6) {
                 throw new IllegalArgumentException("Use: play <human-deck.json> <bot-deck.json> [seed] [human-capital-id] [bot-capital-id]");
             }
-            DeckFileStore files = new DeckFileStore();
-            humanDeck = files.load(Path.of(args[1]), matches.pool());
-            botDeck = files.load(Path.of(args[2]), matches.pool());
+            DeckBuildStore files = new DeckBuildStore(matches.pool(), matches.capitals());
+            com.infiniteconquest.core.DeckBuild humanBuild = files.load(Path.of(args[1]));
+            com.infiniteconquest.core.DeckBuild botBuild = files.load(Path.of(args[2]));
             seed = args.length >= 4 ? parseSeed(args[3]) : 1L;
-            if (args.length >= 5) humanCapital = matches.capitals().require(args[4]);
-            if (args.length >= 6) botCapital = matches.capitals().require(args[5]);
-            if (humanCapital == null) humanCapital = matches.capitals().defaultForDeck(humanDeck).orElse(null);
-            if (botCapital == null) botCapital = matches.capitals().defaultForDeck(botDeck).orElse(null);
+            if (args.length >= 5) humanBuild = new com.infiniteconquest.core.DeckBuild(humanBuild.name(), humanBuild.primaryFaction(), humanBuild.allyFaction(), matches.capitals().require(args[4]), humanBuild.cards());
+            if (args.length >= 6) botBuild = new com.infiniteconquest.core.DeckBuild(botBuild.name(), botBuild.primaryFaction(), botBuild.allyFaction(), matches.capitals().require(args[5]), botBuild.cards());
+            runMatch(matches.create(seed, humanBuild, botBuild, new com.infiniteconquest.core.BoardPosition(1,0),
+                    new com.infiniteconquest.core.BoardPosition(2,5), com.infiniteconquest.core.BoardGeometry.HEX), seed, input);
+            return;
         } else {
             seed = args.length == 0 ? 1L : parseSeed(args[0]);
             humanDeck = matches.demoDeck();

@@ -62,6 +62,14 @@ public final class DemoMatchFactory {
     }
 
     public PrototypeCardPool pool() { return pool; }
+
+    public GameState create(long seed, DeckBuild human, DeckBuild bot, BoardPosition humanPosition,
+                            BoardPosition botPosition, BoardGeometry geometry) {
+        GameState state = new MatchFactory().create(seed,
+                geometry == BoardGeometry.HEX ? MatchRules.hex() : MatchRules.current(), human.cards(), bot.cards());
+        deployCapitals(state, seed, human.capital(), bot.capital(), humanPosition, botPosition);
+        return state;
+    }
     public CapitalRoster capitals() { return capitals; }
 
     private void validateCapitalChoice(List<CardDefinition> deck, CardDefinition capital) {

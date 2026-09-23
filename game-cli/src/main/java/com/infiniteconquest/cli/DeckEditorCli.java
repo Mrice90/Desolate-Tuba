@@ -43,6 +43,8 @@ public final class DeckEditorCli {
                     case "reset" -> {
                         require(parts, 2);
                         editor.reset(factionDecks.starter(parts[1]));
+                        String faction = parts[1].toUpperCase(java.util.Locale.ROOT);
+                        editor.identity(faction, null, new CapitalRoster().forFaction(faction).get(0));
                         output.println("Loaded the " + parts[1].toUpperCase() + " 60-card starter deck.");
                     }
                     case "add" -> { require(parts, 2); editor.add(parts[1]); output.println("Added " + parts[1]); }
@@ -52,13 +54,24 @@ public final class DeckEditorCli {
                         output.println("Swapped " + parts[1] + " for " + parts[2]);
                     }
                     case "save" -> {
-                        require(parts, 2); files.save(Path.of(parts[1]), "Custom Deck", editor.cards());
+                        require(parts, 2);
+                        if (editor.hasIdentity()) new DeckBuildStore(pool,new CapitalRoster()).save(Path.of(parts[1]),editor.build());
+                        else files.save(Path.of(parts[1]), "Custom Deck", editor.cards());
                         output.println("Saved valid deck (40-card minimum) to " + parts[1]);
                     }
                     case "validate" -> {
                         List<String> errors = editor.validationErrors();
                         output.println(errors.isEmpty() ? "Deck is valid." : String.join(System.lineSeparator(), errors));
                     }
+                    case "identity" -> {
+                        if(parts.length<2||parts.length>3)throw new IllegalArgumentException("Use identity <primary> [ally]");
+                        String primary=parts[1].toUpperCase(java.util.Locale.ROOT),ally=parts.length==3?parts[2].toUpperCase(java.util.Locale.ROOT):null;
+                        if(!com.infiniteconquest.core.DeckBuild.FACTIONS.contains(primary))throw new IllegalArgumentException("Unknown primary faction");
+                        editor.identity(primary,ally,new CapitalRoster().forFaction(primary).get(0));
+                    }
+                    case "capital" -> {require(parts,2);var build=editor.build();editor.identity(build.primaryFaction(),build.allyFaction(),new CapitalRoster().require(parts[1]));}
+                    case "share" -> output.println(new DeckBuildStore(pool,new CapitalRoster()).exportCode(editor.build()));
+                    case "import" -> {require(parts,2);var build=new DeckBuildStore(pool,new CapitalRoster()).importCode(parts[1]);editor.reset(build.cards());editor.identity(build.primaryFaction(),build.allyFaction(),build.capital());output.println("Imported "+build.cards().size()+" cards.");}
                     case "quit", "exit" -> { return; }
                     case "" -> { }
                     default -> output.println("Unknown command. Type help.");
@@ -102,6 +115,10 @@ public final class DeckEditorCli {
     private String help() {
         return """
                 factions                     list the six launch factions
+                identity <primary> [ally]    choose one primary and optional ally
+                capital <id>                 choose a primary-faction Capital
+                share                        print a complete ICD1 deck code
+                import <code>                replace the draft with a validated build
                 pool [faction]               list all cards or one faction's cards
                 reset <faction>              load that faction's 60-card starter
                 deck                         show the current deck and copy counts

@@ -67,7 +67,7 @@ public final class GameEngine {
             CardInstance target = state.card(targetId.orElseThrow()).orElseThrow();
             if (target.owner() != attacker.owner()
                     && (target.definition().type() == CardType.CHARACTER || target.definition().isPermanent())
-                    && from.distanceTo(to) <= effectiveRange(state, attacker)
+                    && state.rules().geometry().distance(from, to) <= effectiveRange(state, attacker)
                     && lineOfSightRules.hasLineOfSight(state, from, to)) {
                 legal.add(to);
             }
@@ -153,7 +153,7 @@ public final class GameEngine {
                 .map(id -> state.card(id).orElseThrow())
                 .allMatch(c -> c.owner() == action.playerId());
         boolean adjacentToFriendlyPermanent = state.board().positions().stream()
-                .filter(destination::adjacentTo)
+                .filter(p -> state.rules().geometry().adjacent(destination, p))
                 .flatMap(p -> state.board().stackAt(p).stream())
                 .map(id -> state.card(id).orElseThrow())
                 .anyMatch(c -> c.owner() == action.playerId() && c.definition().isPermanent());
@@ -238,7 +238,7 @@ public final class GameEngine {
         if (from == null || to == null) return ActionResult.rejected("Attacker and target must be on battlefield");
         if (!state.board().topAt(from).orElseThrow().equals(attacker.instanceId())
                 || !state.board().topAt(to).orElseThrow().equals(target.instanceId())) return ActionResult.rejected("Only top cards interact");
-        if (from.distanceTo(to) > effectiveRange(state, attacker)) return ActionResult.rejected("Target out of range");
+        if (state.rules().geometry().distance(from, to) > effectiveRange(state, attacker)) return ActionResult.rejected("Target out of range");
         if (!lineOfSightRules.hasLineOfSight(state, from, to)) return ActionResult.rejected("Line of sight blocked");
 
         new CapitalPassiveRules().beforeAttack(state, attacker, target);
@@ -252,7 +252,7 @@ public final class GameEngine {
             boolean fastStrikeStopsRetaliation = attacker.definition().hasKeyword(Keyword.FAST_STRIKE)
                     && attackerPower > target.effectiveDefense();
             boolean canRetaliate = !fastStrikeStopsRetaliation && defenderPower > 0
-                    && to.distanceTo(from) <= effectiveRange(state, target)
+                    && state.rules().geometry().distance(to, from) <= effectiveRange(state, target)
                     && lineOfSightRules.hasLineOfSight(state, to, from);
             if (canRetaliate) attacker.addCombatDamage(defenderPower);
             boolean attackerDies = canRetaliate && attacker.combatDamage() >= attacker.effectiveDefense();
@@ -351,7 +351,7 @@ public final class GameEngine {
             if (top.isEmpty() || excluded.contains(top.get()) || top.get().equals(mover.instanceId())) continue;
             CardInstance enemy = state.card(top.get()).orElseThrow();
             if (enemy.owner() == mover.owner() || enemy.definition().type() != CardType.CHARACTER
-                    || effectiveAttack(state, enemy) <= 0 || enemyPosition.distanceTo(step) > effectiveRange(state, enemy)) continue;
+                    || effectiveAttack(state, enemy) <= 0 || state.rules().geometry().distance(enemyPosition, step) > effectiveRange(state, enemy)) continue;
             if (lineOfSightRules.hasLineOfSight(state, enemyPosition, step)) {
                 threats.add(new OpportunityThreat(enemy.instanceId(), enemyPosition, step,
                         enemy.definition().name(), effectiveAttack(state, enemy), mover.defenseRemaining()));
