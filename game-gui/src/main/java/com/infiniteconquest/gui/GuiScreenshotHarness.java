@@ -27,6 +27,7 @@ public final class GuiScreenshotHarness {
         SwingUtilities.invokeAndWait(() -> {
             InfiniteConquestGui gui = new InfiniteConquestGui(true);
             try {
+                gui.captureOpeningScreens(outputDirectory);
                 var factory = new com.infiniteconquest.cli.DemoMatchFactory();
                 var build = new com.infiniteconquest.core.DeckBuild("Review", "ZEUS", "POSEIDON", factory.capitals().forFaction("ZEUS").get(0), new com.infiniteconquest.cli.FactionDecks(factory.pool()).starter("ZEUS"));
                 for (int step=0;step<4;step++) new DeckBuilderDialog(gui,factory.pool(),factory.capitals(),build).captureForReview(step,outputDirectory.resolve("deck-builder-step-"+step+".png"));
@@ -40,6 +41,7 @@ public final class GuiScreenshotHarness {
         try {
             prepare(gui, scenario);
             gui.prepareCaptureSize(width, height, !scenario.equals("expanded-hand"));
+            if(scenario.equals("opening-board"))gui.verifyHandOverlay();
             gui.captureScreenshot(outputDirectory.resolve(scenario + "-" + width + "x" + height + ".png"));
         } finally {
             gui.dispose();

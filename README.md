@@ -4,7 +4,7 @@ Infinite Conquest is a tactical card game combining deck construction, a shared 
 
 This repository was rebuilt from the former Medieval Duel prototype. The original project remains recoverable through Git history. The separate `Mrice90/Creepy-Tomatoe` Ninja vs Zombies repository is not touched by this work.
 
-## Play the graphical game (Hex & Allies 0.2)
+## Play the graphical game (Hex & Allies 0.2.1)
 
 Requires JDK 17, Gradle 8+, and a desktop environment.
 
@@ -15,18 +15,18 @@ gradle :game-gui:run
 The graphical client now runs playable hex matches with allied decks and shareable deck codes. See [Hex & Allies](docs/hex-allies-playable.md) for migration, controls and compatibility. The graphical client uses the same tested engine as the CLI. Choose both factions and one of three Capitals per side before the match, with strategy and passive summaries shown in setup.
 
 - Drag a hand card or battlefield unit onto a gold-highlighted legal destination. Click selection plus the **Legal Moves** tab remains available as a keyboard-friendly fallback.
-- Use **Expand Hand** for an art-focused hand tray with substantially larger cards and high-resolution 3:2 artwork.
+- Hover over the tucked hand to reveal cards, or click/tap **Hand** to pin it open. Selecting a card tucks the tray away; Escape closes it. The hand floats over the battlefield without moving or shrinking the hexes.
 - Right-click a card in either hand view and choose **View full card** to open its complete card-format inspection view.
 - Right-click an occupied battlefield cell to inspect every card in its stack, shown top-first. Right-click any card row in that inspector to open a large card-format view with art, current stats, keywords, and abilities.
 - The compact overview shows all 24 battlefield cells at a 1280×650 client area, accommodating window borders and the taskbar on a 1280×720 screen. **Game → Toggle Board View** (`F4`) gives the battlefield more space; `Esc` restores the interface.
-- Both players' Capital art, faction, GP held, and recurring income appear in the top HUD alongside End Turn. Income is based on currently controlled cards, not guaranteed future income.
-- **Actions** (`F2`) opens the legal-action window; use arrow keys and Enter to execute. **History** (`F3`) opens the chronological log. A compact icon-and-text strip shows the most recent entry, including income, spending, and reactions.
+- Both players’ faction, GP held, and recurring income appear in the compact top HUD alongside End Turn. Income is based on currently controlled cards, not guaranteed future income.
+- **Actions** (`F2`) opens the legal-action window; use arrow keys and Enter to execute. **History** (`F3`) opens the chronological log. The history includes income, spending, and reactions.
 - Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
 - Opening mulligans let you visually select up to three cards to discard and redraw, and enemy-turn reactions use a matching visual spell tray plus battlefield targeting instead of a text menu.
 - Choose **Deck Builder** for primary faction → optional ally → Capital → cards. Inspect complete card rules and use **Share deck / Import deck code** to exchange builds. Save one local deck per primary faction; decks require at least 40 cards, starter decks contain 60, and saved decks load automatically for new matches.
 - The Deck Builder is always available from **Game → Deck Builder** (`Ctrl+D`), even when compact window sizing hides header controls.
 - Choose **Bot (watch match)** for Player 1 during setup to run a bot-versus-bot match.
-- Battlefield callouts, directional source-to-target animations, and distinct CC0 sound cues identify movement, melee, ranged attacks, spells, destruction, and rule damage. The gameplay header's **Mute** button toggles those cues. Damaged permanents display both remaining HP and accumulated damage. Audio provenance is documented in `game-gui/src/main/resources/audio/ATTRIBUTION.md`.
+- Battlefield callouts, directional source-to-target animations, and distinct CC0 sound cues identify movement, melee, ranged attacks, spells, destruction, and rule damage. The header’s **Game → Mute** option toggles those cues. Damaged permanents display both remaining HP and accumulated damage. Audio provenance is documented in `game-gui/src/main/resources/audio/ATTRIBUTION.md`.
 
 The client includes the full 4×6 battlefield, responsive hex board tiles with scrolling fallback, pregame Capital placement, an animated graphical initiative coin, unique generated prototype art for every card, real faction starter decks, persistent GP and deck meters, automatic bot turns, reaction windows, and match results.
 

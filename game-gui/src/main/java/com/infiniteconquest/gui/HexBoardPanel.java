@@ -8,6 +8,8 @@ import java.awt.*;
 /** Rotated odd-row hex layout; coordinates are identical to the rules engine. */
 final class HexBoardPanel extends JPanel {
     private boolean storm = true;
+    private boolean showContext = true;
+    void setShowContext(boolean value){showContext=value;repaint();}
     private CardDefinition backgroundCard;
     private CardDefinition inspectedCard;
     void setBackgroundCard(CardDefinition card){backgroundCard=card;repaint();}
@@ -36,7 +38,7 @@ final class HexBoardPanel extends JPanel {
         g.setColor(new Color(125,217,231));g.drawString("PLAYER 1",Math.max(18,getWidth()-90),24);
         double h=Math.max(1,Math.min((getHeight()-22)/4.5,(getWidth()-22)/5.485));
         int margin=(int)((getWidth()-h*2/Math.sqrt(3)*4.75)/2);
-        if(margin>230){
+        if(showContext&&margin>230){
             g.setFont(new Font(Font.SERIF,Font.PLAIN,26));g.setColor(new Color(232,216,176));g.drawString(storm?"Stormfront":"Obsidian Table",30,85);
             g.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,15));g.setColor(new Color(209,222,230));
             g.drawString("One field. Two strongholds.",30,120);g.drawString("Every hex is a decision.",30,145);

@@ -33,7 +33,9 @@ final class VisualEffects {
         copy.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         copy.setComposite(AlphaComposite.SrcOver.derive(Math.max(0f, Math.min(1f, alpha))));
         copy.rotate(rotation, centerX, centerY);
-        copy.drawImage(image, centerX - size / 2, centerY - size / 2, null);
+        // Cached textures use size buckets; draw at the requested size so the center
+        // does not jump whenever an expanding effect crosses a bucket boundary.
+        copy.drawImage(image, centerX - size / 2, centerY - size / 2, size, size, null);
         copy.dispose();
     }
 
