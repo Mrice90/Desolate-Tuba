@@ -1016,9 +1016,9 @@ public final class InfiniteConquestGui extends JFrame {
             CardInstance card = state.card(hand.get(index)).orElseThrow();
             CardDefinition def = card.definition();
             int cardWidth = handExpanded ? 420 : 208;
-            int cardHeight = handExpanded ? Math.max(285, handArea.getPreferredSize().height - 58) : 145;
+            int cardHeight = handExpanded ? Math.max(285, handArea.getPreferredSize().height - 58) : 112;
             int artWidth = handExpanded ? 396 : 190;
-            int artHeight = handExpanded ? Math.min(280, Math.max(235, cardHeight * 2 / 3)) : 58;
+            int artHeight = handExpanded ? Math.min(280, Math.max(235, cardHeight * 2 / 3)) : 48;
             JButton tile = new JButton(handCardHtml(def), CardArtFactory.iconFor(def, artWidth, artHeight));
             Dimension cardSize = new Dimension(cardWidth, cardHeight);
             tile.setPreferredSize(cardSize);
