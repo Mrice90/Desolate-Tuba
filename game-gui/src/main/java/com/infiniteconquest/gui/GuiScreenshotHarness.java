@@ -21,6 +21,7 @@ public final class GuiScreenshotHarness {
         captureMotion(outputDirectory, "invalid-drop-motion", 90);
         captureMotion(outputDirectory, "board-movement", 160);
         captureMotion(outputDirectory, "melee-lunge", 180);
+        captureMotion(outputDirectory, "card-destruction", 150);
         System.exit(0);
     }
 

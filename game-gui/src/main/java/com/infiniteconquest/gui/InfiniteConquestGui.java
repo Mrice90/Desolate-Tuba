@@ -179,6 +179,9 @@ public final class InfiniteConquestGui extends JFrame {
         if ("melee-lunge".equals(scenario)) {
             previewMeleeLunge();
         }
+        if ("card-destruction".equals(scenario)) {
+            previewCardDestruction();
+        }
     }
 
     private void saveDebugScreenshot() {
@@ -1229,6 +1232,28 @@ public final class InfiniteConquestGui extends JFrame {
         executeHuman(choice.command());
     }
 
+    private void previewCardDestruction() {
+        PresentationSnapshot.CardVisual destroyed = PresentationSnapshot.capture(state).cards().values().stream()
+                .filter(card -> card.owner() == 0 && card.zone() == Zone.BATTLEFIELD
+                        && card.top() && card.position() != null)
+                .findFirst().orElseThrow(() -> new IllegalStateException("No card available for destruction fixture"));
+        CardDefinition definition = state.card(destroyed.id()).map(CardInstance::definition).orElseThrow();
+        BoardPosition position = destroyed.position();
+        interaction.lockPresentation();
+        maskedBoardCells.add(position);
+        refreshBoard();
+        combatOverlay.beginSequence(() -> {
+            maskedBoardCells.remove(position);
+            interaction.finishPresentation();
+            refresh();
+        });
+        try {
+            combatOverlay.animateDestroyed(definition, destroyed.owner(), position);
+        } finally {
+            combatOverlay.finishSequence();
+        }
+    }
+
     private void previewMeleeLunge() {
         PresentationSnapshot.CardVisual attacker = PresentationSnapshot.capture(state).cards().values().stream()
                 .filter(card -> card.owner() == 0 && card.zone() == Zone.BATTLEFIELD
@@ -1497,6 +1522,16 @@ public final class InfiniteConquestGui extends JFrame {
                 SoundEffects.play(SoundEffects.Cue.SPELL);
             }
             default -> { }
+        }
+        for (PresentationSnapshot.CardChange change : resolution.changes()) {
+            if (change.change() != PresentationSnapshot.Change.DESTROYED
+                    || change.before() == null || change.before().position() == null) continue;
+            PresentationSnapshot.CardVisual destroyed = change.before();
+            CardDefinition definition = state.card(destroyed.id())
+                    .map(CardInstance::definition).orElse(null);
+            if (definition != null) {
+                combatOverlay.animateDestroyed(definition, destroyed.owner(), destroyed.position());
+            }
         }
         for (GameEvent event : resolution.events()) {
             if (event.type() == GameEvent.Type.OPPORTUNITY_ATTACK) {
@@ -2402,7 +2437,7 @@ public final class InfiniteConquestGui extends JFrame {
         }
     }
 
-    private enum AnimationStyle { MOVE, BLINK, MELEE, RANGED, SPELL, DEPLOY, SNAP_BACK, RULES }
+    private enum AnimationStyle { MOVE, BLINK, MELEE, RANGED, SPELL, DEPLOY, SNAP_BACK, DESTROY, RULES }
 
     private final class CombatOverlay extends JComponent {
         private Animation animation;
@@ -2442,6 +2477,15 @@ public final class InfiniteConquestGui extends JFrame {
             Animation requested = new Animation(attempted, returnBoard, ATTACK, false,
                     AnimationStyle.SNAP_BACK, 0L, image, false, 180_000_000L,
                     returnBoard == null, true);
+            if (animation != null) queued.addLast(requested);
+            else start(requested);
+        }
+
+        void animateDestroyed(CardDefinition card, int owner, BoardPosition position) {
+            if (!sequenceOpen) throw new IllegalStateException("Animations require an open presentation sequence");
+            Image image = CardArtFactory.iconFor(card, 190, 100).getImage();
+            Animation requested = new Animation(position, position, ATTACK, false,
+                    AnimationStyle.DESTROY, 0L, image, owner == 1, 320_000_000L, false, false);
             if (animation != null) queued.addLast(requested);
             else start(requested);
         }
@@ -2538,12 +2582,15 @@ public final class InfiniteConquestGui extends JFrame {
 
             float progress = animation.progress();
             boolean cardLunge = animation.cardImage() != null && animation.style() == AnimationStyle.MELEE;
-            float fade = cardLunge ? 1f : progress < .72f ? 1f : Math.max(0f, (1f - progress) / .28f);
+            boolean cardDestroy = animation.cardImage() != null && animation.style() == AnimationStyle.DESTROY;
+            float fade = cardLunge ? 1f : cardDestroy ? 1f - progress
+                    : progress < .72f ? 1f : Math.max(0f, (1f - progress) / .28f);
             Graphics2D g = (Graphics2D) graphics.create();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setComposite(AlphaComposite.SrcOver.derive(.88f * fade));
             g.setColor(animation.color());
-            float travel = cardLunge ? (float) Math.sin(Math.PI * progress) * .72f
+            float travel = cardDestroy ? 0f
+                    : cardLunge ? (float) Math.sin(Math.PI * progress) * .72f
                     : animation.spring() ? spring(progress)
                     : ease(animation.cardImage() == null ? Math.min(1f, progress / .72f) : progress);
             int orbX = Math.round(source.x + (target.x - source.x) * travel);
@@ -2557,12 +2604,15 @@ public final class InfiniteConquestGui extends JFrame {
                 orbY = Math.round(inverse * inverse * source.y
                         + 2 * inverse * travel * (Math.min(source.y, target.y) - arc)
                         + travel * travel * target.y);
-                int width = Math.round(190 - 62 * travel);
-                int height = Math.round(100 - 34 * travel);
-                g.setComposite(AlphaComposite.SrcOver.derive(.30f));
+                float collapse = cardDestroy ? ease(progress) : 0f;
+                int width = cardDestroy ? Math.max(48, Math.round(190 * (1f - .68f * collapse)))
+                        : Math.round(190 - 62 * travel);
+                int height = cardDestroy ? Math.max(26, Math.round(100 * (1f - .68f * collapse)))
+                        : Math.round(100 - 34 * travel);
+                g.setComposite(AlphaComposite.SrcOver.derive(.30f * fade));
                 g.setColor(Color.BLACK);
                 g.fillRoundRect(orbX - width / 2 + 6, orbY - height / 2 + 8, width, height, 16, 16);
-                g.setComposite(AlphaComposite.SrcOver);
+                g.setComposite(AlphaComposite.SrcOver.derive(Math.max(0f, fade)));
                 g.drawImage(animation.cardImage(), orbX - width / 2, orbY - height / 2,
                         width, height, null);
                 g.setColor(animation.color());
@@ -2575,6 +2625,20 @@ public final class InfiniteConquestGui extends JFrame {
                     VisualEffects.draw(g, VisualEffects.Sprite.SLASH, target.x, target.y, 104,
                             Color.WHITE, Math.max(0f, strikeAlpha), Math.atan2(target.y - source.y, target.x - source.x));
                 }
+                if (cardDestroy) {
+                    g.setComposite(AlphaComposite.SrcOver.derive(Math.max(0f, .82f * (1f - progress))));
+                    g.setColor(new Color(255, 111, 103));
+                    for (int index = 0; index < 12; index++) {
+                        double angle = index * Math.PI / 6.0 + .35;
+                        int distance = Math.round(18 + progress * 74);
+                        int particleX = orbX + (int) Math.round(Math.cos(angle) * distance);
+                        int particleY = orbY + (int) Math.round(Math.sin(angle) * distance);
+                        int size = Math.max(3, Math.round(9 * (1f - progress)));
+                        g.fillOval(particleX - size / 2, particleY - size / 2, size, size);
+                    }
+                    VisualEffects.draw(g, VisualEffects.Sprite.SPARK, orbX, orbY,
+                            Math.round(72 + progress * 86), ATTACK, .72f * (1f - progress), progress * 2.4);
+                }
                 g.dispose();
                 return;
             }
@@ -2585,6 +2649,7 @@ public final class InfiniteConquestGui extends JFrame {
                 case RANGED -> VisualEffects.Sprite.SPARK;
                 case DEPLOY -> VisualEffects.Sprite.LIGHT;
                 case SNAP_BACK -> VisualEffects.Sprite.TRACE;
+                case DESTROY -> VisualEffects.Sprite.SPARK;
                 case RULES -> VisualEffects.Sprite.FLAME;
             };
             VisualEffects.draw(g, traveling, orbX, orbY,
