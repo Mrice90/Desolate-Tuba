@@ -177,7 +177,10 @@ public final class InfiniteConquestGui extends JFrame {
             String command = legalCommands().stream()
                     .filter(value -> value.matches("(move|blink) \\d+ \\d+ \\d+ \\d+"))
                     .findFirst().orElseThrow(() -> new IllegalStateException("No board movement available for fixture"));
-            executeHuman(command);
+            PresentationSnapshot.Frame before = PresentationSnapshot.capture(state);
+            commands.execute(command);
+            showResolution(PresentationSnapshot.between(command, before, state));
+            refresh();
         }
     }
 
