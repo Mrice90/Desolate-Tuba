@@ -2152,12 +2152,12 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private enum Intent {
-        MOVE("MOVE", InfiniteConquestGui.MOVE, "#48b5e6"),
-        ATTACK("ATTACK", InfiniteConquestGui.ATTACK, "#f45c5c"),
-        DEPLOY("PLACE ON TOP", InfiniteConquestGui.DEPLOY, "#68d38b"),
-        BURROW("BURROW BELOW TOP", InfiniteConquestGui.BURROW, "#be79eb"),
-        CAST("SPELL TARGET", InfiniteConquestGui.CAST, "#f6c24e"),
-        BLINK("BLINK", InfiniteConquestGui.SELECTED, "#5bd1ff"),
+        MOVE("MOVE", UiTheme.MOVE, "#48b5e6"),
+        ATTACK("ATTACK", UiTheme.ATTACK, "#f45c5c"),
+        DEPLOY("PLACE ON TOP", UiTheme.DEPLOY, "#68d38b"),
+        BURROW("BURROW BELOW TOP", UiTheme.BURROW, "#be79eb"),
+        CAST("SPELL TARGET", UiTheme.CAST, "#f6c24e"),
+        BLINK("BLINK", UiTheme.SELECTED, "#5bd1ff"),
         CHOOSE("CHOOSE ACTION", Color.WHITE, "#ffffff");
 
         private final String label;
