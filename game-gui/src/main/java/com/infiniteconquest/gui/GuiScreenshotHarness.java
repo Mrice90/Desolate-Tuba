@@ -17,7 +17,8 @@ public final class GuiScreenshotHarness {
         for (String scenario : STATIC_SCENARIOS) {
             SwingUtilities.invokeAndWait(() -> capture(outputDirectory, scenario));
         }
-        captureDeploymentMotion(outputDirectory);
+        captureMotion(outputDirectory, "deployment-motion", 145);
+        captureMotion(outputDirectory, "invalid-drop-motion", 90);
     }
 
     private static void capture(Path outputDirectory, String scenario) {
@@ -30,14 +31,14 @@ public final class GuiScreenshotHarness {
         }
     }
 
-    private static void captureDeploymentMotion(Path outputDirectory) throws Exception {
+    private static void captureMotion(Path outputDirectory, String scenario, int delayMs) throws Exception {
         CountDownLatch captured = new CountDownLatch(1);
         SwingUtilities.invokeAndWait(() -> {
             InfiniteConquestGui gui = new InfiniteConquestGui(true);
-            prepare(gui, "deployment-motion");
-            Timer midpoint = new Timer(145, event -> {
+            prepare(gui, scenario);
+            Timer midpoint = new Timer(delayMs, event -> {
                 try {
-                    gui.captureScreenshot(outputDirectory.resolve("deployment-motion.png"));
+                    gui.captureScreenshot(outputDirectory.resolve(scenario + ".png"));
                 } finally {
                     gui.dispose();
                     captured.countDown();
@@ -47,7 +48,7 @@ public final class GuiScreenshotHarness {
             midpoint.start();
         });
         if (!captured.await(5, TimeUnit.SECONDS)) {
-            throw new IllegalStateException("Timed out capturing deployment motion");
+            throw new IllegalStateException("Timed out capturing " + scenario);
         }
     }
 
