@@ -174,13 +174,7 @@ public final class InfiniteConquestGui extends JFrame {
             animateInvalidDrop(new DragSource(0, null), new BoardPosition(0, BoardPosition.HEIGHT - 1));
         }
         if ("board-movement".equals(scenario)) {
-            String command = legalCommands().stream()
-                    .filter(value -> value.matches("(move|blink) \\d+ \\d+ \\d+ \\d+"))
-                    .findFirst().orElseThrow(() -> new IllegalStateException("No board movement available for fixture"));
-            PresentationSnapshot.Frame before = PresentationSnapshot.capture(state);
-            commands.execute(command);
-            showResolution(PresentationSnapshot.between(command, before, state));
-            refresh();
+            previewBoardMovement();
         }
     }
 
@@ -1230,6 +1224,31 @@ public final class InfiniteConquestGui extends JFrame {
             choice = selectedOption;
         }
         executeHuman(choice.command());
+    }
+
+    private void previewBoardMovement() {
+        PresentationSnapshot.CardVisual moving = PresentationSnapshot.capture(state).cards().values().stream()
+                .filter(card -> card.owner() == 0 && card.zone() == Zone.BATTLEFIELD
+                        && card.top() && card.position() != null)
+                .findFirst().orElseThrow(() -> new IllegalStateException("No board card available for fixture"));
+        CardDefinition definition = state.card(moving.id()).map(CardInstance::definition).orElseThrow();
+        BoardPosition from = moving.position();
+        int targetX = from.x() < BoardPosition.WIDTH - 1 ? from.x() + 1 : from.x() - 1;
+        BoardPosition to = new BoardPosition(targetX, from.y());
+        interaction.lockPresentation();
+        maskedBoardCells.add(to);
+        refreshBoard();
+        combatOverlay.beginSequence(() -> {
+            maskedBoardCells.remove(to);
+            interaction.finishPresentation();
+            refresh();
+        });
+        try {
+            combatOverlay.animateBoardCard(definition, moving.owner(), from, to,
+                    new Color(91, 209, 255), AnimationStyle.MOVE);
+        } finally {
+            combatOverlay.finishSequence();
+        }
     }
 
     private void animateInvalidDrop(DragSource source, BoardPosition attempted) {
