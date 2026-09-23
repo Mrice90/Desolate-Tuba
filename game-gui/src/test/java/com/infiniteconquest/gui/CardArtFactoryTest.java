@@ -59,6 +59,11 @@ class CardArtFactoryTest {
             "poseidon_neon_tidelands", "poseidon_coral_data_reef",
             "poseidon_abyssal_pressure_trench", "poseidon_palace_of_tides_approach",
             "poseidon_ability_healing_shoal");
+    private static final List<String> PAINTED_POSEIDON_ECONOMY_AND_TUTOR_LANDS = List.of(
+            "poseidon_land_saltmarsh_harbor", "poseidon_land_coral_tributary",
+            "poseidon_land_leviathan_shelf", "poseidon_land_pelagic_kingdom",
+            "poseidon_tutor_land_1", "poseidon_tutor_land_2", "poseidon_tutor_land_3",
+            "poseidon_tutor_land_4", "poseidon_tutor_land_5");
     private static final List<String> PAINTED_POSEIDON_CHARACTERS = List.of(
             "poseidon_tidepool_surveyor", "poseidon_nereid_current_rider",
             "poseidon_reefline_defender", "poseidon_undertow_stalker",
@@ -188,6 +193,10 @@ class CardArtFactoryTest {
     @Test void packagesThePaintedPoseidonFoundationalLandBatch() {
         for (String id : PAINTED_POSEIDON_FOUNDATIONAL_LANDS) {
             assertNotNull(CardArtFactory.class.getResource("/art/lands/" + id + ".jpg"), id);
+        }
+        for (String id : PAINTED_POSEIDON_ECONOMY_AND_TUTOR_LANDS) {
+            assertNotNull(CardArtFactory.class.getResource("/art/lands/" + id + ".jpg"), id);
+            assertTrue(CardArtFactory.hasPaintedArt(new PrototypeCardPool().require(id)), id);
         }
         CardDefinition tidelands = new PrototypeCardPool().require("poseidon_neon_tidelands");
         assertTrue(CardArtFactory.hasPaintedArt(tidelands));
