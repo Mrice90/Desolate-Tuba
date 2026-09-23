@@ -845,9 +845,9 @@ public final class InfiniteConquestGui extends JFrame {
     private void executeHuman(String command) {
         if (!canAcceptHumanInput() || !confirmOpportunityRisk(command)) return;
         interaction.beginResolution();
-        Map<UUID, BoardSnapshot> before = captureBoard();
+        PresentationSnapshot.Frame before = PresentationSnapshot.capture(state);
         String result = commands.execute(command);
-        showResolution(command, before);
+        showResolution(PresentationSnapshot.between(command, before, state));
         addHistory("You", describe(command));
         message(result);
         if (state.phase() == Phase.GAME_OVER) interaction.markGameOver();
@@ -878,9 +878,9 @@ public final class InfiniteConquestGui extends JFrame {
             int active = state.activePlayer();
             offerReaction(active);
             if (state.phase() == Phase.GAME_OVER || state.activePlayer() != active) return;
-            Map<UUID, BoardSnapshot> before = captureBoard();
+            PresentationSnapshot.Frame before = PresentationSnapshot.capture(state);
             BotPlayer.Decision decision = bot.takeNextAction(state, commands, active);
-            showResolution(decision.command(), before);
+            showResolution(PresentationSnapshot.between(decision.command(), before, state));
             addHistory(active == 0 ? "Bot 1" : "Bot 2", describe(decision.command()));
             message((active == 0 ? "Bot 1: " : "Bot 2: ") + describe(decision.command()) + " — " + decision.result());
             refresh();
@@ -895,10 +895,10 @@ public final class InfiniteConquestGui extends JFrame {
     private void offerReaction(int active) {
         int reacting = 1 - active;
         if (isAutomatedPlayer(reacting)) {
-            Map<UUID, BoardSnapshot> before = captureBoard();
+            PresentationSnapshot.Frame before = PresentationSnapshot.capture(state);
             BotPlayer.Decision reaction = bot.react(state, commands, reacting);
             if (reaction != null) {
-                showResolution(reaction.command(), before);
+                showResolution(PresentationSnapshot.between(reaction.command(), before, state));
                 addHistory(reacting == 0 ? "Bot 1" : "Bot 2", describe(reaction.command()));
             }
             return;
@@ -909,9 +909,9 @@ public final class InfiniteConquestGui extends JFrame {
         try {
             String chosen = new VisualReactionDialog(reacting, reactions).choose();
             if (chosen != null && !chosen.isBlank()) {
-                Map<UUID, BoardSnapshot> before = captureBoard();
+                PresentationSnapshot.Frame before = PresentationSnapshot.capture(state);
                 message(commands.execute(chosen));
-                showResolution(chosen, before);
+                showResolution(PresentationSnapshot.between(chosen, before, state));
                 addHistory("You", describe(chosen));
                 refresh();
             }
@@ -1255,19 +1255,6 @@ public final class InfiniteConquestGui extends JFrame {
         return String.join(" > ", names);
     }
 
-    private Map<UUID, BoardSnapshot> captureBoard() {
-        Map<UUID, BoardSnapshot> snapshot = new HashMap<>();
-        for (BoardPosition position : state.board().positions()) {
-            for (UUID id : state.board().stackAt(position)) {
-                CardInstance card = state.card(id).orElseThrow();
-                snapshot.put(id, new BoardSnapshot(id, position, card.damage(), card.definition().hitPoints(),
-                        card.definition().defense(), card.definition().name(), card.definition().type(),
-                        state.board().topAt(position).filter(id::equals).isPresent()));
-            }
-        }
-        return snapshot;
-    }
-
     private boolean confirmOpportunityRisk(String command) {
         String[] p = command.split("\\s+");
         if (!p[0].equals("move")) return true;
@@ -1293,7 +1280,9 @@ public final class InfiniteConquestGui extends JFrame {
                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION;
     }
 
-    private void showResolution(String command, Map<UUID, BoardSnapshot> before) {
+    private void showResolution(PresentationSnapshot resolution) {
+        String command = resolution.command();
+        PresentationSnapshot.Frame before = resolution.before();
         String[] p = command.split("\\s+");
         switch (p[0]) {
             case "move", "blink" -> {
@@ -1315,13 +1304,13 @@ public final class InfiniteConquestGui extends JFrame {
                 BoardPosition from = position(p, 1);
                 BoardPosition target = position(p, 3);
                 boolean ranged = from.distanceTo(target) > 1;
-                showTargetResult(target, before, ranged ? "RANGED" : "MELEE", ranged ? "#ffb45b" : "#ff7373");
+                showTargetResult(target, resolution, ranged ? "RANGED" : "MELEE", ranged ? "#ffb45b" : "#ff7373");
                 combatOverlay.animate(from, target, ranged ? new Color(255, 180, 91) : ATTACK, false,
                         ranged ? AnimationStyle.RANGED : AnimationStyle.MELEE);
-                BoardSnapshot originalAttacker = before.values().stream()
+                PresentationSnapshot.CardVisual originalAttacker = before.cards().values().stream()
                         .filter(value -> value.position().equals(from) && value.top()).findFirst().orElse(null);
                 if (originalAttacker != null) {
-                    CardInstance surviving = state.card(originalAttacker.id()).orElse(null);
+                    PresentationSnapshot.CardVisual surviving = resolution.after().card(originalAttacker.id());
                     if (surviving == null || surviving.zone() != Zone.BATTLEFIELD) {
                         badge(from, "RETALIATION • DESTROYED", "#ff7373");
                         combatOverlay.animate(target, from, ATTACK, false, AnimationStyle.MELEE);
@@ -1332,7 +1321,7 @@ public final class InfiniteConquestGui extends JFrame {
             case "cast", "react" -> {
                 int targetIndex = p[0].equals("react") ? 3 : 2;
                 BoardPosition target = position(p, targetIndex);
-                showTargetResult(target, before, "SPELL", "#df92ff");
+                showTargetResult(target, resolution, "SPELL", "#df92ff");
                 combatOverlay.animate(null, target, new Color(223, 146, 255), false, AnimationStyle.SPELL);
                 SoundEffects.play(SoundEffects.Cue.SPELL);
             }
@@ -1345,12 +1334,13 @@ public final class InfiniteConquestGui extends JFrame {
                 try {
                     UUID attackerId = UUID.fromString(detail[0]);
                     UUID moverId = UUID.fromString(detail[2]);
-                    BoardSnapshot attacker = before.get(attackerId);
-                    BoardSnapshot mover = before.get(moverId);
+                    PresentationSnapshot.CardVisual attacker = before.card(attackerId);
+                    PresentationSnapshot.CardVisual mover = before.card(moverId);
                     if (attacker != null && mover != null) {
                         String[] xy = detail[4].split(",");
                         BoardPosition trigger = new BoardPosition(Integer.parseInt(xy[0]), Integer.parseInt(xy[1]));
-                        boolean destroyed = state.card(moverId).map(card -> card.zone() != Zone.BATTLEFIELD).orElse(true);
+                        PresentationSnapshot.CardVisual currentMover = resolution.after().card(moverId);
+                        boolean destroyed = currentMover == null || currentMover.zone() != Zone.BATTLEFIELD;
                         badge(trigger, "FREE ATTACK • " + (destroyed ? "DESTROYED" : "BLOCKED"), "#ff7373");
                         combatOverlay.animate(attacker.position(), trigger, ATTACK, false, AnimationStyle.MELEE);
                         SoundEffects.play(SoundEffects.Cue.MELEE);
@@ -1360,9 +1350,9 @@ public final class InfiniteConquestGui extends JFrame {
             if (event.type() != GameEvent.Type.EXHAUSTION_DAMAGE) continue;
             try {
                 UUID id = UUID.fromString(event.detail().split("\\s+")[0]);
-                BoardSnapshot old = before.get(id);
+                PresentationSnapshot.CardVisual old = before.card(id);
                 if (old == null) continue;
-                CardInstance current = state.card(id).orElse(null);
+                PresentationSnapshot.CardVisual current = resolution.after().card(id);
                 int damage = current == null ? old.hitPoints() - old.damage()
                         : Math.max(1, current.damage() - old.damage());
                 String cause = "EXHAUSTION";
@@ -1373,12 +1363,11 @@ public final class InfiniteConquestGui extends JFrame {
         }
     }
 
-    private void showTargetResult(BoardPosition target, Map<UUID, BoardSnapshot> before,
+    private void showTargetResult(BoardPosition target, PresentationSnapshot resolution,
                                   String cause, String color) {
-        BoardSnapshot old = before.values().stream()
-                .filter(value -> value.position().equals(target) && value.top()).findFirst().orElse(null);
+        PresentationSnapshot.CardVisual old = resolution.before().topAt(target);
         if (old == null) { badge(target, cause, color); return; }
-        CardInstance current = state.card(old.id()).orElse(null);
+        PresentationSnapshot.CardVisual current = resolution.after().card(old.id());
         if (current == null || current.zone() != Zone.BATTLEFIELD) {
             String outcome = cause.equals("SPELL") && current != null && current.zone() == Zone.HAND
                     ? "RETURNED TO HAND" : "DESTROYED";
@@ -2172,8 +2161,6 @@ public final class InfiniteConquestGui extends JFrame {
     }
     private record DragSource(Integer handIndex, BoardPosition position) { }
     private record EffectBadge(String text, String color) { }
-    private record BoardSnapshot(UUID id, BoardPosition position, int damage, int hitPoints,
-                                 int defense, String name, CardType type, boolean top) { }
 
     private final class VictoryPanel extends JPanel {
         private final Color faction;
