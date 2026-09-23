@@ -173,9 +173,12 @@ class CardArtFactoryTest {
             assertNotNull(CardArtFactory.class.getResource("/art/spells/" + id + ".jpg"), id);
             assertTrue(CardArtFactory.hasPaintedArt(new PrototypeCardPool().require(id)), id);
         }
+        CardDefinition crushingDepths = new PrototypeCardPool().require("poseidon_crushing_depths");
         CardDefinition awaitingArt = new CardDefinition("poseidon_future_spell", "Future Spell",
-                CardType.SPELL, "POSEIDON", 1, 0, 0, 0, 0, 0);
+                CardType.SPELL, "POSEIDON", crushingDepths.cost(), 0, 0, 0, 0, 0,
+                crushingDepths.keywords(), crushingDepths.effects());
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
+        assertEquals(190, CardArtFactory.iconFor(crushingDepths, 190, 78).getIconWidth());
     }
 
     @Test void everyPlayablePoseidonCharacterHasPaintedArt() {
