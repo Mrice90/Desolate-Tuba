@@ -12,3 +12,12 @@ dependencies {
 application {
     mainClass = 'com.infiniteconquest.gui.InfiniteConquestGui'
 }
+
+
+tasks.register('captureGuiScreenshots', JavaExec) {
+    group = 'verification'
+    description = 'Captures deterministic GUI screenshots for visual review.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.infiniteconquest.gui.GuiScreenshotHarness'
+    args layout.buildDirectory.dir('screenshots').get().asFile.absolutePath
+}

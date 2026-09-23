@@ -3,12 +3,14 @@ package com.infiniteconquest.gui;
 import com.infiniteconquest.cli.*;
 import com.infiniteconquest.core.*;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.*;
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -83,6 +85,10 @@ public final class InfiniteConquestGui extends JFrame {
     private MatchChoice lastMatchChoice;
 
     public InfiniteConquestGui() {
+        this(false);
+    }
+
+    InfiniteConquestGui(boolean screenshotMode) {
         super("Infinite Conquest");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(1280, 860));
@@ -95,7 +101,8 @@ public final class InfiniteConquestGui extends JFrame {
         setGlassPane(combatOverlay);
         combatOverlay.setVisible(true);
         loadSavedDecks();
-        newMatch();
+        if (screenshotMode) startMatch(defaultChoice(), 424242L, false);
+        else newMatch();
     }
 
     public static void main(String[] args) {
@@ -119,7 +126,53 @@ public final class InfiniteConquestGui extends JFrame {
                 if (boardFullScreen) toggleBoardFullScreen();
             }
         });
+        screenRoot.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke("F10"), "captureScreenshot");
+        screenRoot.getActionMap().put("captureScreenshot", new AbstractAction() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent event) {
+                saveDebugScreenshot();
+            }
+        });
         return screenRoot;
+    }
+
+    Path captureScreenshot(Path output) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("Screenshots must be captured on the Swing event-dispatch thread");
+        }
+        try {
+            Files.createDirectories(output.toAbsolutePath().getParent());
+            Dimension size = screenRoot.getSize();
+            if (size.width <= 0 || size.height <= 0) size = getContentPane().getPreferredSize();
+            BufferedImage image = new BufferedImage(Math.max(1, size.width), Math.max(1, size.height),
+                    BufferedImage.TYPE_INT_ARGB);
+            Graphics2D graphics = image.createGraphics();
+            screenRoot.printAll(graphics);
+            graphics.dispose();
+            ImageIO.write(image, "png", output.toFile());
+            return output;
+        } catch (java.io.IOException exception) {
+            throw new IllegalStateException("Could not capture GUI screenshot", exception);
+        }
+    }
+
+    void prepareScreenshotScenario(String scenario) {
+        selectedHand = null;
+        selectedCell = null;
+        if ("selected-hand".equals(scenario) && !state.player(0).hand().isEmpty()) selectedHand = 0;
+        if ("expanded-hand".equals(scenario) && !handExpanded) toggleHandExpansion();
+        refresh();
+        validate();
+    }
+
+    private void saveDebugScreenshot() {
+        Path output = Path.of("build", "screenshots", "manual-" + System.currentTimeMillis() + ".png");
+        try {
+            captureScreenshot(output);
+            message("Screenshot saved to " + output.toAbsolutePath());
+        } catch (IllegalStateException exception) {
+            message(exception.getMessage());
+        }
     }
 
     private JComponent buildHeader() {
@@ -375,7 +428,10 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void startMatch(MatchChoice choice) {
-        long seed = System.nanoTime();
+        startMatch(choice, System.nanoTime(), true);
+    }
+
+    private void startMatch(MatchChoice choice, long seed, boolean interactiveOpening) {
         lastMatchChoice = choice;
         humanFaction = choice.humanFaction();
         botFaction = choice.botFaction();
@@ -395,15 +451,20 @@ public final class InfiniteConquestGui extends JFrame {
         lastSystemEvent = state.events().stream().mapToLong(GameEvent::sequence).max().orElse(-1);
         historyModel.clear();
         historyNumber = 0;
-        showCoinFlip(state.startingPlayer());
-        runOpeningMulligans();
+        if (interactiveOpening) {
+            showCoinFlip(state.startingPlayer());
+            runOpeningMulligans();
+        } else {
+            completeBotMulligan(0);
+            completeBotMulligan(1);
+        }
         lastSystemEvent = state.events().stream().mapToLong(GameEvent::sequence).max().orElse(-1);
         addHistory("Match", title(humanFaction) + " vs " + title(botFaction)
                 + " — Player " + (state.startingPlayer() + 1) + " won the coin flip");
         message("Player " + (state.startingPlayer() + 1)
                 + " starts. Player 1 begins at 0 GP; Player 2 begins at 1 GP; Capitals generate 1 GP per turn.");
         refresh();
-        if (isAutomatedPlayer(state.activePlayer())) SwingUtilities.invokeLater(this::runBotTurn);
+        if (interactiveOpening && isAutomatedPlayer(state.activePlayer())) SwingUtilities.invokeLater(this::runBotTurn);
     }
 
     private void runOpeningMulligans() {
