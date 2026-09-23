@@ -36,6 +36,7 @@ public final class InfiniteConquestGui extends JFrame {
     private final Map<BoardPosition, JButton> boardButtons = new HashMap<>();
     private final Map<BoardPosition, EffectBadge> effectBadges = new HashMap<>();
     private final CombatOverlay combatOverlay = new CombatOverlay();
+    private final PresentationQueue presentationQueue;
     private final List<JButton> handButtons = new ArrayList<>();
 
     private GameState state;
@@ -78,6 +79,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     InfiniteConquestGui(boolean screenshotMode) {
         super("Infinite Conquest");
+        presentationQueue = new PresentationQueue(this::playPresentation);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(1280, 860));
         setSize(1500, 980);
@@ -1281,6 +1283,24 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void showResolution(PresentationSnapshot resolution) {
+        presentationQueue.enqueue(resolution);
+    }
+
+    private void playPresentation(PresentationSnapshot resolution, Runnable completion) {
+        interaction.lockPresentation();
+        combatOverlay.beginSequence(() -> {
+            interaction.finishPresentation();
+            completion.run();
+            refresh();
+        });
+        try {
+            renderPresentation(resolution);
+        } finally {
+            combatOverlay.finishSequence();
+        }
+    }
+
+    private void renderPresentation(PresentationSnapshot resolution) {
         String command = resolution.command();
         PresentationSnapshot.Frame before = resolution.before();
         String[] p = command.split("\\s+");
@@ -1327,8 +1347,7 @@ public final class InfiniteConquestGui extends JFrame {
             }
             default -> { }
         }
-        for (GameEvent event : state.events()) {
-            if (event.sequence() <= lastSystemEvent) continue;
+        for (GameEvent event : resolution.events()) {
             if (event.type() == GameEvent.Type.OPPORTUNITY_ATTACK) {
                 String[] detail = event.detail().split("\\s+");
                 try {
@@ -2238,8 +2257,24 @@ public final class InfiniteConquestGui extends JFrame {
         private Animation animation;
         private final ArrayDeque<Animation> queued = new ArrayDeque<>();
         private javax.swing.Timer timer;
+        private Runnable sequenceCompletion;
+        private boolean sequenceOpen;
 
         @Override public boolean contains(int x, int y) { return false; }
+
+        void beginSequence(Runnable completion) {
+            if (sequenceOpen || sequenceCompletion != null || animation != null || !queued.isEmpty()) {
+                throw new IllegalStateException("Presentation sequences must not overlap");
+            }
+            sequenceOpen = true;
+            sequenceCompletion = Objects.requireNonNull(completion);
+        }
+
+        void finishSequence() {
+            if (!sequenceOpen) throw new IllegalStateException("No presentation sequence is open");
+            sequenceOpen = false;
+            if (animation == null && queued.isEmpty()) completeSequence();
+        }
 
         void animate(BoardPosition from, BoardPosition to, Color color, boolean fromRules) {
             animate(from, to, color, fromRules, fromRules ? AnimationStyle.RULES
@@ -2247,7 +2282,7 @@ public final class InfiniteConquestGui extends JFrame {
         }
 
         void animate(BoardPosition from, BoardPosition to, Color color, boolean fromRules, AnimationStyle style) {
-            interaction.lockPresentation();
+            if (!sequenceOpen) throw new IllegalStateException("Animations require an open presentation sequence");
             Animation requested = new Animation(from, to, color, fromRules, style, 0L);
             if (animation != null) {
                 queued.addLast(requested);
@@ -2265,9 +2300,8 @@ public final class InfiniteConquestGui extends JFrame {
                     if (queued.isEmpty()) {
                         ((javax.swing.Timer) event.getSource()).stop();
                         animation = null;
-                        interaction.finishPresentation();
                         repaint();
-                        InfiniteConquestGui.this.refresh();
+                        completeSequence();
                     } else {
                         Animation next = queued.removeFirst();
                         animation = new Animation(next.from(), next.to(), next.color(),
@@ -2277,6 +2311,12 @@ public final class InfiniteConquestGui extends JFrame {
             });
             timer.start();
             repaint();
+        }
+
+        private void completeSequence() {
+            Runnable completed = sequenceCompletion;
+            sequenceCompletion = null;
+            if (completed != null) SwingUtilities.invokeLater(completed);
         }
 
         @Override protected void paintComponent(Graphics graphics) {

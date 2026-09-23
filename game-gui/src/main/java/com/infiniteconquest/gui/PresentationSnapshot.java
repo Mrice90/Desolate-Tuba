@@ -4,20 +4,10 @@ import com.infiniteconquest.core.*;
 
 import java.util.*;
 
-/**
- * Immutable before/after data for one authoritative command.
- *
- * The engine mutates immediately. Presentation code consumes this value later
- * without reading a newer GameState or guessing what changed from Swing widgets.
- */
+/** Immutable before/after data for one authoritative command. */
 final class PresentationSnapshot {
     enum Change {
-        ENTERED_BATTLEFIELD,
-        MOVED,
-        DAMAGED,
-        DESTROYED,
-        ZONE_CHANGED,
-        UNCHANGED
+        ENTERED_BATTLEFIELD, MOVED, DAMAGED, DESTROYED, ZONE_CHANGED, UNCHANGED
     }
 
     record CardVisual(UUID id, BoardPosition position, Zone zone, int damage,
@@ -32,13 +22,20 @@ final class PresentationSnapshot {
 
     static final class Frame {
         private final Map<UUID, CardVisual> cards;
+        private final long latestEventSequence;
 
         Frame(Map<UUID, CardVisual> cards) {
+            this(cards, -1L);
+        }
+
+        Frame(Map<UUID, CardVisual> cards, long latestEventSequence) {
             this.cards = Collections.unmodifiableMap(new LinkedHashMap<>(cards));
+            this.latestEventSequence = latestEventSequence;
         }
 
         Map<UUID, CardVisual> cards() { return cards; }
         CardVisual card(UUID id) { return cards.get(id); }
+        long latestEventSequence() { return latestEventSequence; }
 
         CardVisual topAt(BoardPosition position) {
             return cards.values().stream()
@@ -53,18 +50,21 @@ final class PresentationSnapshot {
     private final Frame before;
     private final Frame after;
     private final List<CardChange> changes;
+    private final List<GameEvent> events;
 
-    private PresentationSnapshot(String command, Frame before, Frame after) {
+    private PresentationSnapshot(String command, Frame before, Frame after, List<GameEvent> events) {
         this.command = Objects.requireNonNull(command);
         this.before = Objects.requireNonNull(before);
         this.after = Objects.requireNonNull(after);
         this.changes = classify(before, after);
+        this.events = List.copyOf(events);
     }
 
     String command() { return command; }
     Frame before() { return before; }
     Frame after() { return after; }
     List<CardChange> changes() { return changes; }
+    List<GameEvent> events() { return events; }
 
     static Frame capture(GameState state) {
         Map<UUID, BoardPosition> positions = new HashMap<>();
@@ -92,15 +92,19 @@ final class PresentationSnapshot {
                     definition.hitPoints(), card.effectiveDefense(), definition.name(),
                     definition.type(), topCards.contains(id)));
         }
-        return new Frame(cards);
+        long sequence = state.events().stream().mapToLong(GameEvent::sequence).max().orElse(-1L);
+        return new Frame(cards, sequence);
     }
 
     static PresentationSnapshot between(String command, Frame before, GameState afterState) {
-        return new PresentationSnapshot(command, before, capture(afterState));
+        Frame after = capture(afterState);
+        List<GameEvent> events = afterState.events().stream()
+                .filter(event -> event.sequence() > before.latestEventSequence()).toList();
+        return new PresentationSnapshot(command, before, after, events);
     }
 
     static PresentationSnapshot between(String command, Frame before, Frame after) {
-        return new PresentationSnapshot(command, before, after);
+        return new PresentationSnapshot(command, before, after, List.of());
     }
 
     private static List<CardChange> classify(Frame before, Frame after) {
