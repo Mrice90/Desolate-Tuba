@@ -220,6 +220,23 @@ class CardArtFactoryTest {
                         () -> assertTrue(CardArtFactory.hasPaintedArt(card), card.id())));
     }
 
+    @Test void everyPlayablePoseidonStructureIsPackaged() {
+        List<CardDefinition> structures = new PrototypeCardPool().cardsForFaction("POSEIDON").stream()
+                .filter(card -> card.type() == CardType.STRUCTURE).toList();
+        assertEquals(15, structures.size());
+        for (CardDefinition structure : structures) {
+            assertNotNull(CardArtFactory.class.getResource("/art/structures/" + structure.id() + ".jpg"),
+                    structure.id());
+        }
+    }
+
+    @TestFactory Stream<DynamicTest> decodesEachPoseidonStructurePainting() {
+        return new PrototypeCardPool().cardsForFaction("POSEIDON").stream()
+                .filter(card -> card.type() == CardType.STRUCTURE)
+                .map(card -> DynamicTest.dynamicTest(card.id(),
+                        () -> assertTrue(CardArtFactory.hasPaintedArt(card), card.id())));
+    }
+
     @Test void everyPlayablePoseidonCharacterHasPaintedArt() {
         for (String id : PAINTED_POSEIDON_CHARACTERS) {
             assertNotNull(CardArtFactory.class.getResource("/art/characters/" + id + ".jpg"), id);
