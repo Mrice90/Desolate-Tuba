@@ -48,8 +48,7 @@ public final class InfiniteConquestGui extends JFrame {
     private final DeckFileStore deckFiles = new DeckFileStore();
     private final Map<String, List<CardDefinition>> savedDecks = new HashMap<>();
     private final Path deckDirectory = Path.of(System.getProperty("user.home"), ".infinite-conquest", "decks");
-    private Integer selectedHand;
-    private BoardPosition selectedCell;
+    private final InteractionState interaction = new InteractionState();
     private boolean botRunning;
     private String humanFaction = "ZEUS";
     private String botFaction = "ARES";
@@ -146,14 +145,13 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     void prepareScreenshotScenario(String scenario) {
-        selectedHand = null;
-        selectedCell = null;
+        interaction.clearSelection();
         if ("selected-hand".equals(scenario)) {
             List<String> legal = legalCommands();
             for (int index = 0; index < state.player(0).hand().size(); index++) {
                 final int candidate = index;
                 if (legal.stream().anyMatch(command -> command.matches("(play|burrow|cast) " + candidate + "( .*)?"))) {
-                    selectedHand = candidate;
+                    interaction.selectHand(candidate);
                     break;
                 }
             }
@@ -442,8 +440,7 @@ public final class InfiniteConquestGui extends JFrame {
                 deckForFaction(humanFaction), factionDecks.starter(botFaction),
                 humanCapital, botCapital, choice.humanCapitalPosition(), botCapitalPosition);
         commands = new CommandProcessor(state);
-        selectedHand = null;
-        selectedCell = null;
+        interaction.clearSelection();
         botRunning = false;
         winnerSoundPlayed = false;
         victoryDialogShown = false;
@@ -816,21 +813,18 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void selectHand(int index) {
         if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
-        selectedHand = Objects.equals(selectedHand, index) ? null : index;
-        selectedCell = null;
+        interaction.toggleHand(index);
         refresh();
     }
 
     private void selectCell(BoardPosition position) {
         if (playerOneBot || botRunning || state.phase() == Phase.GAME_OVER) return;
-        selectedCell = Objects.equals(selectedCell, position) ? null : position;
-        selectedHand = null;
+        interaction.toggleBoard(position);
         refresh();
     }
 
     private void clearSelection() {
-        selectedHand = null;
-        selectedCell = null;
+        interaction.clearSelection();
         refresh();
     }
 
@@ -851,8 +845,7 @@ public final class InfiniteConquestGui extends JFrame {
         showResolution(command, before);
         addHistory("You", describe(command));
         message(result);
-        selectedHand = null;
-        selectedCell = null;
+        interaction.clearSelection();
         refresh();
         if (state.phase() != Phase.GAME_OVER && isAutomatedPlayer(state.activePlayer())) runBotTurn();
     }
@@ -934,7 +927,7 @@ public final class InfiniteConquestGui extends JFrame {
             Optional<UUID> topId = state.board().topAt(position);
             Color base = position.isOnPlayerSide(0) ? HUMAN_PLOT : BOT_PLOT;
             Intent intent = destinationIntent(position);
-            boolean selected = Objects.equals(selectedCell, position);
+            boolean selected = Objects.equals(interaction.boardPosition(), position);
             Color surface = intent == null ? base : blend(base, intent.color, TARGET_TINT);
             cell.setBackground(surface);
             cell.setForeground(Color.WHITE);
@@ -1020,7 +1013,7 @@ public final class InfiniteConquestGui extends JFrame {
             tile.setHorizontalTextPosition(SwingConstants.CENTER);
             tile.setVerticalTextPosition(SwingConstants.BOTTOM);
             tile.setForeground(Color.WHITE);
-            boolean selected = Objects.equals(selectedHand, index);
+            boolean selected = Objects.equals(interaction.handIndex(), index);
             Color handSurface = blend(PANEL_LIGHT, factionColor(def.faction()), .36f);
             tile.setBackground(selected ? blend(handSurface, SELECTED, SELECTED_TINT) : handSurface);
             tile.setFocusPainted(false);
@@ -1046,17 +1039,17 @@ public final class InfiniteConquestGui extends JFrame {
         legal.stream().filter(this::matchesSelection)
                 .map(command -> new ActionOption(describe(command), command))
                 .forEach(actionModel::addElement);
-        if (actionModel.isEmpty() && (selectedHand != null || selectedCell != null)) {
+        if (actionModel.isEmpty() && interaction.hasSelection()) {
             actionModel.addElement(new ActionOption("No legal action for that selection", ""));
         }
     }
 
     private boolean matchesSelection(String command) {
-        if (selectedHand != null) {
-            return command.matches("(play|burrow|cast) " + selectedHand + "( .*)?");
+        if (interaction.handIndex() != null) {
+            return command.matches("(play|burrow|cast) " + interaction.handIndex() + "( .*)?");
         }
-        if (selectedCell != null) {
-            String xy = selectedCell.x() + " " + selectedCell.y();
+        if (interaction.boardPosition() != null) {
+            String xy = interaction.boardPosition().x() + " " + interaction.boardPosition().y();
             return command.matches("(move|blink|attack) " + xy + " .*")
                     || command.equals("activate " + xy)
                     || command.matches("cast \\d+ " + xy + "( .*)?");
@@ -1073,16 +1066,17 @@ public final class InfiniteConquestGui extends JFrame {
                     return;
                 }
                 if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
-                if (source.position() != null && (selectedHand != null || selectedCell != null)
-                        && !Objects.equals(selectedCell, source.position()) && isLegalDestination(source.position())) {
-                    DragSource selectedSource = new DragSource(selectedHand, selectedCell);
+                if (source.position() != null && interaction.hasSelection()
+                        && !Objects.equals(interaction.boardPosition(), source.position())
+                        && isLegalDestination(source.position())) {
+                    DragSource selectedSource = new DragSource(interaction.handIndex(), interaction.boardPosition());
                     dragSource = null;
+                    interaction.finishDrag();
                     executeDrop(selectedSource, source.position());
                     return;
                 }
                 dragSource = source;
-                selectedHand = source.handIndex();
-                selectedCell = source.position();
+                interaction.beginDrag(source.handIndex(), source.position());
                 refreshBoard();
                 refreshActions();
             }
@@ -1095,6 +1089,7 @@ public final class InfiniteConquestGui extends JFrame {
                         .map(Map.Entry::getKey).findFirst().orElse(null);
                 DragSource original = dragSource;
                 dragSource = null;
+                interaction.finishDrag();
                 if (destination == null || Objects.equals(original.position(), destination)) {
                     refresh();
                     return;
@@ -1197,14 +1192,14 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private boolean isLegalDestination(BoardPosition destination) {
-        if (selectedHand == null && selectedCell == null) return false;
-        DragSource source = new DragSource(selectedHand, selectedCell);
+        if (!interaction.hasSelection()) return false;
+        DragSource source = new DragSource(interaction.handIndex(), interaction.boardPosition());
         return legalCommands().stream().anyMatch(command -> startsAt(command, source) && endsAt(command, destination));
     }
 
     private Intent destinationIntent(BoardPosition destination) {
-        if (selectedHand == null && selectedCell == null) return null;
-        DragSource source = new DragSource(selectedHand, selectedCell);
+        if (!interaction.hasSelection()) return null;
+        DragSource source = new DragSource(interaction.handIndex(), interaction.boardPosition());
         Set<Intent> intents = new LinkedHashSet<>();
         legalCommands().stream().filter(command -> startsAt(command, source) && endsAt(command, destination))
                 .map(Intent::fromCommand).forEach(intents::add);
