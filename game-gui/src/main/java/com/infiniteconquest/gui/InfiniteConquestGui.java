@@ -1236,10 +1236,11 @@ public final class InfiniteConquestGui extends JFrame {
         int targetX = from.x() < BoardPosition.WIDTH - 1 ? from.x() + 1 : from.x() - 1;
         BoardPosition to = new BoardPosition(targetX, from.y());
         interaction.lockPresentation();
-        maskedBoardCells.add(to);
+        Set<BoardPosition> masked = Set.of(from, to);
+        maskedBoardCells.addAll(masked);
         refreshBoard();
         combatOverlay.beginSequence(() -> {
-            maskedBoardCells.remove(to);
+            maskedBoardCells.removeAll(masked);
             interaction.finishPresentation();
             refresh();
         });
