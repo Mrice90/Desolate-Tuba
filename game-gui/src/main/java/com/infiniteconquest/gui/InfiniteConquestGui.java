@@ -309,6 +309,7 @@ public final class InfiniteConquestGui extends JFrame {
         card.dispatchEvent(new MouseEvent(card,MouseEvent.MOUSE_RELEASED,System.currentTimeMillis(),0,card.getWidth()/2,card.getHeight()/2,1,false,MouseEvent.BUTTON1));
         if(handExpanded||!Objects.equals(interaction.handIndex(),0))throw new IllegalStateException("Selecting a hand card must tuck the tray away and retain selection");
         clearSelection();
+        layoutTree(getRootPane());
     }
 
     private static void layoutTree(Container container) {
