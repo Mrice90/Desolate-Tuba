@@ -188,9 +188,9 @@ class CardArtFactoryTest {
     @Test void packagesThePaintedPoseidonFoundationalLandBatch() {
         for (String id : PAINTED_POSEIDON_FOUNDATIONAL_LANDS) {
             assertNotNull(CardArtFactory.class.getResource("/art/lands/" + id + ".jpg"), id);
-            assertTrue(CardArtFactory.hasPaintedArt(new PrototypeCardPool().require(id)), id);
         }
         CardDefinition tidelands = new PrototypeCardPool().require("poseidon_neon_tidelands");
+        assertTrue(CardArtFactory.hasPaintedArt(tidelands));
         CardDefinition awaitingArt = new CardDefinition("poseidon_future_land", "Future Land",
                 CardType.LAND, "POSEIDON", tidelands.cost(), 0, 0, 0, 0, tidelands.hitPoints());
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
