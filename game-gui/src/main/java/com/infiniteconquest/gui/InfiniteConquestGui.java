@@ -152,7 +152,7 @@ public final class InfiniteConquestGui extends JFrame {
             List<String> legal = legalCommands();
             for (int index = 0; index < state.player(0).hand().size(); index++) {
                 final int candidate = index;
-                if (legal.stream().anyMatch(command -> command.matches("(play|burrow|cast) " + candidate + "( |$)"))) {
+                if (legal.stream().anyMatch(command -> command.matches("(play|burrow|cast) " + candidate + "( .*)?"))) {
                     selectedHand = candidate;
                     break;
                 }
