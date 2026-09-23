@@ -133,12 +133,13 @@ public final class InfiniteConquestGui extends JFrame {
         }
         try {
             Files.createDirectories(output.toAbsolutePath().getParent());
-            Dimension size = screenRoot.getSize();
-            if (size.width <= 0 || size.height <= 0) size = getContentPane().getPreferredSize();
+            JRootPane captureRoot = getRootPane();
+            Dimension size = captureRoot.getSize();
+            if (size.width <= 0 || size.height <= 0) size = getSize();
             BufferedImage image = new BufferedImage(Math.max(1, size.width), Math.max(1, size.height),
                     BufferedImage.TYPE_INT_ARGB);
             Graphics2D graphics = image.createGraphics();
-            screenRoot.printAll(graphics);
+            captureRoot.printAll(graphics);
             graphics.dispose();
             ImageIO.write(image, "png", output.toFile());
             return output;
