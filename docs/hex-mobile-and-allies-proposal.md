@@ -1,14 +1,15 @@
 # Infinite Conquest: hex battlefield, phone release, and allied decks
 
-Status: design checkpoint, 23 September 2026. This document proposes the next version; it does not override the current implemented square-board rules. The accompanying interactive concepts are in `prototypes/hex-mobile/index.html`.
+Status: visual direction and deck-building flow approved for development, 23 September 2026. The user approved the current prototype direction, with a final readability correction for Capital passives. This approval does not change the current implemented square-board rules. The accompanying interactive prototype is in `prototypes/hex-mobile/index.html`.
 
 ## Confirmed direction
 
-- Explore an attractive hex battlefield, retaining 24 spaces and 12 starting spaces per player initially.
+- Develop the approved hex battlefield direction, retaining 24 spaces and 12 starting spaces per player initially.
 - Design for eventual phone release as well as desktop.
 - Target a US $0.99 purchase for the full base game, with additional factions sold as DLC. Final storefront prices, base roster, DLC roster, and DLC prices are not yet selected.
 - Deck creation order is **primary faction → optional one ally faction → Capital → cards**. Ally selection happens at the beginning of deck creation, not during a match.
 - One ally is optional; two or more allies are never allowed.
+- Retain both background choices, readable card inspection, and preview-before-replacement deck sharing. Capital rules sit below artwork in a separate panel with 17px text and generous line spacing; phone layouts use one Capital per row.
 
 Working interpretation: the single Capital belongs to the primary faction. This was stated in the assistant's confirmation and is used throughout the prototype; the user's explicit order does not grant an additional allied Capital.
 
@@ -114,7 +115,7 @@ These sources support the purchase-type design, not a revenue forecast or approv
 
 ## Implementation sequence after this design checkpoint
 
-1. Choose Stormfront, Obsidian Table, or a combination after comparing the same crowded positions on a real phone and desktop. Confirm the single-primary-Capital interpretation and base roster.
+1. Visual direction and deck flow are approved. Retain both background choices during development. Base/DLC roster decisions remain open and do not block deck validation or geometry work.
 2. Implement explicit deck metadata and shared primary/ally validation while keeping the square game playable. This feature can ship independently of hex conversion.
 3. Add geometry interfaces and conformance fixtures for adjacency, routes, range, line of sight, deployment, and opportunity attacks. Keep square behavior intact behind a board-type flag.
 4. Add a playable experimental hex renderer, matching bot geometry and animation endpoints. Reuse the existing event/snapshot flow; enrich missing structured fields incrementally.
@@ -122,4 +123,4 @@ These sources support the purchase-type design, not a revenue forecast or approv
 6. Balance alliances and hexes separately, then together. Compare no-ally baselines, every ordered faction pair, each primary Capital, mirror matches, first-player advantage, stalemates, and match duration. Bot results need human confirmation.
 7. Integrate real store entitlements only after the roster and platform are selected; verify restore, interruptions, refunds, and offline behavior in store sandboxes. Finish physical-device, accessibility, and new-player testing before release.
 
-No production engine conversion or payment integration is included in this checkpoint. Next implementation should follow the selected visual direction and the confirmed deck-building flow.
+The prototype is the approved presentation reference. Production work starts with explicit deck metadata and shared validation, then hex geometry and a playable renderer. Payment integration remains a later phase after roster and platform decisions.

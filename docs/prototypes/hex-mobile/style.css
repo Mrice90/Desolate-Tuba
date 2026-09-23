@@ -6,3 +6,17 @@
 .choice small{font-size:14px;line-height:1.55;color:#e0e5e5;white-space:normal}.choice{align-content:start}
 .sharetools{display:flex;gap:10px;flex-wrap:wrap;padding:0 22px 14px}.catalog{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-card{align-items:flex-start}.cardinfo{min-width:0;flex:1}.card-summary{font-size:13px;line-height:1.5;margin:9px 0;color:#dae2e5}.card-details{width:100%;margin-top:6px}.stat-panel,.rule-panel{background:#263541;padding:12px;border-left:3px solid #dab977;border-radius:5px}.card-lore{font-style:italic}#sheetBody h4{margin:18px 0 8px;color:#e7c780}textarea{display:block;width:100%;min-height:125px;resize:vertical;margin:10px 0 14px;padding:12px;background:#111c26;color:#edf1ef;border:1px solid #758491;border-radius:6px;overflow-wrap:anywhere;font:14px/1.5 monospace}textarea:focus-visible{outline:3px solid #87d8ef}#importError{color:#ffb4a8}#importPreview{overflow-wrap:anywhere}.product[data-device=phone] .catalog{grid-template-columns:1fr}@media(max-width:700px){.catalog{grid-template-columns:1fr}.sharetools{padding:0 14px 14px}.choices:has(.choice:nth-child(3):last-child){grid-template-columns:1fr}}
 .product[data-device=phone] .choices:has(.choice:nth-child(3):last-child){grid-template-columns:1fr}.choices:has(.choice:nth-child(3):last-child) .choice small{background:#101b27ed;padding:10px;border-radius:5px}
+/* Capitals are reading cards: artwork and rules occupy separate areas. */
+.product .capital-choices{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:stretch}
+.product .capital-choice{display:flex;flex-direction:column;padding:0;min-height:0;background:#17232f}
+.product .capital-choice:after{display:none}
+.product .capital-choice img{position:static;width:100%;height:145px;object-fit:cover;opacity:1;z-index:auto}
+.product .capital-copy{display:flex;flex-direction:column;flex:1;padding:22px;text-align:left}
+.product .capital-copy b{margin:0;font:24px/1.25 Georgia,serif}
+.capital-stats{display:block;margin-top:10px;color:#bdcdd6;font-size:14px}
+.capital-passive-name{display:block;margin:24px 0 10px;color:#e7c780;font-size:17px;font-weight:700}
+.capital-passive-text{display:block;font-size:17px;line-height:1.7;color:#f0f3f4;overflow-wrap:break-word}
+.capital-selection{display:block;margin-top:auto;padding-top:24px;color:#e7c780;font-size:14px}
+.product[data-device=phone] .capital-choices{grid-template-columns:1fr;gap:20px}
+.product[data-device=phone] .capital-copy{padding:22px}
+@media(max-width:900px){.product .capital-choices{grid-template-columns:1fr}.product .capital-choice img{height:160px}}

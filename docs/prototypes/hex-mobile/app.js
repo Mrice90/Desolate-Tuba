@@ -118,7 +118,15 @@
    const choices=document.createElement('div');choices.className='choices';stage.append(choices);
    if(state.step===0)for(const f of factions)choices.append(choice(title(f),identities[f],art(capOf(f)),state.primary===f,()=>{if(state.primary!==f&&deckSize()>0&&!confirm('Changing faction removes cards that no longer belong to the primary faction, ally, or Neutral. Continue?'))return;state.primary=f;if(state.ally===f)state.ally=null;state.capital=capOf(f).id;discardIneligible();renderDeck();}));
    if(state.step===1){choices.append(choice('No ally','Use your primary faction and Neutral cards.',null,!state.ally,()=>changeAlly(null)));for(const f of factions.filter(f=>f!==state.primary))choices.append(choice(title(f),identities[f],art(capOf(f)),state.ally===f,()=>changeAlly(f)));}
-   if(state.step===2)for(const cap of capitals.filter(c=>c.faction===state.primary))choices.append(choice(cap.name,cap.hitPoints+' HP · +1 GP/turn — '+cap.passiveName+': '+cap.passiveText,art(cap),state.capital===cap.id,()=>{state.capital=cap.id;renderDeck();}));
+   if(state.step===2){
+    choices.classList.add('capital-choices');
+    for(const cap of capitals.filter(c=>c.faction===state.primary)){
+     const button=choice(cap.name,'',art(cap),state.capital===cap.id,()=>{state.capital=cap.id;renderDeck();});
+     button.classList.add('capital-choice');
+     button.innerHTML=`<img src="${art(cap)}" alt=""><span class="capital-copy"><b>${esc(cap.name)}</b><span class="capital-stats">${cap.hitPoints} HP · +1 GP/turn</span><span class="capital-passive-name">${esc(cap.passiveName)}</span><span class="capital-passive-text">${esc(cap.passiveText)}</span><span class="capital-selection">${state.capital===cap.id?'✓ Selected Capital':'Choose this Capital'}</span></span>`;
+     choices.append(button);
+    }
+   }
   } else renderCatalog(stage);
   $('deckStatus').textContent=state.step===0?'Primary · '+title(state.primary):state.step===1?(state.ally?'Ally · '+title(state.ally):'No ally selected'):state.step===2?capitals.find(c=>c.id===state.capital).name:deckErrors().length?'Draft needs more cards.':'Deck composition valid · prototype draft';
   $('next').disabled=state.step===3&&deckErrors().length>0;
