@@ -14,7 +14,7 @@ public final class GuiScreenshotHarness {
 
     public static void main(String[] args) throws Exception {
         Path outputDirectory = Path.of(args.length == 0 ? "build/screenshots" : args[0]);
-        for (int[] size : new int[][] {{1366, 768}, {1920, 1080}, {1100, 700}}) {
+        for (int[] size : new int[][] {{1280, 650}, {1366, 768}, {1920, 1080}, {1100, 700}}) {
             for (String scenario : STATIC_SCENARIOS) {
                 SwingUtilities.invokeAndWait(() -> capture(outputDirectory, scenario, size[0], size[1]));
             }
@@ -31,7 +31,7 @@ public final class GuiScreenshotHarness {
         InfiniteConquestGui gui = new InfiniteConquestGui(true);
         try {
             prepare(gui, scenario);
-            gui.prepareCaptureSize(width, height, height >= 768 && !scenario.equals("expanded-hand"));
+            gui.prepareCaptureSize(width, height, !scenario.equals("expanded-hand"));
             gui.captureScreenshot(outputDirectory.resolve(scenario + "-" + width + "x" + height + ".png"));
         } finally {
             gui.dispose();

@@ -15,7 +15,7 @@ Choose your faction and Capital, place the Capital, and start a match. Select a 
 
 ## Automated checks
 
-The screenshot harness renders exact client areas at 1366×768, 1920×1080, and 1100×700. It captures opening, selected hand, expanded hand, and a synthetic crowded board, plus motion examples. Normal 1366×768 and 1920×1080 captures assert all 24 cells lie inside the viewport. The smaller size permits scrolling. Expanded Hand intentionally prioritizes inspection; collapsing restores the board. These are client-area renders, not certification of monitor size, Windows scaling, or window decorations.
+The screenshot harness renders exact client areas at 1280×650, 1366×768, 1920×1080, and 1100×700. It captures opening, selected hand, expanded hand, and a synthetic crowded board, plus motion examples. Every normal-size capture asserts all 24 cells lie inside the viewport. The 1280×650 case accounts for taskbar and window borders on a 1280×720 screen. Expanded Hand intentionally prioritizes inspection; collapsing restores the board. These are client-area renders, not certification of every Windows scaling configuration. F4 toggles board-only view; Esc returns to the HUD and hand.
 
 The crowded fixture deliberately populates stacks to stress layout; it is not a replay of a legal match. Motion previews demonstrate rendering, not end-to-end combat correctness. Rules tests cover engine behavior independently.
 

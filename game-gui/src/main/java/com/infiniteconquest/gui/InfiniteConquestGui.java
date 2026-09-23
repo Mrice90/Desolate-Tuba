@@ -70,7 +70,6 @@ public final class InfiniteConquestGui extends JFrame {
     private JComponent actionArea;
     private JComponent handArea;
     private JButton muteButton;
-    private JButton boardFullScreenButton;
     private JButton handExpandButton;
     private JButton endTurnButton;
     private final JLabel recentAction = new JLabel("Recent actions appear here — open History for the complete record.");
@@ -85,7 +84,7 @@ public final class InfiniteConquestGui extends JFrame {
         super("Infinite Conquest");
         presentationQueue = new PresentationQueue(this::playPresentation);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(1100, 700));
+        setMinimumSize(new Dimension(1100, 640));
         setSize(1500, 980);
         if (!screenshotMode) setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
@@ -104,9 +103,9 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private JComponent buildScreen() {
-        screenRoot = new JPanel(new BorderLayout(SCREEN_GAP, SCREEN_GAP));
+        screenRoot = new JPanel(new BorderLayout(4, 4));
         screenRoot.setBackground(INK);
-        screenRoot.setBorder(new EmptyBorder(SCREEN_GAP, SCREEN_GAP, SCREEN_GAP, SCREEN_GAP));
+        screenRoot.setBorder(new EmptyBorder(4, 4, 4, 4));
         headerArea = buildHeader();
         actionArea = buildActions();
         handArea = buildHand();
@@ -310,8 +309,11 @@ public final class InfiniteConquestGui extends JFrame {
         JMenuItem history = new JMenuItem("Action History");
         history.setAccelerator(KeyStroke.getKeyStroke("F3"));
         history.addActionListener(event -> openActionPanel(1));
+        JMenuItem boardView = new JMenuItem("Toggle Board View");
+        boardView.setAccelerator(KeyStroke.getKeyStroke("F4"));
+        boardView.addActionListener(event -> toggleBoardFullScreen());
         game.add(decks); game.addSeparator(); game.add(newGame); game.add(fullscreen);
-        game.add(actions); game.add(history); bar.add(game);
+        game.add(actions); game.add(history); game.add(boardView); bar.add(game);
         return bar;
     }
 
@@ -330,13 +332,6 @@ public final class InfiniteConquestGui extends JFrame {
 
     private JComponent buildBoard() {
         JPanel surround = panel(new BorderLayout(0, 8));
-        JLabel enemy = section("PLAYER 2 — BOT TERRITORY", new Color(239, 106, 122));
-        JLabel human = section("PLAYER 1 — YOUR TERRITORY", new Color(87, 203, 234));
-        boardFullScreenButton = button("Board Fullscreen", e -> toggleBoardFullScreen());
-        JPanel boardHeader = new JPanel(new BorderLayout(8, 0));
-        boardHeader.setOpaque(false);
-        boardHeader.add(enemy, BorderLayout.WEST);
-        boardHeader.add(boardFullScreenButton, BorderLayout.EAST);
         boardPanel.setOpaque(false);
         boardPanel.setBorder(new EmptyBorder(8, 8, 8, 8));
         for (int y = BoardPosition.HEIGHT - 1; y >= 0; y--) {
@@ -354,7 +349,6 @@ public final class InfiniteConquestGui extends JFrame {
                 boardPanel.add(cell);
             }
         }
-        surround.add(boardHeader, BorderLayout.NORTH);
         boardStage.setOpaque(true);
         boardStage.setBackground(BOARD_STAGE);
         boardStage.add(boardPanel);
@@ -371,7 +365,6 @@ public final class InfiniteConquestGui extends JFrame {
             }
         });
         surround.add(boardScroll, BorderLayout.CENTER);
-        surround.add(human, BorderLayout.SOUTH);
         return surround;
     }
 
@@ -386,7 +379,6 @@ public final class InfiniteConquestGui extends JFrame {
         headerArea.setVisible(!boardFullScreen);
         actionArea.setVisible(!boardFullScreen);
         handArea.setVisible(!boardFullScreen);
-        boardFullScreenButton.setText(boardFullScreen ? "Exit Board Fullscreen" : "Board Fullscreen");
         boardLayout.setHgap(boardFullScreen ? 4 : 6);
         boardLayout.setVgap(boardFullScreen ? 4 : 6);
         refreshBoard();
@@ -397,7 +389,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void fitBoardToViewport(Dimension available) {
         Dimension boardSize = new Dimension(Math.max(640, available.width - 4),
-                Math.max(330, available.height - 4));
+                Math.max(300, available.height - 4));
         boardPanel.setPreferredSize(boardSize);
         boardPanel.setMinimumSize(boardSize);
         boardPanel.setMaximumSize(boardSize);
@@ -1067,9 +1059,9 @@ public final class InfiniteConquestGui extends JFrame {
                     : "HP " + Math.max(0, def.hitPoints() - card.damage()) + "/" + def.hitPoints()
                     + (card.damage() > 0 ? "  <font color='#ff9b73'>DMG " + card.damage() + "</font>" : "");
             EffectBadge badge = effectBadges.get(position);
-            cell.setText("<html><font size='-2' color='#aebdd0'>" + position.x() + "," + position.y()
-                    + " • P" + (card.owner() + 1) + " • " + compactType(def.type()) + (stack > 1 ? " • S" + stack : "") + "</font><br>"
-                    + "<b>" + html(compactName(def.name(), 20)) + "</b><br><font size='-2'>" + stats + "</font>"
+            cell.setText("<html><b>" + html(compactName(def.name(), 18)) + "</b>"
+                    + " <font size='-2' color='#aebdd0'>P" + (card.owner() + 1) + (stack > 1 ? " • S" + stack : "") + "</font>"
+                    + "<br><font size='-2'>" + stats + "</font>"
                     + (badge == null ? "" : " <b><font color='" + badge.color() + "'>" + html(badge.text()) + "</font></b>")
                     + (intent == null ? "" : " <b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
             cell.setToolTipText("<html><b>" + html(def.name()) + "</b><br>" + html(keywordLine(def))

@@ -18,7 +18,7 @@ The graphical client uses the same tested engine as the CLI. Choose both faction
 - Use **Expand Hand** for an art-focused hand tray with substantially larger cards and high-resolution 3:2 artwork.
 - Right-click a card in either hand view and choose **View full card** to open its complete card-format inspection view.
 - Right-click an occupied battlefield cell to inspect every card in its stack, shown top-first. Right-click any card row in that inspector to open a large card-format view with art, current stats, keywords, and abilities.
-- The compact overview shows all 24 battlefield cells at a 1366×768 client area. Smaller windows may scroll. **Board Fullscreen** gives the battlefield more space; `Esc` restores the interface.
+- The compact overview shows all 24 battlefield cells at a 1280×650 client area, accommodating window borders and the taskbar on a 1280×720 screen. **Game → Toggle Board View** (`F4`) gives the battlefield more space; `Esc` restores the interface.
 - Both players' Capital art, faction, GP held, and recurring income appear in the top HUD alongside End Turn. Income is based on currently controlled cards, not guaranteed future income.
 - **Actions** (`F2`) opens the legal-action window; use arrow keys and Enter to execute. **History** (`F3`) opens the chronological log. A compact icon-and-text strip shows the most recent entry, including income, spending, and reactions.
 - Destination labels and colors distinguish movement, ranged or melee attacks, spells, top-of-stack deployment, and Mole burrowing. Ambiguous stack drops ask you to choose the exact action.
