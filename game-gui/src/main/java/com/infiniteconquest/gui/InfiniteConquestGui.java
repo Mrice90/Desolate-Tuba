@@ -159,7 +159,16 @@ public final class InfiniteConquestGui extends JFrame {
     void prepareScreenshotScenario(String scenario) {
         selectedHand = null;
         selectedCell = null;
-        if ("selected-hand".equals(scenario) && !state.player(0).hand().isEmpty()) selectedHand = 0;
+        if ("selected-hand".equals(scenario)) {
+            List<String> legal = legalCommands();
+            for (int index = 0; index < state.player(0).hand().size(); index++) {
+                final int candidate = index;
+                if (legal.stream().anyMatch(command -> command.matches("(play|burrow|cast) " + candidate + "( |$)"))) {
+                    selectedHand = candidate;
+                    break;
+                }
+            }
+        }
         if ("expanded-hand".equals(scenario) && !handExpanded) toggleHandExpansion();
         refresh();
         validate();
@@ -457,6 +466,7 @@ public final class InfiniteConquestGui extends JFrame {
         } else {
             completeBotMulligan(0);
             completeBotMulligan(1);
+            advanceScreenshotToHumanTurn();
         }
         lastSystemEvent = state.events().stream().mapToLong(GameEvent::sequence).max().orElse(-1);
         addHistory("Match", title(humanFaction) + " vs " + title(botFaction)
@@ -465,6 +475,16 @@ public final class InfiniteConquestGui extends JFrame {
                 + " starts. Player 1 begins at 0 GP; Player 2 begins at 1 GP; Capitals generate 1 GP per turn.");
         refresh();
         if (interactiveOpening && isAutomatedPlayer(state.activePlayer())) SwingUtilities.invokeLater(this::runBotTurn);
+    }
+
+    private void advanceScreenshotToHumanTurn() {
+        int guard = 0;
+        while (state.activePlayer() != 0 && state.phase() != Phase.GAME_OVER && guard++ < 64) {
+            bot.takeNextAction(state, commands, state.activePlayer());
+        }
+        if (state.activePlayer() != 0) {
+            throw new IllegalStateException("Screenshot fixture could not reach the human turn");
+        }
     }
 
     private void runOpeningMulligans() {
