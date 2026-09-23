@@ -2,9 +2,11 @@
 
 `CardArtFactory` uses a hybrid art pipeline. Completed rollout categories load their own painterly illustrations, while cards still awaiting bespoke art use the deterministic runtime compositor. The same stable card ID always produces the same visual at every supported display size.
 
-The Character art rollout covers all 24 Zeus Characters. Poseidon's Character rollout now covers all 24 playable Characters, from Tidepool Surveyor through the apex Kraken Prime Avatar. Its core, keyword, tactical, ability, and apex Character groups all use unique painterly illustrations; Poseidon Spells, Lands, and Structures continue to use the procedural compositor until their category rollouts.
+The Character art rollout covers all 24 Zeus Characters. Poseidon's Character rollout now covers all 24 playable Characters, from Tidepool Surveyor through the apex Kraken Prime Avatar. Its core, keyword, tactical, ability, and apex Character groups all use unique painterly illustrations.
 
-The Spell art rollout covers all 10 Zeus Spells: five core tactical effects and their five apex-scale counterparts. The Land rollout covers all 15 playable Zeus Lands, including the five retained tutor developments. The Structure rollout likewise covers all 15 playable Zeus Structures. Together with 24 Characters, this completes bespoke art for all 64 playable Zeus deck cards; its three Capitals are also fully illustrated.
+The Spell art rollout covers all 10 Zeus Spells and all 6 playable Poseidon Spells. Poseidon's spell set spans five core tactical effects plus the apex Maelstrom Verdict, using abyssal navy, bioluminescent cyan, and pearl-white organic-tech imagery. Poseidon Lands and Structures continue to use the procedural compositor until their category rollouts.
+
+The Land rollout covers all 15 playable Zeus Lands, including the five retained tutor developments. The Structure rollout likewise covers all 15 playable Zeus Structures. Together with 24 Characters and 10 Spells, this completes bespoke art for all 64 playable Zeus deck cards; its three Capitals are also fully illustrated.
 
 ## Painted Capitals
 

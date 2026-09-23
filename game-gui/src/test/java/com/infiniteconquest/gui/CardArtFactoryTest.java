@@ -51,6 +51,10 @@ class CardArtFactoryTest {
             "zeus_structure_oracle_of_storms", "zeus_apex_worldstorm_spire",
             "zeus_tutor_structure_1", "zeus_tutor_structure_2", "zeus_tutor_structure_3",
             "zeus_tutor_structure_4", "zeus_tutor_structure_5");
+    private static final List<String> PAINTED_POSEIDON_SPELLS = List.of(
+            "poseidon_crushing_depths", "poseidon_erode_foundation",
+            "poseidon_restorative_tide", "poseidon_undertow_recall",
+            "poseidon_tidal_armor", "poseidon_apex_maelstrom_verdict");
     private static final List<String> PAINTED_POSEIDON_CHARACTERS = List.of(
             "poseidon_tidepool_surveyor", "poseidon_nereid_current_rider",
             "poseidon_reefline_defender", "poseidon_undertow_stalker",
@@ -159,6 +163,19 @@ class CardArtFactoryTest {
         assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
         assertEquals(190, CardArtFactory.iconFor(pylon, 190, 78).getIconWidth());
         assertEquals(56, CardArtFactory.boardIconFor(pylon).getIconHeight());
+    }
+
+    @Test void everyPlayablePoseidonSpellHasPaintedArt() {
+        List<CardDefinition> spells = new PrototypeCardPool().cardsForFaction("POSEIDON").stream()
+                .filter(card -> card.type() == CardType.SPELL).toList();
+        assertEquals(PAINTED_POSEIDON_SPELLS.size(), spells.size());
+        for (String id : PAINTED_POSEIDON_SPELLS) {
+            assertNotNull(CardArtFactory.class.getResource("/art/spells/" + id + ".jpg"), id);
+            assertTrue(CardArtFactory.hasPaintedArt(new PrototypeCardPool().require(id)), id);
+        }
+        CardDefinition awaitingArt = new CardDefinition("poseidon_future_spell", "Future Spell",
+                CardType.SPELL, "POSEIDON", 1, 0, 0, 0, 0, 0);
+        assertFalse(CardArtFactory.hasPaintedArt(awaitingArt));
     }
 
     @Test void everyPlayablePoseidonCharacterHasPaintedArt() {
