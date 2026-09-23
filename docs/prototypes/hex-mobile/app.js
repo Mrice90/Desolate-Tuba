@@ -17,16 +17,16 @@
   const qa=a.c-(a.r-(a.r&1))/2, qb=b.c-(b.r-(b.r&1))/2;
   return Math.max(Math.abs(qa-qb),Math.abs(a.r-b.r),Math.abs(qa+a.r-qb-b.r));
  };
- function deckErrors() {
+ function deckErrors(candidate=state) {
   const errors=[];
-  if(!factions.includes(state.primary)) errors.push('Choose a primary faction.');
-  if(state.ally && (!factions.includes(state.ally)||state.ally===state.primary)) errors.push('Choose a different faction as your only ally, or choose no ally.');
-  if(!capitals.some(c=>c.id===state.capital&&c.faction===state.primary)) errors.push('Your Capital must belong to your primary faction.');
-  if(deckSize()<40) errors.push('Add '+(40-deckSize())+' more cards to reach 40.');
-  if(Object.keys(state.counts).filter(id=>state.counts[id]>0).length<10) errors.push('Use at least 10 different cards.');
-  for(const [id,count] of Object.entries(state.counts)) {
+  if(!factions.includes(candidate.primary)) errors.push('Choose a primary faction.');
+  if(candidate.ally && (!factions.includes(candidate.ally)||candidate.ally===candidate.primary)) errors.push('Choose a different faction as your only ally, or choose no ally.');
+  if(!capitals.some(c=>c.id===candidate.capital&&c.faction===candidate.primary)) errors.push('Your Capital must belong to your primary faction.');
+  if(Object.values(candidate.counts).reduce((a,b)=>a+b,0)<40) errors.push('Add '+(40-Object.values(candidate.counts).reduce((a,b)=>a+b,0))+' more cards to reach 40.');
+  if(Object.keys(candidate.counts).filter(id=>candidate.counts[id]>0).length<10) errors.push('Use at least 10 different cards.');
+  for(const [id,count] of Object.entries(candidate.counts)) {
    const card=cards.find(c=>c.id===id);
-   if(!card||!eligible(card)||count<1||count>4||!Number.isInteger(count)) errors.push('Invalid card selection: '+id);
+   if(!card||!(card.faction===candidate.primary||card.faction===candidate.ally||card.faction==='NEUTRAL')||count<1||count>4||!Number.isInteger(count)) errors.push('Invalid card selection: '+id);
   }
   return errors;
  }
@@ -99,7 +99,7 @@
   const pool=cards.filter(c=>c.faction===state.primary&&c.type==='CHARACTER').slice(0,3);
   if(state.ally)pool.push(cards.find(c=>c.faction===state.ally&&c.type==='CHARACTER'));
   $('hand').innerHTML='';
-  for(const card of pool){const b=document.createElement('button');b.className='handcard';b.innerHTML=`<img src="${art(card)}" alt=""><i>${card.cost}</i><span>${esc(card.name)}</span>`;b.onclick=()=>sheet(card.name,`<img class="sheet-art" src="${art(card)}" alt=""><p>${esc(card.faction)} · ${card.cost} GP · Attack ${card.attack} · Defense ${card.defense}</p><p>Tap inspection replaces right-click on phones. Card play is not implemented in this visual study.</p>`);$('hand').append(b);}
+  for(const card of pool){const b=document.createElement('button');b.className='handcard';b.innerHTML=`<img src="${art(card)}" alt=""><i>${card.cost}</i><span>${esc(card.name)}</span>`;b.onclick=()=>inspectCard(card);$('hand').append(b);}
  }
  $('history').onclick=()=>sheet('Recent actions','<div class="history-entry">↻ Turn start · You</div><div class="history-entry">+ Income · 3 GP from developments</div><div class="history-entry">○ Selection · '+esc($('inspectName').textContent)+'</div><p>Illustrative history. No match is running.</p>');
  $('endTurn').onclick=()=>sheet('Prototype only','<p>This concept tests layout and inspection. It does not run a match or end a real turn.</p>');
@@ -118,7 +118,7 @@
    const choices=document.createElement('div');choices.className='choices';stage.append(choices);
    if(state.step===0)for(const f of factions)choices.append(choice(title(f),identities[f],art(capOf(f)),state.primary===f,()=>{if(state.primary!==f&&deckSize()>0&&!confirm('Changing faction removes cards that no longer belong to the primary faction, ally, or Neutral. Continue?'))return;state.primary=f;if(state.ally===f)state.ally=null;state.capital=capOf(f).id;discardIneligible();renderDeck();}));
    if(state.step===1){choices.append(choice('No ally','Use your primary faction and Neutral cards.',null,!state.ally,()=>changeAlly(null)));for(const f of factions.filter(f=>f!==state.primary))choices.append(choice(title(f),identities[f],art(capOf(f)),state.ally===f,()=>changeAlly(f)));}
-   if(state.step===2)for(const cap of capitals.filter(c=>c.faction===state.primary))choices.append(choice(cap.name,cap.description,art(cap),state.capital===cap.id,()=>{state.capital=cap.id;renderDeck();}));
+   if(state.step===2)for(const cap of capitals.filter(c=>c.faction===state.primary))choices.append(choice(cap.name,cap.hitPoints+' HP · +1 GP/turn — '+cap.passiveName+': '+cap.passiveText,art(cap),state.capital===cap.id,()=>{state.capital=cap.id;renderDeck();}));
   } else renderCatalog(stage);
   $('deckStatus').textContent=state.step===0?'Primary · '+title(state.primary):state.step===1?(state.ally?'Ally · '+title(state.ally):'No ally selected'):state.step===2?capitals.find(c=>c.id===state.capital).name:deckErrors().length?'Draft needs more cards.':'Deck composition valid · prototype draft';
   $('next').disabled=state.step===3&&deckErrors().length>0;
@@ -129,10 +129,10 @@
   const errors=document.createElement('div');errors.className='errors';errors.textContent=deckErrors().join(' ');stage.append(errors);
   const toolbar=document.createElement('div');toolbar.className='decktools';toolbar.innerHTML='<input id="search" aria-label="Search eligible cards" placeholder="Search eligible cards" value="'+esc(state.filter)+'"><button id="sampleDeck">Fill sample deck</button><button id="clearDeck">Clear</button>';stage.append(toolbar);
   const list=document.createElement('div');list.className='catalog';stage.append(list);
-  function fill(){list.replaceChildren();for(const card of cards.filter(eligible).filter(c=>(c.name+' '+c.faction+' '+c.type).toLowerCase().includes(state.filter.toLowerCase()))){
+  function fill(){list.replaceChildren();for(const card of cards.filter(eligible).filter(c=>(c.name+' '+c.faction+' '+c.type+' '+cardRules(c).join(' ')).toLowerCase().includes(state.filter.toLowerCase()))){
    const count=state.counts[card.id]||0,row=document.createElement('div');row.className='catalog-card';row.dataset.faction=card.faction;
    row.innerHTML=`<img loading="lazy" src="${art(card)}" alt=""><div class="cardinfo"><b>${esc(card.name)}</b><small>${esc(card.faction)} · ${esc(card.type)}<br>${card.cost} ${card.type==='LAND'||card.type==='STRUCTURE'?'development turn':'GP'}</small></div><div class="countcontrols"><button aria-label="Add ${esc(card.name)}" ${count>=4?'disabled':''}>+</button><span>${count}/4</span><button aria-label="Remove ${esc(card.name)}" ${!count?'disabled':''}>−</button></div>`;
-   const buttons=row.querySelectorAll('button');buttons[0].onclick=()=>{state.counts[card.id]=count+1;renderDeck();};buttons[1].onclick=()=>{if(count===1)delete state.counts[card.id];else state.counts[card.id]=count-1;renderDeck();};list.append(row);
+   const info=row.querySelector('.cardinfo');info.insertAdjacentHTML('beforeend','<p class="card-summary">'+esc(cardStats(card))+'</p><p class="card-summary">'+esc(cardRules(card).join(' '))+'</p>');const details=document.createElement('button');details.className='card-details';details.textContent='View card';details.setAttribute('aria-label','View '+card.name);details.onclick=()=>inspectCard(card);info.append(details);const buttons=row.querySelectorAll('.countcontrols button');buttons[0].onclick=()=>{state.counts[card.id]=count+1;renderDeck();};buttons[1].onclick=()=>{if(count===1)delete state.counts[card.id];else state.counts[card.id]=count-1;renderDeck();};list.append(row);
   }}fill();
   $('search').oninput=e=>{state.filter=e.target.value;fill();};
   $('sampleDeck').onclick=()=>{state.counts={};const primary=cards.filter(c=>c.faction===state.primary).slice(0,state.ally?7:10);const ally=state.ally?cards.filter(c=>c.faction===state.ally).slice(0,3):[];for(const c of [...primary,...ally])state.counts[c.id]=4;renderDeck();};
@@ -140,7 +140,52 @@
  }
  $('back').onclick=()=>{state.step=Math.max(0,state.step-1);renderDeck();};
  $('next').onclick=()=>{if(state.step<3){state.step++;renderDeck();return;}if(deckErrors().length)return;const draft={kind:'infinite-conquest-design-draft',schemaVersion:2,name:title(state.primary)+' alliance',primaryFaction:state.primary,allyFaction:state.ally,capitalId:state.capital,cards:Object.entries(state.counts).map(([id,copies])=>({id,copies}))};try{localStorage.setItem('infinite-conquest-hex-deck-draft',JSON.stringify(draft));sheet('Draft saved','<p>Your '+deckSize()+'-card draft is saved in this browser.</p><p>This is a design prototype; the desktop game cannot import this format yet.</p>');}catch(e){sheet('Storage unavailable','<p>Your browser blocked local storage. The draft remains available in this open page.</p>');}};
- window.ICPrototype={state,distance,deckErrors,eligible,cards,renderDeck,renderShell,sampleUnits};
+
+ const words = text => String(text).toLowerCase().replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
+ function cardStats(card) {
+  if(card.type==='CHARACTER')return `Attack ${card.attack} · Defense ${card.defense} · Move ${card.movement} · Range ${card.range}`;
+  if(card.type==='LAND'||card.type==='STRUCTURE'||card.type==='CAPITAL')return `${card.hitPoints} HP · +${card.gpGeneration} GP/turn`;
+  return 'Spell · resolves when cast';
+ }
+ function cardRules(card) {
+  const rules=[];
+  if(card.passiveText)rules.push(card.passiveName+': '+card.passiveText);
+  if(card.keywords?.length)rules.push('Keywords: '+card.keywords.map(words).join(', ')+'.');
+  for(const effect of card.effects||[])rules.push(`${words(effect.type)} ${effect.amount} — ${words(effect.target)}.`);
+  for(const a of card.abilities||[]) {
+   const timing={ENTERS_PLAY:'When this enters play',DESTROYED:'When destroyed',PASSIVE:'Start of your turn',ACTIVATED:`Activate once per turn (${a.gpCost} GP)`}[a.trigger];
+   const effect={DRAW_CARD:`draw ${a.amount} card(s)`,DRAW_CHARACTER:'draw a random Character from your deck',DRAW_STRUCTURE:'draw a random Structure from your deck',GAIN_GP:`gain ${a.amount} GP`,HEAL_SELF:`heal this card for ${a.amount}`,HEAL_CAPITAL:`heal your Capital for ${a.amount}`,BUFF_SELF_ATTACK:`gain +${a.amount} Attack this turn`,BUFF_SELF_DEFENSE:`gain +${a.amount} Defense this turn`,DAMAGE_ENEMY_CAPITAL:`deal ${a.amount} damage to the enemy Capital`}[a.effect];
+   rules.push(timing+': '+effect+'.');
+  }
+  const development={DRAW_ON_DEPLOY:'Deploy: draw 1 card.',HEAL_CAPITAL_ON_DEPLOY:'Deploy: heal your Capital for 3.',SELF_REPAIR:'Start of your turn: heal 2 damage from this card.'}[card.developmentPassive];
+  if(development)rules.push(development);
+  return rules;
+ }
+ function inspectCard(card) {
+  const cost=card.type==='LAND'||card.type==='STRUCTURE'?'Free · available from turn '+Math.max(1,card.cost):card.cost+' GP';
+  sheet(card.name,`<img class="sheet-art" src="${art(card)}" alt=""><p class="card-meta">${esc(words(card.faction))} · ${esc(words(card.type))} · ${cost}</p><p class="stat-panel">${esc(cardStats(card))}</p><h4>Abilities & effects</h4>${cardRules(card).map(r=>'<p class="rule-panel">'+esc(r)+'</p>').join('')||'<p>No additional abilities.</p>'}${card.rulesText?'<p>'+esc(card.rulesText)+'</p>':''}${card.description&&card.description!==card.rulesText?'<p class="card-lore">'+esc(card.description)+'</p>':''}`);
+ }
+ $('shareDeck').onclick=()=>{
+  const errors=deckErrors();if(errors.length){sheet('Finish your deck first','<p>'+esc(errors.join(' '))+'</p>');return;}
+  const code=ICDeckCode.encode(state);
+  sheet('Share your deck','<p>This code recreates your faction, ally, Capital and every card. Share the whole code.</p><label for="deckCode">Deck code</label><textarea id="deckCode" readonly spellcheck="false"></textarea><button id="copyCode">Copy deck code</button><p id="copyStatus" role="status"></p><p>Works in this prototype. Desktop game import is not available yet.</p>');
+  $('deckCode').value=code;
+  $('copyCode').onclick=async()=>{try{await navigator.clipboard.writeText(code);$('copyStatus').textContent='Deck code copied.';}catch{$('deckCode').focus();$('deckCode').select();$('copyStatus').textContent='Code selected. Use Copy on your device.';}};
+ };
+ $('importDeck').onclick=()=>{
+  sheet('Import a shared deck','<label for="importCode">Paste the complete deck code</label><textarea id="importCode" spellcheck="false" maxlength="64000"></textarea><button id="previewCode">Preview deck</button><p id="importError" role="alert"></p><div id="importPreview"></div>');
+  $('importCode').oninput=()=>{$('importPreview').replaceChildren();$('importError').textContent='';};
+  $('previewCode').onclick=()=>{
+   $('importPreview').replaceChildren();$('importError').textContent='';
+   try {
+    const candidate=ICDeckCode.decode($('importCode').value,deckErrors),cap=capitals.find(c=>c.id===candidate.capital);
+    $('importPreview').innerHTML='<h4>'+esc(title(candidate.primary)+(candidate.ally?' + '+title(candidate.ally):' · No ally'))+'</h4><p>'+esc(cap.name)+'</p><p>'+esc(cap.passiveText)+'</p><ul>'+Object.entries(candidate.counts).map(([id,n])=>'<li>'+n+' × '+esc(cards.find(c=>c.id===id).name)+'</li>').join('')+'</ul><p>Import replaces the draft currently on screen. Save draft afterward to keep it in this browser.</p><button id="applyImport">Replace draft with this deck</button>';
+    $('applyImport').onclick=()=>{Object.assign(state,candidate,{step:3,view:'deck',filter:''});$('sheet').close();renderShell();renderDeck();};
+   }catch(error){$('importError').textContent=error.message;}
+  };
+ };
+
+ window.ICPrototype={state,cardRules,cardStats,inspectCard,distance,deckErrors,eligible,cards,renderDeck,renderShell,sampleUnits};
  window.addEventListener('resize',()=>renderBattle());
  renderShell();renderDeck();
 })();

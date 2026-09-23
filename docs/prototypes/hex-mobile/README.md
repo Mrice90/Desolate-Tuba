@@ -15,3 +15,7 @@ See [the rules, mobile, alliance, and business proposal](../../hex-mobile-and-al
 With Node and Playwright available, run `node docs/prototypes/hex-mobile/verify.cjs` from the repository root. Optionally set `IC_BROWSER_EXECUTABLE` to a local Chromium-based browser executable. The script checks geometry, deck composition, inspection, saving, desktop height, image loading, and phone overflow/touch bounds. It writes seven preview images to `build/hex-prototype/`.
 
 Passing browser checks do not establish physical-device playability, native-store readiness, or game balance. Existing game rules and the desktop build are unchanged by these files.
+
+Capital choices display engine passive descriptions. Card inspection includes movement, range, keywords, spell effects, abilities and income. Run python generate-data.py to refresh metadata from game sources while preserving art choices.
+
+Share deck exports a self-contained ICD1 code using stable card IDs and an accidental-copy-error checksum (not authentication). Import validates deck composition and previews before replacing the open draft. Codes do not grant DLC ownership, run a match, or import into the desktop game. Future incompatible formats require a new version prefix.

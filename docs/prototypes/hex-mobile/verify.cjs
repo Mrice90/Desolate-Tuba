@@ -42,6 +42,23 @@ const {chromium} = require('playwright');
  await page.click('#next');await page.click('#closeSheet');draft=await page.evaluate(()=>JSON.parse(localStorage.getItem('infinite-conquest-hex-deck-draft')));assert.equal(draft.allyFaction,'POSEIDON');
  const invalid=await page.evaluate(()=>{const s=ICPrototype.state;const bad=ICPrototype.cards.find(c=>c.faction==='ARES');s.counts[bad.id]=1;const rejected=ICPrototype.deckErrors().some(e=>e.includes('Invalid card'));delete s.counts[bad.id];return rejected;});assert.equal(invalid,true,'Reject a third faction even if injected');
  const identityChecks=await page.evaluate(()=>{const s=ICPrototype.state,ally=s.ally,capital=s.capital;s.ally=s.primary;const sameAlly=ICPrototype.deckErrors().some(e=>e.includes('different faction'));s.ally=ally;s.capital='ares_capital_red_citadel';const wrongCapital=ICPrototype.deckErrors().some(e=>e.includes('Capital must'));s.capital=capital;return {sameAlly,wrongCapital,unique:new Set(ICPrototype.cards.map(c=>c.id)).size===ICPrototype.cards.length};});assert.deepEqual(identityChecks,{sameAlly:true,wrongCapital:true,unique:true});
+ const codec=await page.evaluate(()=>{
+  const {state,deckErrors}=ICPrototype,code=ICDeckCode.encode(state);
+  const imported=ICDeckCode.decode(code,deckErrors);
+  const reversed={...state,counts:Object.fromEntries(Object.entries(state.counts).reverse())};
+  const rejected=[];
+  for(const bad of [code.slice(0,-1)+'x',code.replace('ICD1','ICD9'),ICDeckCode.encode({...state,ally:state.primary}),ICDeckCode.encode({...state,capital:'ares_capital_red_citadel'}),ICDeckCode.encode({...state,counts:{...state.counts,[ICPrototype.cards.find(c=>c.faction==='ARES').id]:1}}),ICDeckCode.encode({...state,counts:{[Object.keys(state.counts)[0]]:5}})]){
+   try{ICDeckCode.decode(bad,deckErrors);rejected.push(false);}catch{rejected.push(true);}
+  }
+  return {stable:ICDeckCode.encode(reversed)===code,roundtrip:ICDeckCode.encode(imported)===code,wrapped:ICDeckCode.encode(ICDeckCode.decode(code.replaceAll('.','.\n'),deckErrors))===code,rejected,passives:ICData.capitals.every(c=>c.passiveName&&c.passiveText),stats:ICPrototype.cards.every(c=>Number.isInteger(c.movement)&&Number.isInteger(c.range))};
+ });assert.deepEqual(codec,{stable:true,roundtrip:true,wrapped:true,rejected:Array(6).fill(true),passives:true,stats:true});
+ await page.click('#shareDeck');const shared=await page.inputValue('#deckCode');await page.click('#closeSheet');
+ await page.click('#importDeck');await page.fill('#importCode',shared);await page.click('#previewCode');assert.equal(await page.locator('#importPreview li').count(),10);await page.click('#closeSheet');
+ await page.click('#clearDeck');await page.click('#importDeck');await page.fill('#importCode','bad code');await page.click('#previewCode');assert.match(await page.textContent('#importError'),/Unsupported/);assert.equal(await page.evaluate(()=>Object.keys(ICPrototype.state.counts).length),0);
+ await page.fill('#importCode',shared);await page.click('#previewCode');await page.click('#applyImport');assert.equal(await page.evaluate(()=>ICDeckCode.encode(ICPrototype.state)),shared);
+ await page.locator('.card-details').first().click();assert.match(await page.textContent('#sheetBody'),/Attack.*Defense.*Move.*Range/);await page.screenshot({path:path.join(out,'card-inspection.png')});await page.click('#closeSheet');
+ await page.evaluate(()=>ICPrototype.inspectCard(ICPrototype.cards.find(c=>c.id==='zeus_ability_oracle_spire')));assert.match(await page.textContent('#sheetBody'),/2 GP.*draw 1/);await page.click('#closeSheet');
+ await page.click('#back');assert.match(await page.textContent('#deckStage'),/first Blink Character gains/);await page.locator('#product').screenshot({path:path.join(out,'capital-passives.png')});await page.click('#next');
  await page.locator('#product').screenshot({path:path.join(out,'allied-deck-phone.png')});
  for(const width of [320,360,390]){
   await page.setViewportSize({width,height:844});await page.click('#battleTab');

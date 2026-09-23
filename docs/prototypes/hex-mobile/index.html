@@ -20,11 +20,12 @@
  <section id="deckView" hidden aria-label="Deck creation concept">
   <div class="decktop"><div><span class="eyebrow">YOUR NEXT CONQUEST</span><h2>Forge an alliance.</h2></div><span id="deckCount">0 / 40 cards</span></div>
   <ol class="steps"><li class="active" data-step="0">1 <span>Faction</span></li><li data-step="1">2 <span>Ally</span></li><li data-step="2">3 <span>Capital</span></li><li data-step="3">4 <span>Deck</span></li></ol>
+  <div class="sharetools"><button id="shareDeck">Share deck</button><button id="importDeck">Import deck code</button></div>
   <div id="deckStage"></div>
   <div class="deckfooter"><button id="back">Back</button><span id="deckStatus" role="status">Choose your primary faction.</span><button class="gold" id="next">Continue</button></div>
  </section>
  <dialog id="sheet"><div class="sheethead"><h3 id="sheetTitle"></h3><button id="closeSheet" aria-label="Close inspection">Close</button></div><div id="sheetBody"></div></dialog>
 </main>
 <footer class="study-note"><b>Design checkpoint:</b> explore both directions, opening/crowded boards, phone view, and Faction → optional Ally → Capital → Deck. Sample deck drafts stay in this browser and cannot yet load in the game. No purchases are enabled.</footer>
-<script src="data.js"></script><script src="app.js"></script>
+<script src="data.js"></script><script src="deck-code.js"></script><script src="app.js"></script>
 </body></html>
