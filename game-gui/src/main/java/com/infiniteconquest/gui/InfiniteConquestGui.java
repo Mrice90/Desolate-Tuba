@@ -440,7 +440,7 @@ public final class InfiniteConquestGui extends JFrame {
                 deckForFaction(humanFaction), factionDecks.starter(botFaction),
                 humanCapital, botCapital, choice.humanCapitalPosition(), botCapitalPosition);
         commands = new CommandProcessor(state);
-        interaction.clearSelection();
+        interaction.reset();
         botRunning = false;
         winnerSoundPlayed = false;
         victoryDialogShown = false;
@@ -812,13 +812,13 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void selectHand(int index) {
-        if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
+        if (!canAcceptHumanInput()) return;
         interaction.toggleHand(index);
         refresh();
     }
 
     private void selectCell(BoardPosition position) {
-        if (playerOneBot || botRunning || state.phase() == Phase.GAME_OVER) return;
+        if (!canAcceptHumanInput()) return;
         interaction.toggleBoard(position);
         refresh();
     }
@@ -838,26 +838,35 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void executeHuman(String command) {
-        if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
-        if (!confirmOpportunityRisk(command)) return;
+        if (!canAcceptHumanInput() || !confirmOpportunityRisk(command)) return;
+        interaction.beginResolution();
         Map<UUID, BoardSnapshot> before = captureBoard();
         String result = commands.execute(command);
         showResolution(command, before);
         addHistory("You", describe(command));
         message(result);
-        interaction.clearSelection();
+        if (state.phase() == Phase.GAME_OVER) interaction.markGameOver();
+        else if (isAutomatedPlayer(state.activePlayer())) runBotTurn();
+        else interaction.finishResolution();
         refresh();
-        if (state.phase() != Phase.GAME_OVER && isAutomatedPlayer(state.activePlayer())) runBotTurn();
+    }
+
+    private boolean canAcceptHumanInput() {
+        return state != null && !playerOneBot && !botRunning && state.activePlayer() == 0
+                && state.phase() != Phase.GAME_OVER && interaction.acceptsHumanInput();
     }
 
     private void runBotTurn() {
         botRunning = true;
+        interaction.beginBotTurn();
         refresh();
         javax.swing.Timer timer = new javax.swing.Timer(380, null);
         timer.addActionListener(e -> {
             if (state.phase() == Phase.GAME_OVER || !isAutomatedPlayer(state.activePlayer())) {
                 timer.stop();
                 botRunning = false;
+                if (state.phase() == Phase.GAME_OVER) interaction.markGameOver();
+                else interaction.finishBotTurn();
                 refresh();
                 return;
             }
@@ -891,16 +900,18 @@ public final class InfiniteConquestGui extends JFrame {
         }
         List<String> reactions = hints.spellActionsForPlayer(state, reacting);
         if (reactions.isEmpty()) return;
-        List<ActionOption> options = new ArrayList<>();
-        options.add(new ActionOption("Pass reaction", ""));
-        reactions.forEach(command -> options.add(new ActionOption(describe(command), command)));
-        String chosen = new VisualReactionDialog(reacting, reactions).choose();
-        if (chosen != null && !chosen.isBlank()) {
-            Map<UUID, BoardSnapshot> before = captureBoard();
-            message(commands.execute(chosen));
-            showResolution(chosen, before);
-            addHistory("You", describe(chosen));
-            refresh();
+        interaction.beginReaction();
+        try {
+            String chosen = new VisualReactionDialog(reacting, reactions).choose();
+            if (chosen != null && !chosen.isBlank()) {
+                Map<UUID, BoardSnapshot> before = captureBoard();
+                message(commands.execute(chosen));
+                showResolution(chosen, before);
+                addHistory("You", describe(chosen));
+                refresh();
+            }
+        } finally {
+            interaction.finishReaction();
         }
     }
 
@@ -1023,7 +1034,7 @@ public final class InfiniteConquestGui extends JFrame {
                     new EmptyBorder(HAND_PADDING, HAND_PADDING, HAND_PADDING, HAND_PADDING)));
             final int selectedIndex = index;
             tile.addMouseListener(dragListener(new DragSource(selectedIndex, null)));
-            tile.setEnabled(!playerOneBot && !botRunning && state.activePlayer() == 0 && state.phase() != Phase.GAME_OVER);
+            tile.setEnabled(canAcceptHumanInput());
             handButtons.add(tile);
             handPanel.add(tile);
             handPanel.add(Box.createHorizontalStrut(8));
@@ -1034,7 +1045,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private void refreshActions() {
         actionModel.clear();
-        if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
+        if (!canAcceptHumanInput()) return;
         List<String> legal = hints.forActivePlayer(state, new GameEngine());
         legal.stream().filter(this::matchesSelection)
                 .map(command -> new ActionOption(describe(command), command))
@@ -1065,7 +1076,7 @@ public final class InfiniteConquestGui extends JFrame {
                     else if (source.handIndex() != null) showHandCardContextMenu(event, source.handIndex());
                     return;
                 }
-                if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return;
+                if (!canAcceptHumanInput()) return;
                 if (source.position() != null && interaction.hasSelection()
                         && !Objects.equals(interaction.boardPosition(), source.position())
                         && isLegalDestination(source.position())) {
@@ -1135,7 +1146,7 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private boolean canActivate(BoardPosition position) {
-        if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() != Phase.PLAY) return false;
+        if (!canAcceptHumanInput() || state.phase() != Phase.PLAY) return false;
         return hints.forActivePlayer(state, new GameEngine()).contains(activationCommand(position));
     }
 
@@ -1170,7 +1181,7 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private List<String> legalCommands() {
-        if (playerOneBot || botRunning || state.activePlayer() != 0 || state.phase() == Phase.GAME_OVER) return List.of();
+        if (!canAcceptHumanInput()) return List.of();
         return hints.forActivePlayer(state, new GameEngine());
     }
 
@@ -1582,6 +1593,7 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void showWinner() {
+        interaction.markGameOver();
         boolean playerOneWon = state.winner().isPresent() && state.winner().getAsInt() == 0;
         String result = state.winner().isEmpty() ? "DRAW"
                 : playerOneBot ? "PLAYER " + (state.winner().getAsInt() + 1) + " WINS"
@@ -2182,6 +2194,7 @@ public final class InfiniteConquestGui extends JFrame {
         }
 
         void animate(BoardPosition from, BoardPosition to, Color color, boolean fromRules, AnimationStyle style) {
+            interaction.lockPresentation();
             Animation requested = new Animation(from, to, color, fromRules, style, 0L);
             if (animation != null) {
                 queued.addLast(requested);
@@ -2199,7 +2212,9 @@ public final class InfiniteConquestGui extends JFrame {
                     if (queued.isEmpty()) {
                         ((javax.swing.Timer) event.getSource()).stop();
                         animation = null;
+                        interaction.finishPresentation();
                         repaint();
+                        InfiniteConquestGui.this.refresh();
                     } else {
                         Animation next = queued.removeFirst();
                         animation = new Animation(next.from(), next.to(), next.color(),

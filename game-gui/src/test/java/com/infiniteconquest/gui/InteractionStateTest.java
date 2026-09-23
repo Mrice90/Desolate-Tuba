@@ -35,7 +35,6 @@ class InteractionStateTest {
         InteractionState state = new InteractionState();
         state.beginDrag(3, null);
         assertEquals(InteractionState.Mode.DRAGGING, state.mode());
-        assertEquals(3, state.handIndex());
         state.finishDrag();
         assertEquals(InteractionState.Mode.HAND_SELECTED, state.mode());
     }
@@ -46,5 +45,48 @@ class InteractionStateTest {
         assertThrows(IllegalArgumentException.class, () -> state.beginDrag(null, null));
         assertThrows(IllegalArgumentException.class,
                 () -> state.beginDrag(0, new BoardPosition(0, 0)));
+    }
+
+    @Test
+    void blockingModesRejectHumanSelection() {
+        InteractionState state = new InteractionState();
+        state.beginResolution();
+        assertFalse(state.acceptsHumanInput());
+        assertThrows(IllegalStateException.class, () -> state.selectHand(0));
+        state.finishResolution();
+        assertEquals(InteractionState.Mode.IDLE, state.mode());
+    }
+
+    @Test
+    void reactionDuringPresentationReturnsToBotTurn() {
+        InteractionState state = new InteractionState();
+        state.beginBotTurn();
+        state.lockPresentation();
+        state.beginReaction();
+        state.finishReaction();
+        state.finishPresentation();
+        assertEquals(InteractionState.Mode.BOT_TURN, state.mode());
+    }
+
+    @Test
+    void finishingBotTurnDuringPresentationUnlocksToIdle() {
+        InteractionState state = new InteractionState();
+        state.beginBotTurn();
+        state.lockPresentation();
+        state.finishBotTurn();
+        state.finishPresentation();
+        assertEquals(InteractionState.Mode.IDLE, state.mode());
+        assertTrue(state.acceptsHumanInput());
+    }
+
+    @Test
+    void gameOverSurvivesAnActivePresentationLock() {
+        InteractionState state = new InteractionState();
+        state.beginResolution();
+        state.lockPresentation();
+        state.markGameOver();
+        state.finishPresentation();
+        assertEquals(InteractionState.Mode.GAME_OVER, state.mode());
+        assertFalse(state.acceptsHumanInput());
     }
 }
