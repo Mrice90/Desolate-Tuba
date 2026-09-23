@@ -64,6 +64,10 @@ class CardArtFactoryTest {
             "poseidon_land_leviathan_shelf", "poseidon_land_pelagic_kingdom",
             "poseidon_tutor_land_1", "poseidon_tutor_land_2", "poseidon_tutor_land_3",
             "poseidon_tutor_land_4", "poseidon_tutor_land_5");
+    private static final List<String> PAINTED_POSEIDON_APEX_LANDS = List.of(
+            "poseidon_apex_atlantis_crown_basin", "poseidon_apex_oceanus_current_vault",
+            "poseidon_apex_leviathan_nursery_trench", "poseidon_apex_trident_confluence",
+            "poseidon_apex_worldsea_platform");
     private static final List<String> PAINTED_POSEIDON_CHARACTERS = List.of(
             "poseidon_tidepool_surveyor", "poseidon_nereid_current_rider",
             "poseidon_reefline_defender", "poseidon_undertow_stalker",
@@ -190,13 +194,13 @@ class CardArtFactoryTest {
         assertEquals(190, CardArtFactory.iconFor(crushingDepths, 190, 78).getIconWidth());
     }
 
-    @Test void packagesThePaintedPoseidonFoundationalLandBatch() {
-        for (String id : PAINTED_POSEIDON_FOUNDATIONAL_LANDS) {
-            assertNotNull(CardArtFactory.class.getResource("/art/lands/" + id + ".jpg"), id);
-        }
-        for (String id : PAINTED_POSEIDON_ECONOMY_AND_TUTOR_LANDS) {
-            assertNotNull(CardArtFactory.class.getResource("/art/lands/" + id + ".jpg"), id);
-            assertTrue(CardArtFactory.hasPaintedArt(new PrototypeCardPool().require(id)), id);
+    @Test void everyPlayablePoseidonLandHasPaintedArt() {
+        List<CardDefinition> lands = new PrototypeCardPool().cardsForFaction("POSEIDON").stream()
+                .filter(card -> card.type() == CardType.LAND).toList();
+        assertEquals(19, lands.size());
+        for (CardDefinition land : lands) {
+            assertNotNull(CardArtFactory.class.getResource("/art/lands/" + land.id() + ".jpg"), land.id());
+            assertTrue(CardArtFactory.hasPaintedArt(land), land.id());
         }
         CardDefinition tidelands = new PrototypeCardPool().require("poseidon_neon_tidelands");
         assertTrue(CardArtFactory.hasPaintedArt(tidelands));
