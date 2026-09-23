@@ -2,7 +2,7 @@
 
 `CardArtFactory` uses a hybrid art pipeline. Completed rollout categories load their own painterly illustrations, while cards still awaiting bespoke art use the deterministic runtime compositor. The same stable card ID always produces the same visual at every supported display size.
 
-The Character art rollout covers all 24 Zeus Characters. Poseidon's rollout now covers 18 unique low- and mid-cost Character illustrations, extending from Tidepool Surveyor through Maelstrom Bulwark across costs 1–6. The remaining six high-cost and apex Poseidon Characters, plus factions awaiting their rollout, continue to use the procedural compositor.
+The Character art rollout covers all 24 Zeus Characters. Poseidon's Character rollout now covers all 24 playable Characters, from Tidepool Surveyor through the apex Kraken Prime Avatar. Its core, keyword, tactical, ability, and apex Character groups all use unique painterly illustrations; Poseidon Spells, Lands, and Structures continue to use the procedural compositor until their category rollouts.
 
 The Spell art rollout covers all 10 Zeus Spells: five core tactical effects and their five apex-scale counterparts. The Land rollout covers all 15 playable Zeus Lands, including the five retained tutor developments. The Structure rollout likewise covers all 15 playable Zeus Structures. Together with 24 Characters, this completes bespoke art for all 64 playable Zeus deck cards; its three Capitals are also fully illustrated.
 
