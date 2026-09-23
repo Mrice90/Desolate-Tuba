@@ -335,8 +335,9 @@ public final class InfiniteConquestGui extends JFrame {
         actionList.setBackground(PANEL_LIGHT);
         actionList.setForeground(Color.WHITE);
         actionList.setSelectionBackground(new Color(48, 112, 137));
-        actionList.setFixedCellHeight(34);
+        actionList.setFixedCellHeight(40);
         actionList.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+        actionList.setCellRenderer(new ActionOptionRenderer());
         actionList.setBorder(new EmptyBorder(5, 5, 5, 5));
         actionList.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
@@ -348,7 +349,7 @@ public final class InfiniteConquestGui extends JFrame {
         historyList.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         historyList.setFixedCellHeight(28);
         historyList.setBorder(new EmptyBorder(5, 5, 5, 5));
-        actionTabs.addTab("LEGAL MOVES", new JScrollPane(actionList));
+        actionTabs.addTab("ACTIONS", new JScrollPane(actionList));
         actionTabs.addTab("ACTION LOG", new JScrollPane(historyList));
         actionTabs.setMinimumSize(new Dimension(330, 145));
         side.add(actionTabs, BorderLayout.CENTER);
@@ -834,6 +835,10 @@ public final class InfiniteConquestGui extends JFrame {
             message("Choose an action from the list. Double-click also executes it.");
             return;
         }
+        if (option.command().isBlank()) {
+            message(option.label() + ". Legal destinations glow on the battlefield.");
+            return;
+        }
         executeHuman(option.command());
     }
 
@@ -1014,7 +1019,7 @@ public final class InfiniteConquestGui extends JFrame {
             int cardHeight = handExpanded ? Math.max(285, handArea.getPreferredSize().height - 58) : 145;
             int artWidth = handExpanded ? 396 : 190;
             int artHeight = handExpanded ? Math.min(280, Math.max(235, cardHeight * 2 / 3)) : 58;
-            JButton tile = new JButton(cardHtml(def), CardArtFactory.iconFor(def, artWidth, artHeight));
+            JButton tile = new JButton(handCardHtml(def), CardArtFactory.iconFor(def, artWidth, artHeight));
             Dimension cardSize = new Dimension(cardWidth, cardHeight);
             tile.setPreferredSize(cardSize);
             tile.setMaximumSize(cardSize);
@@ -1028,6 +1033,10 @@ public final class InfiniteConquestGui extends JFrame {
             Color handSurface = blend(PANEL_LIGHT, factionColor(def.faction()), .36f);
             tile.setBackground(selected ? blend(handSurface, SELECTED, SELECTED_TINT) : handSurface);
             tile.setFocusPainted(false);
+            tile.setToolTipText("<html><b>" + html(def.name()) + "</b><br>"
+                    + html(playRequirement(def)) + " • " + html(keywordLine(def))
+                    + (developmentText(def).isBlank() ? "" : "<br>" + html(developmentText(def)))
+                    + (abilityLine(def).isBlank() ? "" : "<br>" + html(abilityLine(def))) + "</html>");
             tile.setBorder(new CompoundBorder(
                     new LineBorder(selected ? SELECTED : factionColor(def.faction()),
                             selected ? EMPHASIS_BORDER : IDLE_BORDER, true),
@@ -1046,13 +1055,31 @@ public final class InfiniteConquestGui extends JFrame {
     private void refreshActions() {
         actionModel.clear();
         if (!canAcceptHumanInput()) return;
+        if (!interaction.hasSelection()) {
+            actionModel.addElement(new ActionOption("Select a card or unit", ""));
+            return;
+        }
         List<String> legal = hints.forActivePlayer(state, new GameEngine());
         legal.stream().filter(this::matchesSelection)
-                .map(command -> new ActionOption(describe(command), command))
+                .map(command -> new ActionOption(contextualActionLabel(command), command))
                 .forEach(actionModel::addElement);
-        if (actionModel.isEmpty() && interaction.hasSelection()) {
-            actionModel.addElement(new ActionOption("No legal action for that selection", ""));
+        if (actionModel.isEmpty()) {
+            actionModel.addElement(new ActionOption("No legal action for this selection", ""));
         }
+    }
+
+    private String contextualActionLabel(String command) {
+        String[] p = command.split("\\s+");
+        return switch (p[0]) {
+            case "play" -> "PLACE ON TOP  →  (" + p[2] + ", " + p[3] + ")";
+            case "burrow" -> "BURROW BELOW  →  (" + p[2] + ", " + p[3] + ")";
+            case "move" -> "MOVE  →  (" + p[3] + ", " + p[4] + ")";
+            case "blink" -> "BLINK  →  (" + p[3] + ", " + p[4] + ")";
+            case "attack" -> "ATTACK  →  (" + p[3] + ", " + p[4] + ")";
+            case "activate" -> "ACTIVATE THIS CARD";
+            case "cast" -> "CAST  →  (" + p[2] + ", " + p[3] + ")";
+            default -> describe(command);
+        };
     }
 
     private boolean matchesSelection(String command) {
@@ -1686,6 +1713,18 @@ public final class InfiniteConquestGui extends JFrame {
         messageLabel.setText("<html>" + html(text).replace("&lt;b&gt;", "<b>").replace("&lt;/b&gt;", "</b>") + "</html>");
     }
 
+    private String handCardHtml(CardDefinition def) {
+        if (handExpanded) return cardHtml(def);
+        String stats = def.type() == CardType.CHARACTER
+                ? "A " + def.attack() + "  D " + def.defense() + "  M " + def.movement() + "  R " + def.range()
+                : def.isPermanent() ? "HP " + def.hitPoints() + "  •  +" + def.gpGeneration() + " GP/TURN"
+                : compactName(effectLine(def), 30);
+        return "<html><font color='#f0bf49'><b>" + html(playRequirement(def)) + "</b></font>"
+                + " &nbsp; " + compactType(def.type())
+                + "<br><b>" + html(compactName(def.name(), 24)) + "</b>"
+                + "<br><font color='#dce7f5'>" + html(stats) + "</font></html>";
+    }
+
     private String cardHtml(CardDefinition def) {
         String stats = def.type() == CardType.CHARACTER
                 ? "ATK " + def.attack() + "  DEF " + def.defense() + "  MOVE " + def.movement() + "  RANGE " + def.range()
@@ -1824,6 +1863,33 @@ public final class InfiniteConquestGui extends JFrame {
 
     private record ActionOption(String label, String command) {
         @Override public String toString() { return label; }
+    }
+
+    private final class ActionOptionRenderer extends JLabel implements ListCellRenderer<ActionOption> {
+        ActionOptionRenderer() {
+            setOpaque(true);
+            setBorder(new EmptyBorder(5, 9, 5, 9));
+        }
+
+        @Override public Component getListCellRendererComponent(JList<? extends ActionOption> list,
+                ActionOption option, int index, boolean selected, boolean focused) {
+            String verb = option.command().isBlank() ? "" : option.command().split("\\s+")[0];
+            Color accent = switch (verb) {
+                case "move" -> MOVE;
+                case "blink" -> SELECTED;
+                case "attack" -> ATTACK;
+                case "play" -> DEPLOY;
+                case "burrow" -> BURROW;
+                case "cast", "activate" -> CAST;
+                default -> new Color(154, 169, 190);
+            };
+            setText("<html><b>" + html(option.label()) + "</b></html>");
+            setForeground(selected ? Color.WHITE : accent);
+            setBackground(selected ? blend(PANEL_LIGHT, accent, .42f) : PANEL_LIGHT);
+            setBorder(new CompoundBorder(new MatteBorder(0, 4, 0, 0, accent),
+                    new EmptyBorder(5, 8, 5, 8)));
+            return this;
+        }
     }
 
     private record CapitalChoice(CardDefinition card) {
