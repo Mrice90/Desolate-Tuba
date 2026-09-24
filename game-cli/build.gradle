@@ -22,3 +22,10 @@ tasks.register('balancePass', JavaExec) {
     args rootProject.file(findProperty('balanceOutput') ?: 'docs/balance/current').absolutePath,
          rootProject.file(findProperty('balanceManifest') ?: 'docs/balance/scenarios.json').absolutePath
 }
+
+tasks.register('starterBalance', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.infiniteconquest.cli.StarterBalanceRunner'
+    maxHeapSize = '768m'
+    args rootProject.file('docs/starters').absolutePath
+}

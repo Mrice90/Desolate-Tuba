@@ -4,7 +4,7 @@ plugins {
 
 allprojects {
     group = 'com.infiniteconquest'
-    version = '0.4.1-readability-alpha'
+    version = '0.4.2-starters-alpha'
     repositories { mavenCentral() }
 }
 

@@ -91,7 +91,7 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     InfiniteConquestGui(boolean screenshotMode) {
-        super("Infinite Conquest — Hex & Allies 0.4.1");
+        super("Infinite Conquest — Hex & Allies 0.4.2");
         captureMode=screenshotMode;
         presentationQueue = new PresentationQueue(this::playPresentation);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -181,6 +181,11 @@ public final class InfiniteConquestGui extends JFrame {
 
     void prepareScreenshotScenario(String scenario) {
         interaction.clearSelection();
+        if ("deployment-motion".equals(scenario) || "selected-hand".equals(scenario)) {
+            CardInstance card = new CardInstance(UUID.randomUUID(), matchFactory.pool().require("zeus_olympian_cloudbank"), 0, Zone.HAND);
+            state.register(card);
+            state.player(0).addToHand(card.instanceId());
+        }
         if("terrain-board".equals(scenario)) {
             BoardPosition high=new BoardPosition(2,0), gun=new BoardPosition(2,4), medic=new BoardPosition(0,1);
             fixtureCard("zeus_eagles_perch_array",high,0);fixtureCard("athena_owlwatch_tower",high,0);fixtureCard("zeus_cyclone_marksman",high,0);
@@ -668,6 +673,7 @@ public final class InfiniteConquestGui extends JFrame {
             try {
                 DeckBuild build = buildStore.load(file);
                 if (!build.primaryFaction().equals(faction)) throw new IllegalArgumentException("Deck primary faction does not match its saved slot");
+                build=StarterDeckMigration.upgrade(file,build,matchFactory.pool(),buildStore);
                 savedDecks.put(faction, build);
             } catch (RuntimeException exception) {
                 JOptionPane.showMessageDialog(this, exception.getMessage() + "\nOriginal file is unchanged. Use the deck builder to create a new build.", "Deck Loading", JOptionPane.WARNING_MESSAGE);

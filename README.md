@@ -4,9 +4,11 @@ Infinite Conquest is a tactical card game combining deck construction, a shared 
 
 This repository was rebuilt from the former Medieval Duel prototype. The original project remains recoverable through Git history. The separate `Mrice90/Creepy-Tomatoe` Ninja vs Zombies repository is not touched by this work.
 
-## Play the graphical game (Hex & Allies 0.4.1)
+## Play the graphical game (Hex & Allies 0.4.2)
 
 Requires JDK 17, Gradle 8+, and a desktop environment.
+
+Version 0.4.2 rebuilds all six faction starters with fixed, repeatable lists and safer opening curves. Exact old saved starters update with a backup; edited decks are preserved. See [starter lists, strategies and reset details](docs/starters/README.md).
 
 Version 0.4.1 adds complete readable card inspection, spell explanations before reaction selection, target outcome previews, and an upright board with your territory at the bottom. See [readability, reactions and perspective](docs/readability-reactions-perspective.md).
 
@@ -58,7 +60,7 @@ gradle :game-cli:run --args="42"
 
 ## Build a custom deck
 
-The graphical **Deck Builder** supports 384 faction cards across regular, apex, keyword, tactical, development, tutor, and triggered-ability tiers. The CLI additionally retains 24 legacy DEMO/UNASSIGNED prototypes; those are not eligible for faction decks. Each faction has 64 choices, including five Lands that draw the next Structure from the deck and five Structures that draw the next Character from the deck. Its 60-card starter uses 18 Lands, 18 Structures, and 24 action cards centered on a unique two-keyword identity. Custom decks require at least 40 cards and allow no more than four copies of one card. The 18 Capitals are selected separately and never count toward the deck.
+The graphical **Deck Builder** supports 384 faction cards across regular, apex, keyword, tactical, development, tutor, and triggered-ability tiers. The CLI additionally retains 24 legacy DEMO/UNASSIGNED prototypes; those are not eligible for faction decks. Each faction has 64 choices, including five Lands that draw the next Structure from the deck and five Structures that draw the next Character from the deck. Its 60-card starter uses 18 Lands, 14 Structures, 20 Characters, and 8 Spells centered on a unique two-keyword identity. Custom decks require at least 40 cards and allow no more than four copies of one card. The 18 Capitals are selected separately and never count toward the deck.
 
 Lands, Structures, and Characters can now carry data-driven abilities with four timing windows: **When this enters play**, **When this is destroyed**, **Start of your turn** passive effects, and once-per-turn **Activated** effects with a printed GP cost. The current effect set supports card draw, GP gain, self-repair, Capital repair, temporary self Attack/Defense bonuses, and direct enemy-Capital damage. Select the top card of a stack and use its highlighted **Activate** legal action to pay for an activated ability.
 

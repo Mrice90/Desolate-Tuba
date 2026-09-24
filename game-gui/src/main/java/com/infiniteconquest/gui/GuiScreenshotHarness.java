@@ -12,7 +12,12 @@ public final class GuiScreenshotHarness {
 
     private GuiScreenshotHarness() { }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
+        try { runCapture(args); }
+        catch (Throwable failure) { failure.printStackTrace(); System.exit(1); }
+    }
+
+    private static void runCapture(String[] args) throws Exception {
         Path outputDirectory = Path.of(args.length == 0 ? "build/screenshots" : args[0]);
         for (int[] size : new int[][] {{1280, 650}, {1366, 768}, {1920, 1080}, {1100, 700}}) {
             for (String scenario : STATIC_SCENARIOS) {

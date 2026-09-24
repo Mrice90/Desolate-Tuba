@@ -2,7 +2,7 @@
 
 The current playable pool contains 64 prototype deck-building choices per faction across Characters, Lands, Structures, Spells, apex cards, keyword tiers, tutor developments, and triggered-ability cards. Each faction has a distinct two-keyword pairing and examples of enter-play, destroyed, start-of-turn passive, and paid activated effects.
 
-Each faction starter contains 60 cards: 18 Lands, 18 Structures, and 24 Characters/Spells. Custom decks must contain at least 40 cards and may contain no more than four copies of one card.
+Each faction starter contains 60 cards: 18 Lands, 14 Structures, 20 Characters, and 8 Spells. Custom decks must contain at least 40 cards and may contain no more than four copies of one card.
 
 Every faction has five tutor Lands and five tutor Structures unlocking on turns 2, 4, 6, 8, and 10. Tutor Lands have an activated ability that draws the next Structure; tutor Structures draw the next Character. Only one Land and one Structure may be played each turn, tracked separately.
 

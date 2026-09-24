@@ -91,7 +91,7 @@ class FactionCardSetTest {
                     .collect(Collectors.groupingBy(CardDefinition::id, Collectors.counting()));
             assertTrue(copies.values().stream().allMatch(count -> count <= DeckValidator.MAX_COPIES));
             assertEquals(18, deck.stream().filter(card -> card.type() == CardType.LAND).count(), faction);
-            assertEquals(18, deck.stream().filter(card -> card.type() == CardType.STRUCTURE).count(), faction);
+            assertEquals(14, deck.stream().filter(card -> card.type() == CardType.STRUCTURE).count(), faction);
             var primary = FactionDecks.PRIMARY_KEYWORDS.get(faction);
             var secondary = FactionDecks.SECONDARY_KEYWORDS.get(faction);
             assertTrue(deck.stream().anyMatch(card -> card.hasKeyword(primary)), faction + " primary keyword");

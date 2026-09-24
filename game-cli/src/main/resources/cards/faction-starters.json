@@ -1,0 +1,590 @@
+{
+  "ZEUS": [
+    {
+      "id": "zeus_olympian_cloudbank",
+      "copies": 4
+    },
+    {
+      "id": "zeus_land_dawncloud_step",
+      "copies": 4
+    },
+    {
+      "id": "zeus_throneward_conduit",
+      "copies": 4
+    },
+    {
+      "id": "zeus_eagles_perch_array",
+      "copies": 2
+    },
+    {
+      "id": "zeus_tutor_land_1",
+      "copies": 2
+    },
+    {
+      "id": "zeus_land_aurora_reach",
+      "copies": 2
+    },
+    {
+      "id": "zeus_storm_relay_pylon",
+      "copies": 4
+    },
+    {
+      "id": "zeus_keraunos_charging_spire",
+      "copies": 2
+    },
+    {
+      "id": "zeus_cloudwall_bastion",
+      "copies": 2
+    },
+    {
+      "id": "zeus_structure_stormglass_relay",
+      "copies": 2
+    },
+    {
+      "id": "zeus_tutor_structure_1",
+      "copies": 2
+    },
+    {
+      "id": "zeus_ability_oracle_spire",
+      "copies": 2
+    },
+    {
+      "id": "zeus_cloudline_courier",
+      "copies": 3
+    },
+    {
+      "id": "zeus_arc_relay_scout",
+      "copies": 3
+    },
+    {
+      "id": "zeus_iris_signal_runner",
+      "copies": 3
+    },
+    {
+      "id": "zeus_keyword_stormgate_sentinel",
+      "copies": 3
+    },
+    {
+      "id": "zeus_ability_skyline_seer",
+      "copies": 2
+    },
+    {
+      "id": "zeus_boltwing_cavalier",
+      "copies": 2
+    },
+    {
+      "id": "zeus_stormgate_adept",
+      "copies": 2
+    },
+    {
+      "id": "zeus_keyword_thunderhead_guardian",
+      "copies": 2
+    },
+    {
+      "id": "zeus_chain_lightning",
+      "copies": 2
+    },
+    {
+      "id": "zeus_windstep_protocol",
+      "copies": 2
+    },
+    {
+      "id": "zeus_aegis_of_the_sky",
+      "copies": 2
+    },
+    {
+      "id": "zeus_skybreaker_bolt",
+      "copies": 2
+    }
+  ],
+  "POSEIDON": [
+    {
+      "id": "poseidon_neon_tidelands",
+      "copies": 4
+    },
+    {
+      "id": "poseidon_coral_data_reef",
+      "copies": 4
+    },
+    {
+      "id": "poseidon_palace_of_tides_approach",
+      "copies": 4
+    },
+    {
+      "id": "poseidon_ability_healing_shoal",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_tutor_land_1",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_apex_worldsea_platform",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_sonar_beacon",
+      "copies": 4
+    },
+    {
+      "id": "poseidon_structure_tidevault",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_coral_bulwark",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_tidal_pump_station",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_tutor_structure_1",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_ability_tidewell",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_tidepool_surveyor",
+      "copies": 3
+    },
+    {
+      "id": "poseidon_undertow_stalker",
+      "copies": 3
+    },
+    {
+      "id": "poseidon_reefline_defender",
+      "copies": 3
+    },
+    {
+      "id": "poseidon_keyword_breakwater_hoplite",
+      "copies": 3
+    },
+    {
+      "id": "poseidon_delphic_sonar_adept",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_keyword_trench_stalker",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_ability_reefwarden",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_kraken_tendril_drone",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_crushing_depths",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_restorative_tide",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_tidal_armor",
+      "copies": 2
+    },
+    {
+      "id": "poseidon_erode_foundation",
+      "copies": 2
+    }
+  ],
+  "HADES": [
+    {
+      "id": "hades_styx_transit_channel",
+      "copies": 4
+    },
+    {
+      "id": "hades_asphodel_server_field",
+      "copies": 4
+    },
+    {
+      "id": "hades_gate_of_the_dead_grid",
+      "copies": 4
+    },
+    {
+      "id": "hades_erebus_undercity",
+      "copies": 2
+    },
+    {
+      "id": "hades_tutor_land_1",
+      "copies": 2
+    },
+    {
+      "id": "hades_land_erebus_claim",
+      "copies": 2
+    },
+    {
+      "id": "hades_obol_archive",
+      "copies": 4
+    },
+    {
+      "id": "hades_hades_throne_vault",
+      "copies": 2
+    },
+    {
+      "id": "hades_cerberus_gate_node",
+      "copies": 2
+    },
+    {
+      "id": "hades_structure_silent_mortuary",
+      "copies": 2
+    },
+    {
+      "id": "hades_tutor_structure_1",
+      "copies": 2
+    },
+    {
+      "id": "hades_ability_soul_furnace",
+      "copies": 2
+    },
+    {
+      "id": "hades_styx_ferryman_drone",
+      "copies": 3
+    },
+    {
+      "id": "hades_gravecode_collector",
+      "copies": 3
+    },
+    {
+      "id": "hades_erebus_sniper",
+      "copies": 3
+    },
+    {
+      "id": "hades_keyword_shade_ferryman",
+      "copies": 3
+    },
+    {
+      "id": "hades_fast_final_breath",
+      "copies": 2
+    },
+    {
+      "id": "hades_ability_graveflash",
+      "copies": 2
+    },
+    {
+      "id": "hades_keyword_styx_burrower",
+      "copies": 2
+    },
+    {
+      "id": "hades_keyword_erebus_reaper",
+      "copies": 2
+    },
+    {
+      "id": "hades_soul_sever",
+      "copies": 2
+    },
+    {
+      "id": "hades_lethes_embrace",
+      "copies": 2
+    },
+    {
+      "id": "hades_deathly_vigor",
+      "copies": 2
+    },
+    {
+      "id": "hades_grave_pressure",
+      "copies": 2
+    }
+  ],
+  "ARES": [
+    {
+      "id": "ares_crimson_training_yard",
+      "copies": 4
+    },
+    {
+      "id": "ares_phobos_launch_strip",
+      "copies": 4
+    },
+    {
+      "id": "ares_warforge_front",
+      "copies": 4
+    },
+    {
+      "id": "ares_land_red_dust_march",
+      "copies": 2
+    },
+    {
+      "id": "ares_tutor_land_1",
+      "copies": 2
+    },
+    {
+      "id": "ares_land_conquerors_divide",
+      "copies": 2
+    },
+    {
+      "id": "ares_forward_barricade",
+      "copies": 4
+    },
+    {
+      "id": "ares_structure_spoil_depot",
+      "copies": 2
+    },
+    {
+      "id": "ares_ballistic_shrine",
+      "copies": 2
+    },
+    {
+      "id": "ares_chariot_deployment_rack",
+      "copies": 2
+    },
+    {
+      "id": "ares_tutor_structure_1",
+      "copies": 2
+    },
+    {
+      "id": "ares_ability_war_drum",
+      "copies": 2
+    },
+    {
+      "id": "ares_redline_recruit",
+      "copies": 3
+    },
+    {
+      "id": "ares_spearwall_breaker",
+      "copies": 3
+    },
+    {
+      "id": "ares_keyword_bloodshield_recruit",
+      "copies": 3
+    },
+    {
+      "id": "ares_keyword_flashblade_skirmisher",
+      "copies": 3
+    },
+    {
+      "id": "ares_warhound_assault_pack",
+      "copies": 2
+    },
+    {
+      "id": "ares_keyword_phalanx_breaker",
+      "copies": 2
+    },
+    {
+      "id": "ares_ability_gate_ravager",
+      "copies": 2
+    },
+    {
+      "id": "ares_keyword_warpath_telearch",
+      "copies": 2
+    },
+    {
+      "id": "ares_spear_volley",
+      "copies": 2
+    },
+    {
+      "id": "ares_blood_frenzy",
+      "copies": 2
+    },
+    {
+      "id": "ares_forced_march",
+      "copies": 2
+    },
+    {
+      "id": "ares_siege_fury",
+      "copies": 2
+    }
+  ],
+  "ATHENA": [
+    {
+      "id": "athena_academy_training_grid",
+      "copies": 4
+    },
+    {
+      "id": "athena_owlwatch_promenade",
+      "copies": 4
+    },
+    {
+      "id": "athena_parthenon_data_court",
+      "copies": 4
+    },
+    {
+      "id": "athena_aegis_defensive_quarter",
+      "copies": 2
+    },
+    {
+      "id": "athena_tutor_land_1",
+      "copies": 2
+    },
+    {
+      "id": "athena_land_oracles_province",
+      "copies": 2
+    },
+    {
+      "id": "athena_tactical_relay_post",
+      "copies": 4
+    },
+    {
+      "id": "athena_structure_logistics_stoa",
+      "copies": 2
+    },
+    {
+      "id": "athena_owlwatch_tower",
+      "copies": 2
+    },
+    {
+      "id": "athena_aegis_projection_wall",
+      "copies": 2
+    },
+    {
+      "id": "athena_tutor_structure_1",
+      "copies": 2
+    },
+    {
+      "id": "athena_ability_council_tower",
+      "copies": 2
+    },
+    {
+      "id": "athena_athenian_cadet",
+      "copies": 3
+    },
+    {
+      "id": "athena_grid_tactician",
+      "copies": 3
+    },
+    {
+      "id": "athena_keyword_aegis_cadet",
+      "copies": 3
+    },
+    {
+      "id": "athena_pallas_counter_sniper",
+      "copies": 3
+    },
+    {
+      "id": "athena_keyword_hidden_flank_scholar",
+      "copies": 2
+    },
+    {
+      "id": "athena_medusa_pattern_analyst",
+      "copies": 2
+    },
+    {
+      "id": "athena_ability_highwall_archon",
+      "copies": 2
+    },
+    {
+      "id": "athena_keyword_labyrinth_tactician",
+      "copies": 2
+    },
+    {
+      "id": "athena_calculated_shot",
+      "copies": 2
+    },
+    {
+      "id": "athena_brace_formation",
+      "copies": 2
+    },
+    {
+      "id": "athena_tactical_edge",
+      "copies": 2
+    },
+    {
+      "id": "athena_expose_structural_weakness",
+      "copies": 2
+    }
+  ],
+  "HEPHAESTUS": [
+    {
+      "id": "hephaestus_cinderworks_lot",
+      "copies": 4
+    },
+    {
+      "id": "hephaestus_magma_conduit_field",
+      "copies": 4
+    },
+    {
+      "id": "hephaestus_hephaestus_core_forge",
+      "copies": 4
+    },
+    {
+      "id": "hephaestus_land_caldera_works",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_tutor_land_1",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_land_copper_seam",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_automaton_assembly_line",
+      "copies": 4
+    },
+    {
+      "id": "hephaestus_structure_gear_mint",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_smart_metal_bulwark",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_cyclops_plasma_furnace",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_tutor_structure_1",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_ability_repair_foundry",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_forge_spark_drone",
+      "copies": 3
+    },
+    {
+      "id": "hephaestus_bronze_assembly_bot",
+      "copies": 3
+    },
+    {
+      "id": "hephaestus_automaton_shieldsmith",
+      "copies": 3
+    },
+    {
+      "id": "hephaestus_keyword_subforge_sapper",
+      "copies": 3
+    },
+    {
+      "id": "hephaestus_cyclops_arc_welder",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_foundry_siege_walker",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_ability_forge_ram",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_keyword_foundry_bastion",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_plasma_cut",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_field_repair",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_overclock",
+      "copies": 2
+    },
+    {
+      "id": "hephaestus_core_meltdown",
+      "copies": 2
+    }
+  ]
+}

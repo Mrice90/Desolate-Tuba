@@ -50,51 +50,22 @@ public final class FactionDecks {
     }
 
     public List<CardDefinition> starter(String factionName) {
-        String faction = factionName.toUpperCase(Locale.ROOT);
-        if (!FACTIONS.contains(faction)) throw new IllegalArgumentException("Unknown faction: " + factionName);
-        List<CardDefinition> factionCards = pool.cardsForFaction(faction);
-        List<CardDefinition> developments = new ArrayList<>();
-        for (CardType type : List.of(CardType.LAND, CardType.STRUCTURE)) {
-            List<CardDefinition> available = factionCards.stream()
-                    .filter(card -> card.type() == type)
-                    .sorted(Comparator.comparingInt(CardDefinition::cost).thenComparing(CardDefinition::name))
-                    .toList();
-            if (available.isEmpty()) throw new IllegalStateException(faction + " has no " + type + " cards");
-            for (int index = 0; developments.stream().filter(card -> card.type() == type).count() < 18; index++) {
-                CardDefinition candidate = available.get(index % available.size());
-                long copies = developments.stream().filter(card -> card.id().equals(candidate.id())).count();
-                if (copies < DeckValidator.MAX_COPIES) developments.add(candidate);
+        String faction=factionName.toUpperCase(Locale.ROOT);
+        if(!FACTIONS.contains(faction))throw new IllegalArgumentException("Unknown faction: "+factionName);
+        List<CardDefinition> deck=new ArrayList<>();
+        try(var input=FactionDecks.class.getResourceAsStream("/cards/faction-starters.json")){
+            if(input==null)throw new IllegalStateException("Starter catalog missing");
+            var entries=new com.fasterxml.jackson.databind.ObjectMapper().readTree(input).get(faction);
+            if(entries==null || !entries.isArray())throw new IllegalStateException("Starter missing for "+faction);
+            Set<String> seen=new HashSet<>();
+            for(var entry:entries){
+                var card=pool.require(entry.path("id").asText());int count=entry.path("copies").asInt();
+                if(!card.faction().equals(faction)||card.type()==CardType.CAPITAL||count<1||count>4||!seen.add(card.id()))throw new IllegalStateException("Invalid starter entry: "+card.id());
+                for(int copy=0;copy<count;copy++)deck.add(card);
             }
-        }
-        List<CardDefinition> actions = factionCards.stream()
-                .filter(card -> card.type() != CardType.LAND && card.type() != CardType.STRUCTURE)
-                .filter(card -> card.keywords().isEmpty() || card.keywords().stream().allMatch(keyword ->
-                        keyword == PRIMARY_KEYWORDS.get(faction) || keyword == SECONDARY_KEYWORDS.get(faction)))
-                .toList();
-        final int starterSize = 60;
-        if (developments.size() != 36 || actions.size() * DeckValidator.MAX_COPIES < starterSize - developments.size()) {
-            throw new IllegalStateException(faction + " does not have a valid 60-card starter pool");
-        }
-        int actionSlots = starterSize - developments.size();
-        List<CardDefinition> tactical = actions.stream().filter(this::hasNewTacticalKeyword).toList();
-        if (tactical.size() > actionSlots) throw new IllegalStateException(faction + " has too many required tactical cards");
-        List<CardDefinition> deck = new ArrayList<>(developments);
-        deck.addAll(tactical);
-        actions.stream().filter(card -> !hasNewTacticalKeyword(card))
-                .limit(actionSlots - tactical.size()).forEach(deck::add);
-        for (int index = 0; deck.size() < starterSize; index++) {
-            CardDefinition candidate = actions.get(index % actions.size());
-            long copies = deck.stream().filter(card -> card.id().equals(candidate.id())).count();
-            if (copies < DeckValidator.MAX_COPIES) deck.add(candidate);
-        }
-
-        List<String> errors = new DeckValidator().validate(deck);
-        if (!errors.isEmpty()) throw new IllegalStateException(String.join("; ", errors));
+        }catch(java.io.IOException e){throw new IllegalStateException("Cannot load faction starters",e);}
+        List<String> errors=new DeckValidator().validate(deck);
+        if(deck.size()!=60 || !errors.isEmpty())throw new IllegalStateException("Invalid starter "+faction+": "+errors);
         return List.copyOf(deck);
-    }
-
-    private boolean hasNewTacticalKeyword(CardDefinition card) {
-        return card.hasKeyword(Keyword.FAST_STRIKE) || card.hasKeyword(Keyword.SIEGE)
-                || card.hasKeyword(Keyword.SHARP_SHOT);
     }
 }

@@ -1,6 +1,10 @@
-# Hex & Allies playable desktop alpha (0.4.1)
+# Hex & Allies playable desktop alpha (0.4.2)
 
-The approved browser concept now has a playable desktop implementation. Run `gradle :game-gui:run`, or extract the desktop distribution and run `bin/game-gui.bat` on Windows with Java 17 installed. The window title includes **Hex & Allies 0.4.1** so it can be distinguished from older builds.
+The approved browser concept now has a playable desktop implementation. Run `gradle :game-gui:run`, or extract the desktop distribution and run `bin/game-gui.bat` on Windows with Java 17 installed. The window title includes **Hex & Allies 0.4.2** so it can be distinguished from older builds.
+
+## Starter reset in 0.4.2
+
+All six starters now use explicit 60-card lists with stronger opening curves and fewer late developments. See [starter lists and automatic migration details](starters/README.md).
 
 ## Readability and perspective in 0.4.1
 
