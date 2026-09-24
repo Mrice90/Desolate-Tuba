@@ -4,9 +4,11 @@ Infinite Conquest is a tactical card game combining deck construction, a shared 
 
 This repository was rebuilt from the former Medieval Duel prototype. The original project remains recoverable through Git history. The separate `Mrice90/Creepy-Tomatoe` Ninja vs Zombies repository is not touched by this work.
 
-## Play the graphical game (Hex & Allies 0.4)
+## Play the graphical game (Hex & Allies 0.4.1)
 
 Requires JDK 17, Gradle 8+, and a desktop environment.
+
+Version 0.4.1 adds complete readable card inspection, spell explanations before reaction selection, target outcome previews, and an upright board with your territory at the bottom. See [readability, reactions and perspective](docs/readability-reactions-perspective.md).
 
 The [0.4 balance pass](docs/balance/README.md) reviews all 402 faction cards and Capitals, retains free basic developments, prices stronger upgrades, and includes a complete card ledger and reproducible hex-match reports.
 

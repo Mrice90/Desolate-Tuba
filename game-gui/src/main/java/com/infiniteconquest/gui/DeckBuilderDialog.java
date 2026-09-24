@@ -123,36 +123,7 @@ final class DeckBuilderDialog extends JDialog {
     private void refreshCards(){CardDefinition selected=deck.getSelectedValue();deckModel.clear();cards.stream().distinct().sorted(Comparator.comparing(CardDefinition::name)).forEach(deckModel::addElement);if(selected!=null)deck.setSelectedValue(selected,true);available.repaint();updateStatus();}
     private void updateStatus(){List<String> errors=DeckBuild.errors(primary(),ally(),capital,cards);status.setText("<html>"+primary()+(ally()==null?" · No ally":" + "+ally())+" · "+cards.size()+" cards · "+cards.stream().map(CardDefinition::id).distinct().count()+" distinct"+(step==3&&!errors.isEmpty()?"<br>"+escape(String.join("; ",errors)):"")+"</html>");next.setEnabled(step<3||errors.isEmpty());}
     private void inspect(CardDefinition c){inspection.setText(details(c));inspection.setCaretPosition(0);}
-    static String details(CardDefinition c){
-        StringBuilder text=new StringBuilder("<html><body style='font-family:sans-serif;font-size:14pt;color:#edf0f1;background:#1c2835;padding:12px'><h2>"+escape(c.name())+"</h2><p>"+c.faction()+" · "+c.type()+" · "+cost(c)+"</p>");
-        if(!c.archetypes().isEmpty())text.append("<p>Archetypes: ").append(escape(String.join(" · ",c.archetypes()).replace('_',' '))).append("</p>");
-        if(c.type()==CardType.CHARACTER)text.append("<p>Attack ").append(c.attack()).append(" · Defense ").append(c.defense()).append("<br>Move ").append(c.movement()).append(" · Range ").append(c.range()).append("</p>");
-        if(c.isPermanent())text.append("<p>HP ").append(c.hitPoints()).append(" · +").append(c.type()==CardType.CAPITAL?1:c.income()).append(" GP/turn</p>");
-        for(var keyword:c.keywords())text.append("<p><b>").append(keyword.name().replace('_',' ')).append("</b><br>").append(switch(keyword){
-            case BLINK -> "Once per personal turn, move to any empty hex without spending normal movement.";
-            case MOLE -> "May deploy beneath a controlled Land using Burrow.";
-            case VANGUARD -> "Blocks line of sight while on top of its stack.";
-            case FAST_STRIKE -> "Prevents retaliation when this attack strictly exceeds the defender's Defense.";
-            case SIEGE -> "Deals double attack damage to Lands, Structures and Capitals.";
-            case SHARP_SHOT -> "Gains +1 Attack and +1 Range on top of a friendly Structure or Capital.";
-            default -> TerrainRules.describe(c,keyword);
-        }).append("</p>");
-        if(c.type()==CardType.CAPITAL)text.append("<h3>Capital passive</h3><p>").append(escape(new CapitalPassiveRules().description(c))).append("</p>");
-        for(SpellEffect e:c.effects())text.append("<p>").append(e.type().name().replace('_',' ')).append(" ").append(e.amount()).append(" — ").append(e.target()).append("</p>");
-        for(CardAbility a:c.abilities())text.append("<p>").append(switch(a.trigger()){case ENTERS_PLAY->"When played";case DESTROYED->"When destroyed";case PASSIVE->"Start of your turn";case ACTIVATED->"Activate once per turn ("+a.gpCost()+" GP)";}).append(": ").append(switch(a.effect()){
-            case DRAW_CARD->"draw "+a.amount()+" card(s)";
-            case DRAW_CHARACTER->"draw "+a.amount()+" next Character(s) from your deck";
-            case DRAW_STRUCTURE->"draw "+a.amount()+" next Structure(s) from your deck";
-            case GAIN_GP->"gain "+a.amount()+" GP";
-            case HEAL_SELF->"heal this card for "+a.amount();
-            case HEAL_CAPITAL->"heal your Capital for "+a.amount();
-            case BUFF_SELF_ATTACK->"gain +"+a.amount()+" Attack this turn";
-            case BUFF_SELF_DEFENSE->"gain +"+a.amount()+" Defense this turn";
-            case DAMAGE_ENEMY_CAPITAL->"deal "+a.amount()+" damage to the enemy Capital";
-        }).append(".</p>");
-        String passive=DevelopmentRules.passiveText(c.developmentPassive());if(!passive.isBlank())text.append("<p>").append(escape(passive)).append("</p>");
-        return text.append("</body></html>").toString();
-    }
+    static String details(CardDefinition c){ return CardRulesText.details(c); }
     private static String cost(CardDefinition c){return c.type()==CardType.LAND||c.type()==CardType.STRUCTURE?"Turn "+Math.max(1,c.cost())+" · "+(c.developmentGoldCost()==0?"free":c.developmentGoldCost()+" Gold"):c.cost()+" GP";}
     private void showCode(String code){JTextArea text=new JTextArea(code,8,55);text.setLineWrap(true);text.setWrapStyleWord(false);text.setEditable(false);JPanel panel=new JPanel(new BorderLayout(8,8));panel.add(new JScrollPane(text));JButton copy=new JButton("Copy deck code");copy.addActionListener(e->{try{Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(code),null);copy.setText("Copied");}catch(IllegalStateException ex){text.selectAll();text.requestFocusInWindow();}});panel.add(copy,BorderLayout.SOUTH);JOptionPane.showMessageDialog(this,panel,"Share this complete deck code",JOptionPane.PLAIN_MESSAGE);}
     private void importDeck(){JTextArea input=new JTextArea(8,55);input.setLineWrap(true);if(JOptionPane.showConfirmDialog(this,new JScrollPane(input),"Paste deck code",JOptionPane.OK_CANCEL_OPTION)!=JOptionPane.OK_OPTION)return;try{

@@ -2,11 +2,11 @@ package com.infiniteconquest.gui;
 
 import java.awt.FontMetrics;
 
-/** Text must fit the narrowest horizontal span of its entire line inside a flat-top hex. */
+/** Text must fit the narrowest horizontal span of its entire line inside a pointed-top hex. */
 final class HexText {
     static int lineWidth(int width, int height, int top, int bottom) {
         double edge = Math.min(Math.max(0, top), Math.max(0, height - bottom));
-        double span = width * (.5 + Math.min(.5, edge / Math.max(1, height)));
+        double span = width * Math.min(1, 4 * edge / Math.max(1, height));
         return Math.max(0, (int) span - 14);
     }
     static String fit(String text, FontMetrics metrics, int width) {

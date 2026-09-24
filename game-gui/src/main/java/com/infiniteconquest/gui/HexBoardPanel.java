@@ -5,8 +5,11 @@ import com.infiniteconquest.core.CardDefinition;
 import javax.swing.*;
 import java.awt.*;
 
-/** Rotated odd-row hex layout; coordinates are identical to the rules engine. */
+/** Upright odd-row hex layout; perspective never changes authoritative coordinates. */
 final class HexBoardPanel extends JPanel {
+    private BoardPerspective perspective=new BoardPerspective(0);
+    void setLocalPlayer(int player){perspective=new BoardPerspective(player);revalidate();repaint();}
+    private double hexHeight(){return Math.max(1,Math.min((getHeight()-22)/4.75,(getWidth()-24)/(4.5*1.2)));}
     private boolean storm = true;
     private boolean showContext = true;
     void setShowContext(boolean value){showContext=value;repaint();}
@@ -17,11 +20,13 @@ final class HexBoardPanel extends JPanel {
     HexBoardPanel(){super(null);setOpaque(false);}
     void toggleBackground(){storm=!storm;repaint();}
     @Override public void doLayout(){
-        double h=Math.max(1,Math.min((getHeight()-22)/4.5,(getWidth()-22)/5.485));
-        double w=h*2/Math.sqrt(3),originX=(getWidth()-w*4.75)/2,originY=(getHeight()-h*4.5)/2;
+        double h=hexHeight(),w=h*1.2;
+        double originX=(getWidth()-w*4.5)/2,originY=(getHeight()-h*4.75)/2;
         for(Component component:getComponents()){
             BoardPosition p=(BoardPosition)((JComponent)component).getClientProperty("position");
-            if(p!=null)component.setBounds((int)(originX+(5-p.y())*.75*w),(int)(originY+(p.x()+(p.y()%2)*.5)*h),(int)w-3,(int)h-3);
+            if(p!=null){((JComponent)component).putClientProperty("viewer",perspective.localPlayer());
+                if(perspective.localPlayer()==1)component.setBackground(p.isOnPlayerSide(1)?UiTheme.HUMAN_PLOT:UiTheme.BOT_PLOT);
+                var center=perspective.center(p);component.setBounds((int)(originX+(center.x-.5)*w),(int)(originY+(center.y-.5)*h),(int)w-3,(int)h-3);}
         }
     }
     @Override protected void paintComponent(Graphics graphics){
@@ -36,10 +41,10 @@ final class HexBoardPanel extends JPanel {
         }
         g.setColor(new Color(205,222,235,18));
         for(int x=-getHeight();x<getWidth();x+=65)g.drawLine(x,0,x+getHeight(),getHeight());
-        g.setColor(new Color(227,180,182));g.drawString("PLAYER 2",18,24);
-        g.setColor(new Color(125,217,231));g.drawString("PLAYER 1",Math.max(18,getWidth()-90),24);
-        double h=Math.max(1,Math.min((getHeight()-22)/4.5,(getWidth()-22)/5.485));
-        int margin=(int)((getWidth()-h*2/Math.sqrt(3)*4.75)/2);
+        g.setColor(new Color(227,180,182));g.drawString("OPPONENT",18,24);
+        g.setColor(new Color(125,217,231));g.drawString("YOU · PLAYER 1 VIEW",18,getHeight()-12);
+        double h=hexHeight();
+        int margin=(int)((getWidth()-h*1.2*4.5)/2);
         if(showContext&&margin>230){
             g.setFont(new Font("Palatino Linotype",Font.BOLD,28));g.setColor(new Color(232,216,176));g.drawString(storm?"Stormfront":"Obsidian Table",30,85);
             g.setFont(new Font("Georgia",Font.ITALIC,16));g.setColor(new Color(209,222,230));

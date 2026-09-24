@@ -46,8 +46,32 @@ public final class GuiScreenshotHarness {
                 }
             }
         });
+        verifyReactionReview(outputDirectory);
         verifyAutomatedPlayback(outputDirectory);
         System.exit(0);
+    }
+
+    private static void verifyReactionReview(Path directory) throws Exception {
+        CountDownLatch finished=new CountDownLatch(1);
+        var failure=new java.util.concurrent.atomic.AtomicReference<Throwable>();
+        SwingUtilities.invokeAndWait(()->{
+            InfiniteConquestGui gui=new InfiniteConquestGui(true);prepare(gui,"opening-board");gui.prepareCaptureSize(1280,650,true);
+            gui.prepareReactionReview(directory);
+            String[] frozen={null};long[] opened={0};long start=System.nanoTime();
+            Timer monitor=new Timer(25,event->{
+                try {
+                    var dialog=gui.visibleReactionReview();
+                    if(dialog!=null){
+                        if(frozen[0]==null){frozen[0]=gui.captureStateFingerprint();opened[0]=System.nanoTime();}
+                        if(!frozen[0].equals(gui.captureStateFingerprint()))throw new IllegalStateException("Bot advanced while reaction dialog was open");
+                        if(System.nanoTime()-opened[0]>650_000_000L){((Timer)event.getSource()).stop();dialog.dispose();gui.dispose();finished.countDown();}
+                    }
+                    if(System.nanoTime()-start>5_000_000_000L)throw new IllegalStateException("Reaction window did not open");
+                }catch(Throwable error){failure.set(error);((Timer)event.getSource()).stop();for(var w:gui.getOwnedWindows())w.dispose();gui.dispose();finished.countDown();}
+            });monitor.start();gui.beginReactionReview();
+        });
+        if(!finished.await(10,TimeUnit.SECONDS))throw new IllegalStateException("Reaction review timed out");
+        if(failure.get()!=null)throw new IllegalStateException("Reaction review failed",failure.get());
     }
 
     private static void verifyAutomatedPlayback(Path outputDirectory) throws Exception {

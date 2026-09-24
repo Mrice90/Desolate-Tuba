@@ -10,6 +10,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
@@ -89,7 +91,7 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     InfiniteConquestGui(boolean screenshotMode) {
-        super("Infinite Conquest — Hex & Allies 0.4");
+        super("Infinite Conquest — Hex & Allies 0.4.1");
         captureMode=screenshotMode;
         presentationQueue = new PresentationQueue(this::playPresentation);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -783,6 +785,40 @@ public final class InfiniteConquestGui extends JFrame {
                 playerOneControl.getSelectedIndex() == 1, capitalPlacement.selected());
     }
 
+    void prepareReactionReview(Path directory) {
+        playerOneBot=false;
+        for(UUID id:List.copyOf(state.player(0).hand())){state.player(0).removeFromHand(id);state.card(id).orElseThrow().moveTo(Zone.DISCARD);}
+        for(BoardPosition pos:state.board().positions())while(!state.board().isEmpty(pos))state.card(state.board().pop(pos)).orElseThrow().moveTo(Zone.DISCARD);
+        fixtureCard("zeus_stormgate_adept",new BoardPosition(1,0),0);
+        fixtureCard("poseidon_keyword_maelstrom_bulwark",new BoardPosition(1,4),1);
+        fixtureCard("ares_redline_recruit",new BoardPosition(2,4),1);
+        fixtureCard("zeus_land_thunderstep_plateau",new BoardPosition(0,0),0);
+        for(String id:List.of("zeus_chain_lightning","zeus_stormcharge","zeus_windstep_protocol")){
+            CardInstance card=new CardInstance(UUID.randomUUID(),matchFactory.pool().require(id),0,Zone.HAND);state.register(card);state.player(0).addToHand(card.instanceId());
+        }
+        state.player(0).restoreGp(10);
+        if(state.activePlayer()==0)new GameEngine().apply(state,new GameAction.EndTurn(0));
+        refresh();
+        for(String id:List.of("poseidon_reefline_defender","zeus_keyword_stormgate_sentinel","zeus_land_thunderstep_plateau","zeus_apex_worldstorm_spire","zeus_chain_lightning")){
+            CardInstance card=new CardInstance(UUID.randomUUID(),matchFactory.pool().require(id),0,Zone.HAND);state.register(card);
+            CardInspectionPanel panel=new CardInspectionPanel(state,card);panel.setSize(800,520);layoutTree(panel);captureComponent(panel,directory.resolve("full-card-"+id+".png"));
+        }
+        CardInstance capital=new CardInstance(UUID.randomUUID(),matchFactory.capitals().require("zeus_capital_cloud_throne"),0,Zone.BATTLEFIELD);capital.addDamage(3);state.register(capital);
+        CardInspectionPanel panel=new CardInspectionPanel(state,capital);panel.setSize(800,520);layoutTree(panel);captureComponent(panel,directory.resolve("full-card-capital.png"));
+        var dialog=new VisualReactionDialog(0,hints.spellActionsForPlayer(state,0));
+        dialog.addNotify();dialog.getRootPane().setSize(dialog.getWidth()-16,dialog.getHeight()-40);layoutTree(dialog.getRootPane());captureComponent((JComponent)dialog.getContentPane(),directory.resolve("reaction-before-selection.png"));
+        String before=captureStateFingerprint();int gold=state.player(0).currentGp();
+        dialog.selectSpell(0);dialog.previewTarget(new BoardPosition(1,4));
+        layoutTree(dialog.getRootPane());captureComponent((JComponent)dialog.getContentPane(),directory.resolve("reaction-threshold-preview.png"));
+        if(!before.equals(captureStateFingerprint())||gold!=state.player(0).currentGp())throw new IllegalStateException("Preview mutated the match");
+        dialog.chooseTarget(new BoardPosition(2,4));
+        if(dialog.result==null || !commands.execute(dialog.result).startsWith("OK:"))throw new IllegalStateException("Reaction UI did not emit an executable command");
+        if(!state.board().isEmpty(new BoardPosition(2,4)) || state.player(0).currentGp()!=gold-3 || state.activePlayer()!=1)throw new IllegalStateException("Reaction did not resolve on opponent turn");
+        dialog.dispose();
+    }
+    void beginReactionReview(){runBotTurn();}
+    JDialog visibleReactionReview(){for(Window w:getOwnedWindows())if(w instanceof VisualReactionDialog d && d.isVisible())return d;return null;}
+
     void captureOpeningScreens(Path directory) {
         setupCaptureDirectory=directory;try{chooseMatch();}finally{setupCaptureDirectory=null;}
     }
@@ -943,7 +979,11 @@ public final class InfiniteConquestGui extends JFrame {
             int active = state.activePlayer();
             if (!reactionOffered[0]) {
                 reactionOffered[0] = true;
-                offerReaction(active);
+                // A modal Swing dialog pumps timer events; explicitly suspend this timer
+                // so targets and hand indices cannot change while the player reads.
+                timer.stop();
+                try { offerReaction(active); }
+                finally { if(state==match && isDisplayable())timer.start(); }
                 if (presentationQueue.isPlaying()) return;
             }
             if (state.phase() == Phase.GAME_OVER || state.activePlayer() != active) return;
@@ -1096,7 +1136,7 @@ public final class InfiniteConquestGui extends JFrame {
         BattlefieldCell() { setContentAreaFilled(false);setOpaque(false); }
         private Polygon shape() {
             int w=getWidth()-1,h=getHeight()-1;
-            return new Polygon(new int[]{w/4,3*w/4,w,3*w/4,w/4,0},new int[]{0,0,h/2,h,h,h/2},6);
+            return new Polygon(new int[]{w/2,w,w,w/2,0,0},new int[]{0,h/4,3*h/4,h,3*h/4,h/4},6);
         }
         @Override public boolean contains(int x,int y){return shape().contains(x,y);}
         @Override protected void paintBorder(Graphics g) { }
@@ -1112,18 +1152,20 @@ public final class InfiniteConquestGui extends JFrame {
                 int fontSize = Math.max(10, Math.min(14, getHeight() / 8));
                 g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontSize));
                 g.setColor(Color.WHITE);
-                centered(g, card.name(), (int)(getHeight() * .59));
+                centered(g, card.name(), (int)(getHeight() * .56));
                 g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, fontSize));
-                centered(g, (String)getClientProperty("stats"), (int)(getHeight() * .75));
+                centered(g, (String)getClientProperty("stats"), (int)(getHeight() * .71));
                 g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Math.max(9, fontSize - 1)));
-                g.setColor(new Color(5, 12, 20, 205));g.fillRect(0, 0, getWidth(), fontSize + 7);
-                g.setColor(((Integer)getClientProperty("owner"))==0?new Color(130,231,255):new Color(255,157,160));
-                centered(g,"P"+(((Integer)getClientProperty("owner"))+1)+" · H"+Objects.toString(getClientProperty("height"),"0"),fontSize + 2);
+                g.setColor(new Color(5, 12, 20, 205));g.fillRect(0, (int)(getHeight()*.19), getWidth(), fontSize + 7);
+                int viewer=((Number)Objects.requireNonNullElse(getClientProperty("viewer"),0)).intValue();
+                boolean own=((Integer)getClientProperty("owner"))==viewer;
+                g.setColor(own?new Color(130,231,255):new Color(255,157,160));
+                centered(g,"P"+(own?1:2)+" · H"+Objects.toString(getClientProperty("height"),"0"),(int)(getHeight()*.19)+fontSize + 2);
             }else{
                 g.setColor(new Color(182,209,218,100));BoardPosition p=(BoardPosition)getClientProperty("position");
                 g.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,11));centered(g,p.x()+","+p.y(),getHeight()/2);
             }
-            String badge=(String)getClientProperty("badge");if(badge!=null&&!badge.isEmpty()){g.setFont(new Font(Font.SANS_SERIF,Font.BOLD,Math.max(9,Math.min(11,getHeight()/10))));g.setColor(new Color(252,226,137));centered(g,HexText.status(badge),(int)(getHeight()*.9));}
+            String badge=(String)getClientProperty("badge");if(badge!=null&&!badge.isEmpty()){g.setFont(new Font(Font.SANS_SERIF,Font.BOLD,Math.max(9,Math.min(11,getHeight()/10))));g.setColor(new Color(252,226,137));centered(g,HexText.status(badge),(int)(getHeight()*.85));}
             g.setClip(null);g.setStroke(new BasicStroke(isFocusOwner()?3:((Number)getClientProperty("outlineWidth")).floatValue()));
             g.setColor(isFocusOwner()?Color.WHITE:(Color)getClientProperty("outline"));g.draw(hex);g.dispose();
         }
@@ -1884,50 +1926,14 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void showFullCard(CardInstance card) {
-        CardDefinition def = card.definition();
-        JPanel fullCard = new JPanel(new BorderLayout(0, 12));
-        fullCard.setBackground(blend(PANEL, factionColor(def.faction()), .28f));
-        fullCard.setBorder(new CompoundBorder(new LineBorder(factionColor(def.faction()), 4, true),
-                new EmptyBorder(18, 18, 18, 18)));
-
-        JLabel name = new JLabel(def.name(), SwingConstants.CENTER);
-        name.setForeground(Color.WHITE);
-        name.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 25));
-        fullCard.add(name, BorderLayout.NORTH);
-
-        JLabel art = new JLabel(CardArtFactory.iconFor(def, 420, 250));
-        art.setHorizontalAlignment(SwingConstants.CENTER);
-        art.setBorder(new LineBorder(new Color(218, 192, 113), 2, true));
-
-        String stats = def.type() == CardType.CHARACTER
-                ? "Attack " + new GameEngine().effectiveAttack(state, card)
-                + "   •   Defense " + card.defenseRemaining() + "/" + card.effectiveDefense()
-                + "   •   Move " + def.movement() + "   •   Range " + new GameEngine().effectiveRange(state, card)
-                : def.isPermanent() ? "HP " + Math.max(0, def.hitPoints() - card.damage()) + "/" + def.hitPoints()
-                : effectLine(def);
-        String details = "<html><div style='text-align:center'><b>" + html(title(def.faction())) + " "
-                + html(title(def.type().name())) + "</b> &nbsp; • &nbsp; " + html(playRequirement(def))
-                + "<br><br><b>" + html(stats) + "</b>"
-                + "<br><br><font color='#e8ca72'><b>" + html(keywordLine(def)) + "</b></font>"
-                + (developmentText(def).isBlank() ? "" : "<br><br><font color='#7be5a3'>" + html(developmentText(def)) + "</font>")
-                + (abilityLine(def).isBlank() ? "" : "<br><br><font color='#9be7ff'>" + html(abilityLine(def)) + "</font>")
-                + (def.type() == CardType.CAPITAL ? "<br><br>" + html(passiveRules.description(def)) : "")
-                + "</div></html>";
-        String terrainText=def.keywords().stream().map(k->TerrainRules.describe(def,k)).filter(t->!t.isBlank()).collect(java.util.stream.Collectors.joining("<br><br>"));
-        details=details.replace("</div></html>",(terrainText.isBlank()?"":"<br><br>"+terrainText)+"</div></html>");
-        JEditorPane information = new JEditorPane("text/html",details);
-        information.setEditable(false);information.setOpaque(false);information.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES,true);
-        information.setForeground(Color.WHITE);
-        information.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
-
-
-        JPanel body = new JPanel(new BorderLayout(0, 14));
-        body.setOpaque(false);
-        body.add(art, BorderLayout.NORTH);
-        JScrollPane informationScroll=new JScrollPane(information);informationScroll.setBorder(null);body.add(informationScroll, BorderLayout.CENTER);
-        fullCard.add(body, BorderLayout.CENTER);
-        fullCard.setPreferredSize(new Dimension(470, 610));
-        JOptionPane.showMessageDialog(this, fullCard, def.name(), JOptionPane.PLAIN_MESSAGE);
+        JDialog dialog=new JDialog(this,card.definition().name(),true);
+        JPanel content=panel(new BorderLayout(8,8));
+        content.add(new CardInspectionPanel(state,card),BorderLayout.CENTER);
+        content.add(button("Close",e->dialog.dispose()),BorderLayout.SOUTH);
+        dialog.setContentPane(content);dialog.setResizable(true);
+        Rectangle usable=GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        dialog.setSize(Math.min(860,usable.width-32),Math.min(620,usable.height-40));
+        dialog.setLocationRelativeTo(this);dialog.setVisible(true);
     }
 
     private void addHistory(String actor, String action) {
@@ -2265,6 +2271,7 @@ public final class InfiniteConquestGui extends JFrame {
         result.setBorder(new CompoundBorder(new LineBorder(factionColor(card.faction()), 2, true),
                 new EmptyBorder(6, 6, 6, 6)));
         result.setFocusPainted(false);
+        result.setToolTipText(CardRulesText.details(card));
         return result;
     }
 
@@ -2281,9 +2288,10 @@ public final class InfiniteConquestGui extends JFrame {
             super(InfiniteConquestGui.this, "Reaction Window", true);
             this.reacting = reacting;
             this.commands = commands;
-            spellTray.setLayout(new BoxLayout(spellTray, BoxLayout.X_AXIS));
+            spellTray.setLayout(new BoxLayout(spellTray, BoxLayout.Y_AXIS));
             spellTray.setBackground(PANEL);
             HexBoardPanel board = new HexBoardPanel();
+            board.setLocalPlayer(reacting);board.setShowContext(false);
             board.setOpaque(false);
             for (int y = BoardPosition.HEIGHT - 1; y >= 0; y--) for (int x = 0; x < BoardPosition.WIDTH; x++) {
                 BoardPosition position = new BoardPosition(x, y);
@@ -2297,13 +2305,19 @@ public final class InfiniteConquestGui extends JFrame {
                 cell.setVerticalTextPosition(SwingConstants.BOTTOM);
                 cell.addActionListener(e -> chooseTarget(position));
                 cell.addMouseListener(new MouseAdapter() {
-                    @Override public void mouseReleased(MouseEvent e) { if (selectedHandIndex != null) chooseTarget(position); }
+                    @Override public void mouseEntered(MouseEvent e) { previewTarget(position); }
+
                 });
+                cell.addFocusListener(new FocusAdapter(){@Override public void focusGained(FocusEvent e){previewTarget(position);}});
                 targets.put(position, cell); board.add(cell);
             }
             commands.stream().map(this::handIndex).distinct().forEach(index -> {
                 CardDefinition spell = state.card(state.player(reacting).hand().get(index)).orElseThrow().definition();
-                JButton card = visualChoiceCard(spell, 190, 170);
+                JButton card = new JButton("<html><div style='width:210px'><b>"+html(spell.name())+"</b><br>"+spell.goldCost()+" GOLD<br><br>"+html(CardRulesText.spellSummary(spell))+"<br><br><b>Choose targets →</b></div></html>");
+                card.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,14));card.setForeground(Color.WHITE);card.setBackground(PANEL_LIGHT);
+                card.setHorizontalAlignment(SwingConstants.LEFT);card.setMargin(new Insets(10,10,10,10));
+                Dimension size=new Dimension(300,240);card.setPreferredSize(size);card.setMinimumSize(size);card.setMaximumSize(size);
+                card.setToolTipText(CardRulesText.details(spell));
                 card.addActionListener(e -> selectSpell(index));
                 card.addMouseListener(new MouseAdapter() {
                     @Override public void mousePressed(MouseEvent e) { selectSpell(index); }
@@ -2313,21 +2327,23 @@ public final class InfiniteConquestGui extends JFrame {
                                 .map(Map.Entry::getKey).findFirst().ifPresent(VisualReactionDialog.this::chooseTarget);
                     }
                 });
-                spellTray.add(card); spellTray.add(Box.createHorizontalStrut(8));
+                spellTray.add(card); spellTray.add(Box.createVerticalStrut(8));
             });
             JButton pass = button("Pass Reaction", e -> dispose());
             instruction.setForeground(Color.WHITE);
-            JPanel header = new JPanel(new BorderLayout()); header.setOpaque(false);
+            instruction.setText("<html><b>Between opponent actions · You have "+state.player(reacting).currentGp()+" gold.</b><br>Read a spell, choose it, then choose a target. Passing spends nothing.</html>");
+            JPanel header = new JPanel(new BorderLayout()); header.setOpaque(false);header.setPreferredSize(new Dimension(800,74));
             header.add(instruction, BorderLayout.CENTER); header.add(pass, BorderLayout.EAST);
             JPanel content = panel(new BorderLayout(8, 8)); content.setBorder(new EmptyBorder(12, 12, 12, 12));
             content.add(header, BorderLayout.NORTH);
             content.add(board, BorderLayout.CENTER);
-            JScrollPane spells = new JScrollPane(spellTray, ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            JScrollPane spells = new JScrollPane(spellTray, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+            spells.getViewport().setBackground(PANEL);
             spells.setBorder(new TitledBorder(new LineBorder(CAST, 2), "REACTION SPELLS", TitledBorder.LEFT,
                     TitledBorder.TOP, getFont(), CAST));
-            spells.setPreferredSize(new Dimension(800, 220)); content.add(spells, BorderLayout.SOUTH);
-            setContentPane(content); Rectangle usable=GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds(); setSize(Math.min(900,usable.width-40),Math.min(790,usable.height-50)); setLocationRelativeTo(InfiniteConquestGui.this);
+            spells.setPreferredSize(new Dimension(330, 400)); content.add(spells, BorderLayout.WEST);
+            setContentPane(content); Rectangle usable=GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds(); setSize(Math.min(1100,usable.width-40),Math.min(790,usable.height-50)); setLocationRelativeTo(InfiniteConquestGui.this);
             setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); refreshTargets();
         }
 
@@ -2340,7 +2356,7 @@ public final class InfiniteConquestGui extends JFrame {
         private void selectSpell(int index) {
             selectedHandIndex = index;
             CardDefinition spell = state.card(state.player(reacting).hand().get(index)).orElseThrow().definition();
-            instruction.setText("<html><b>" + html(spell.name()) + " selected.</b> Drop or click a gold target.</html>");
+            instruction.setText("<html><b>" + html(spell.name()) + " · "+spell.goldCost()+" gold.</b><br>"+html(CardRulesText.spellSummary(spell))+"<br>Hover or focus a gold target to preview the result; click to cast.</html>");
             refreshTargets();
         }
         private void refreshTargets() {
@@ -2352,8 +2368,20 @@ public final class InfiniteConquestGui extends JFrame {
                 button.putClientProperty("outline", legal ? CAST : PANEL_LIGHT);
                 button.putClientProperty("outlineWidth", legal ? 3 : 1);
                 button.setEnabled(selectedHandIndex == null || legal);
+                if(legal) state.board().topAt(position).flatMap(state::card).ifPresent(target->{
+                    var spell=state.card(state.player(reacting).hand().get(selectedHandIndex)).orElseThrow().definition();
+                    button.setToolTipText("<html><div style='width:240px'><b>"+html(target.definition().name())+"</b><br>"+html(ReactionPreview.outcome(spell,target))+"</div></html>");
+                    button.getAccessibleContext().setAccessibleDescription(ReactionPreview.outcome(spell,target));
+                });
                 button.repaint();
             });
+        }
+        private void previewTarget(BoardPosition position) {
+            if(selectedHandIndex==null)return;
+            var spell=state.card(state.player(reacting).hand().get(selectedHandIndex)).orElseThrow().definition();
+            state.board().topAt(position).flatMap(state::card).ifPresent(target->instruction.setText(
+                    "<html><b>"+html(spell.name())+" · "+spell.goldCost()+" gold → "+html(target.definition().name())+"</b><br>"+
+                    html(ReactionPreview.outcome(spell,target))+"<br>Click a gold target to cast, or choose another spell.</html>"));
         }
         private void chooseTarget(BoardPosition position) {
             if (selectedHandIndex == null) return;
@@ -2366,6 +2394,7 @@ public final class InfiniteConquestGui extends JFrame {
         }
         private String chooseTeleportDestination(List<String> matches) {
             HexBoardPanel grid = new HexBoardPanel();
+            grid.setLocalPlayer(reacting);grid.setShowContext(false);
             grid.setBackground(PANEL);
             final String[] selected = {null};
             JDialog picker = new JDialog(this, "Choose teleport destination", true);
@@ -2762,7 +2791,7 @@ public final class InfiniteConquestGui extends JFrame {
                 g.fillRoundRect(orbX - width / 2 + 6, orbY - height / 2 + 8, width, height, 16, 16);
                 g.setComposite(AlphaComposite.SrcOver.derive(Math.max(0f, fade)));
                 int left=orbX-width/2,top=orbY-height/2;
-                Polygon sprite=new Polygon(new int[]{left+width/4,left+3*width/4,left+width,left+3*width/4,left+width/4,left},new int[]{top,top,top+height/2,top+height,top+height,top+height/2},6);
+                Polygon sprite=new Polygon(new int[]{left+width/2,left+width,left+width,left+width/2,left,left},new int[]{top,top+height/4,top+3*height/4,top+height,top+3*height/4,top+height/4},6);
                 Shape oldClip=g.getClip();g.clip(sprite);
                 g.drawImage(animation.cardImage(),left,top,width,height,null);g.setClip(oldClip);
                 g.setColor(animation.color());g.setStroke(new BasicStroke(2f));g.draw(sprite);

@@ -29,6 +29,42 @@ class SpellEngineTest {
     }
 
     @Test
+    void everySpellEffectResolvesForInactivePlayerWithoutTakingTheTurn() {
+        for(SpellEffectType type:SpellEffectType.values()) {
+            var state=new GameState(55L);state.player(1).restoreGp(10);int startingGold=state.player(1).currentGp();
+            boolean hostile=Set.of(SpellEffectType.STRIKE_CHARACTER,SpellEffectType.DAMAGE_PERMANENT,SpellEffectType.RETURN_CHARACTER).contains(type);
+            boolean permanent=type==SpellEffectType.DAMAGE_PERMANENT || type==SpellEffectType.HEAL_PERMANENT;
+            var target=add(state,hostile?0:1,permanent?new CardDefinition("land","Land",CardType.LAND,"TEST",0,0,0,0,0,8):character("unit",2,4),Zone.BATTLEFIELD,new BoardPosition(0,0));
+            if(permanent)target.addDamage(2);
+            var definition=new CardDefinition("reaction","Reaction",CardType.SPELL,"TEST",2,0,0,0,0,0,Set.of(),List.of(new SpellEffect(type,5,hostile?SpellTarget.ENEMY:SpellTarget.FRIENDLY)));
+            var reaction=add(state,1,definition,Zone.HAND,null);
+            var destination=type==SpellEffectType.TELEPORT_CHARACTER?new BoardPosition(2,3):null;
+            assertTrue(new GameEngine().apply(state,new GameAction.CastSpell(1,reaction.instanceId(),target.instanceId(),destination)).accepted(),type.name());
+            assertEquals(0,state.activePlayer());assertEquals(startingGold-2,state.player(1).currentGp());assertEquals(Zone.DISCARD,reaction.zone());
+            switch(type){
+                case STRIKE_CHARACTER -> assertEquals(Zone.DISCARD,target.zone());
+                case DAMAGE_PERMANENT -> assertEquals(7,target.damage());
+                case HEAL_PERMANENT -> assertEquals(0,target.damage());
+                case RETURN_CHARACTER -> {assertEquals(Zone.HAND,target.zone());assertTrue(state.player(0).hand().contains(target.instanceId()));}
+                case TELEPORT_CHARACTER -> assertEquals(destination,state.board().positionOf(target.instanceId()).orElseThrow());
+                case BUFF_ATTACK -> assertEquals(7,target.effectiveAttack());
+                case BUFF_DEFENSE -> assertEquals(9,target.effectiveDefense());
+            }
+        }
+    }
+
+    @Test
+    void unaffordableReactionAndWrongSideDoNotConsumeGoldOrCard(){
+        var state=new GameState(56L);var target=add(state,0,character("enemy",2,4),Zone.BATTLEFIELD,new BoardPosition(0,0));
+        var reaction=add(state,1,new CardDefinition("buff","Buff",CardType.SPELL,"TEST",2,0,0,0,0,0,Set.of(),List.of(new SpellEffect(SpellEffectType.BUFF_DEFENSE,3,SpellTarget.FRIENDLY))),Zone.HAND,null);
+        var engine=new GameEngine();
+        assertFalse(engine.apply(state,new GameAction.CastSpell(1,reaction.instanceId(),target.instanceId(),null)).accepted());
+        state.player(1).restoreGp(2);
+        assertFalse(engine.apply(state,new GameAction.CastSpell(1,reaction.instanceId(),target.instanceId(),null)).accepted());
+        assertEquals(3,state.player(1).currentGp());assertEquals(Zone.HAND,reaction.zone());assertEquals(4,target.effectiveDefense());
+    }
+
+    @Test
     void inactivePlayerCanSpendSavedGpOnImmediateReactionBuff() {
         GameState state = new GameState(1L);
         GameEngine engine = new GameEngine();
