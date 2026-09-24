@@ -155,7 +155,8 @@
       "rarity": 3,
       "contentStatus": "PROTOTYPE",
       "archetypes": [
-        "FORTRESS"
+        "FORTRESS",
+        "MEDICAL"
       ]
     },
     {
@@ -165,7 +166,7 @@
       "faction": "POSEIDON",
       "cost": 5,
       "attack": 4,
-      "defense": 7,
+      "defense": 6,
       "range": 1,
       "movement": 2,
       "hitPoints": 0,
@@ -445,7 +446,7 @@
       "name": "Highwall Archon",
       "type": "CHARACTER",
       "faction": "ATHENA",
-      "cost": 5,
+      "cost": 6,
       "attack": 4,
       "defense": 6,
       "range": 2,

@@ -10,7 +10,7 @@
       "attack": 2,
       "defense": 1,
       "range": 1,
-      "movement": 3,
+      "movement": 4,
       "hitPoints": 0,
       "keywords": [
         "BLINK"
@@ -27,7 +27,7 @@
       "type": "CHARACTER",
       "faction": "ZEUS",
       "cost": 5,
-      "attack": 5,
+      "attack": 4,
       "defense": 4,
       "range": 2,
       "movement": 3,
@@ -46,7 +46,7 @@
       "name": "Aetherbolt Avatar",
       "type": "CHARACTER",
       "faction": "ZEUS",
-      "cost": 8,
+      "cost": 9,
       "attack": 8,
       "defense": 7,
       "range": 3,
@@ -118,7 +118,7 @@
       "attack": 2,
       "defense": 2,
       "range": 1,
-      "movement": 2,
+      "movement": 3,
       "hitPoints": 0,
       "keywords": [
         "MOLE"
@@ -200,6 +200,7 @@
       "rarity": 2,
       "contentStatus": "PROTOTYPE",
       "archetypes": [
+        "HUMAN",
         "MERFOLK"
       ]
     },
@@ -250,7 +251,7 @@
       "faction": "HADES",
       "cost": 5,
       "attack": 6,
-      "defense": 4,
+      "defense": 3,
       "range": 1,
       "movement": 3,
       "hitPoints": 0,
@@ -355,7 +356,10 @@
       "rulesText": "Fast Strike. An aggressive recruit that wins the first exchange.",
       "description": "The shield is another weapon.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "ares_keyword_phalanx_breaker",
@@ -364,7 +368,7 @@
       "faction": "ARES",
       "cost": 5,
       "attack": 6,
-      "defense": 5,
+      "defense": 4,
       "range": 1,
       "movement": 3,
       "hitPoints": 0,
@@ -454,7 +458,7 @@
       "attack": 1,
       "defense": 4,
       "range": 1,
-      "movement": 2,
+      "movement": 3,
       "hitPoints": 0,
       "keywords": [
         "VANGUARD"
@@ -463,7 +467,10 @@
       "rulesText": "Vanguard. Establishes an efficient defensive firing screen.",
       "description": "The first lesson is where to stand.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "athena_keyword_owlguard_strategos",
@@ -518,7 +525,7 @@
       "name": "High-Flank Scholar",
       "type": "CHARACTER",
       "faction": "ATHENA",
-      "cost": 3,
+      "cost": 4,
       "attack": 3,
       "defense": 4,
       "range": 2,
@@ -531,7 +538,10 @@
       "rulesText": "Sharp Shot. Converts prepared elevation into pressure.",
       "description": "The best angle waits above the map.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "athena_keyword_labyrinth_tactician",
@@ -551,7 +561,10 @@
       "rulesText": "Sharp Shot. Controls the maze from a fortified stack.",
       "description": "The best position is the one unseen.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "hephaestus_keyword_bronze_line_automaton",
@@ -560,9 +573,9 @@
       "faction": "HEPHAESTUS",
       "cost": 2,
       "attack": 2,
-      "defense": 4,
+      "defense": 3,
       "range": 1,
-      "movement": 1,
+      "movement": 2,
       "hitPoints": 0,
       "keywords": [
         "VANGUARD"

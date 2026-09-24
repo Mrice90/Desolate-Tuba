@@ -23,7 +23,10 @@
       "rulesText": "A sovereign bolt erases all but the strongest enemy combatants.",
       "description": "A sovereign bolt erases all but the strongest enemy combatants.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "STORM"
+      ]
     },
     {
       "id": "zeus_apex_wrath_of_olympus",
@@ -47,14 +50,17 @@
       "rulesText": "The upper grid discharges directly into hostile infrastructure.",
       "description": "The upper grid discharges directly into hostile infrastructure.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "STORM"
+      ]
     },
     {
       "id": "zeus_apex_divine_tailwind",
       "name": "Divine Tailwind",
       "type": "SPELL",
       "faction": "ZEUS",
-      "cost": 5,
+      "cost": 2,
       "attack": 0,
       "defense": 0,
       "range": 0,
@@ -71,14 +77,17 @@
       "rulesText": "A chosen warrior crosses the entire battlefield on command.",
       "description": "A chosen warrior crosses the entire battlefield on command.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "STORM"
+      ]
     },
     {
       "id": "zeus_apex_crownstorm_ascendance",
       "name": "Crownstorm Ascendance",
       "type": "SPELL",
       "faction": "ZEUS",
-      "cost": 6,
+      "cost": 5,
       "attack": 0,
       "defense": 0,
       "range": 0,
@@ -95,14 +104,17 @@
       "rulesText": "Royal lightning grants overwhelming temporary force.",
       "description": "Royal lightning grants overwhelming temporary force.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "STORM"
+      ]
     },
     {
       "id": "zeus_apex_imperial_sky_aegis",
       "name": "Imperial Sky Aegis",
       "type": "SPELL",
       "faction": "ZEUS",
-      "cost": 6,
+      "cost": 5,
       "attack": 0,
       "defense": 0,
       "range": 0,
@@ -119,14 +131,17 @@
       "rulesText": "A dome of stormglass turns aside a decisive assault.",
       "description": "A dome of stormglass turns aside a decisive assault.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "STORM"
+      ]
     },
     {
       "id": "zeus_apex_skyfather_archon",
       "name": "Skyfather Archon",
       "type": "CHARACTER",
       "faction": "ZEUS",
-      "cost": 8,
+      "cost": 9,
       "attack": 8,
       "defense": 7,
       "range": 3,
@@ -146,7 +161,7 @@
       "name": "Keraunos Seraph",
       "type": "CHARACTER",
       "faction": "ZEUS",
-      "cost": 7,
+      "cost": 8,
       "attack": 7,
       "defense": 6,
       "range": 3,
@@ -192,12 +207,21 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 17,
-      "keywords": [],
+      "keywords": [
+        "HIGH_GROUND"
+      ],
       "effects": [],
       "rulesText": "The highest district of Neo-Olympus, charged with divine authority.",
       "description": "The highest district of Neo-Olympus, charged with divine authority.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "HIGH_GROUND": {
+          "range": 0,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "zeus_apex_worldstorm_spire",
@@ -210,12 +234,21 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 20,
-      "keywords": [],
+      "keywords": [
+        "TURRET"
+      ],
       "effects": [],
       "rulesText": "A planetary-scale conductor dominating every visible skyline.",
       "description": "A planetary-scale conductor dominating every visible skyline.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "TURRET": {
+          "range": 2,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 3
     },
     {
       "id": "poseidon_apex_atlantis_crown_basin",
@@ -246,12 +279,21 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 18,
-      "keywords": [],
+      "keywords": [
+        "WAYSTATION"
+      ],
       "effects": [],
       "rulesText": "Ancient currents are stored beneath unbreakable pressure seals.",
       "description": "Ancient currents are stored beneath unbreakable pressure seals.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "WAYSTATION": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "poseidon_apex_leviathan_nursery_trench",
@@ -264,12 +306,21 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 17,
-      "keywords": [],
+      "keywords": [
+        "SANCTUARY"
+      ],
       "effects": [],
       "rulesText": "A deep biome where siege organisms mature unseen.",
       "description": "A deep biome where siege organisms mature unseen.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "SANCTUARY": {
+          "range": 0,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "poseidon_apex_trident_confluence",
@@ -345,7 +396,10 @@
       "rulesText": "The ocean god's largest autonomous war-body.",
       "description": "The ocean god's largest autonomous war-body.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "BEAST"
+      ]
     },
     {
       "id": "poseidon_apex_abysswalker_nereid",
@@ -366,7 +420,10 @@
       "rulesText": "An impossible infiltrator moving through water, stone, and folded space.",
       "description": "An impossible infiltrator moving through water, stone, and folded space.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NYMPH"
+      ]
     },
     {
       "id": "poseidon_apex_maelstrom_verdict",
@@ -390,7 +447,10 @@
       "rulesText": "A contained maelstrom tears nine damage from an enemy Permanent.",
       "description": "A contained maelstrom tears nine damage from an enemy Permanent.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TIDAL"
+      ]
     },
     {
       "id": "poseidon_apex_leviathan_gate",
@@ -403,12 +463,21 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 21,
-      "keywords": [],
+      "keywords": [
+        "MEDIC_TENT"
+      ],
       "effects": [],
       "rulesText": "A living fortress sealing the road to Atlantis.",
       "description": "A living fortress sealing the road to Atlantis.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "MEDIC_TENT": {
+          "range": 2,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "hades_apex_final_passage",
@@ -432,7 +501,10 @@
       "rulesText": "The chosen enemy is measured against the final threshold.",
       "description": "The chosen enemy is measured against the final threshold.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NECROMANCY"
+      ]
     },
     {
       "id": "hades_apex_tomb_of_all_systems",
@@ -456,14 +528,17 @@
       "rulesText": "Every dead machine pulls an enemy Permanent toward ruin.",
       "description": "Every dead machine pulls an enemy Permanent toward ruin.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NECROMANCY"
+      ]
     },
     {
       "id": "hades_apex_lethe_absolute",
       "name": "Lethe Absolute",
       "type": "SPELL",
       "faction": "HADES",
-      "cost": 6,
+      "cost": 4,
       "attack": 0,
       "defense": 0,
       "range": 0,
@@ -480,14 +555,17 @@
       "rulesText": "An enemy Character forgets the battlefield completely.",
       "description": "An enemy Character forgets the battlefield completely.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NECROMANCY"
+      ]
     },
     {
       "id": "hades_apex_crown_of_the_unquiet",
       "name": "Crown of the Unquiet",
       "type": "SPELL",
       "faction": "HADES",
-      "cost": 6,
+      "cost": 5,
       "attack": 0,
       "defense": 0,
       "range": 0,
@@ -504,14 +582,17 @@
       "rulesText": "The dead lend a friendly Character their unfinished violence.",
       "description": "The dead lend a friendly Character their unfinished violence.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NECROMANCY"
+      ]
     },
     {
       "id": "hades_apex_erebus_null_shroud",
       "name": "Erebus Null Shroud",
       "type": "SPELL",
       "faction": "HADES",
-      "cost": 6,
+      "cost": 5,
       "attack": 0,
       "defense": 0,
       "range": 0,
@@ -528,7 +609,10 @@
       "rulesText": "Absolute darkness shields a friendly Character from judgment.",
       "description": "Absolute darkness shields a friendly Character from judgment.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NECROMANCY"
+      ]
     },
     {
       "id": "hades_apex_cerberus_omega",
@@ -548,7 +632,10 @@
       "rulesText": "The completed three-core guardian permits no passage.",
       "description": "The completed three-core guardian permits no passage.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "BEAST"
+      ]
     },
     {
       "id": "hades_apex_persephone_underworld_queen",
@@ -601,12 +688,21 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 18,
-      "keywords": [],
+      "keywords": [
+        "ARCHIVE"
+      ],
       "effects": [],
       "rulesText": "The underworld's oldest memories grow through black roots.",
       "description": "The underworld's oldest memories grow through black roots.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "ARCHIVE": {
+          "range": 0,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "hades_apex_gate_beyond_death",
@@ -619,12 +715,21 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 22,
-      "keywords": [],
+      "keywords": [
+        "BEACON"
+      ],
       "effects": [],
       "rulesText": "A threshold whose destruction would release the entire dead grid.",
       "description": "A threshold whose destruction would release the entire dead grid.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "BEACON": {
+          "range": 1,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "ares_apex_ares_godframe_unbound",
@@ -644,7 +749,10 @@
       "rulesText": "War itself given a body and permission to advance.",
       "description": "War itself given a body and permission to advance.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "ares_apex_phobos_terror_titan",
@@ -695,11 +803,13 @@
       "attack": 10,
       "defense": 8,
       "range": 2,
-      "movement": 2,
+      "movement": 1,
       "hitPoints": 0,
-      "keywords": [],
+      "keywords": [
+        "SIEGE"
+      ],
       "effects": [],
-      "rulesText": "A siege warrior designed to turn districts into arenas.",
+      "rulesText": "Siege.",
       "description": "A siege warrior designed to turn districts into arenas.",
       "rarity": 4,
       "contentStatus": "PROTOTYPE"
@@ -729,7 +839,7 @@
       "name": "Total War",
       "type": "SPELL",
       "faction": "ARES",
-      "cost": 7,
+      "cost": 5,
       "attack": 0,
       "defense": 0,
       "range": 0,
@@ -746,7 +856,10 @@
       "rulesText": "A friendly Character becomes the center of all violence.",
       "description": "A friendly Character becomes the center of all violence.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "WARFARE"
+      ]
     },
     {
       "id": "ares_apex_no_safe_ground",
@@ -770,14 +883,17 @@
       "rulesText": "Ares converts every battlefield system into a weapon.",
       "description": "Ares converts every battlefield system into a weapon.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "WARFARE"
+      ]
     },
     {
       "id": "ares_apex_champions_refusal",
       "name": "Champion's Refusal",
       "type": "SPELL",
       "faction": "ARES",
-      "cost": 6,
+      "cost": 4,
       "attack": 0,
       "defense": 0,
       "range": 0,
@@ -794,7 +910,10 @@
       "rulesText": "A warrior refuses destruction until the next turn.",
       "description": "A warrior refuses destruction until the next turn.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "WARFARE"
+      ]
     },
     {
       "id": "ares_apex_endless_arena",
@@ -807,12 +926,21 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 15,
-      "keywords": [],
+      "keywords": [
+        "WAYSTATION"
+      ],
       "effects": [],
       "rulesText": "A colossal combat district that feeds on public warfare.",
       "description": "A colossal combat district that feeds on public warfare.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "WAYSTATION": {
+          "range": 0,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "ares_apex_siege_god_arsenal",
@@ -825,12 +953,24 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 18,
-      "keywords": [],
+      "keywords": [
+        "TURRET"
+      ],
       "effects": [],
       "rulesText": "Every weapon Ares has ever approved waits within.",
       "description": "Every weapon Ares has ever approved waits within.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "TURRET": {
+          "range": 2,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 3,
+      "archetypes": [
+        "EMPLACEMENT"
+      ]
     },
     {
       "id": "athena_apex_athena_strategic_avatar",
@@ -890,7 +1030,10 @@
       "rulesText": "A mobile intelligence that recognizes victory before it happens.",
       "description": "A mobile intelligence that recognizes victory before it happens.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "athena_apex_medusa_countermeasure_prime",
@@ -917,7 +1060,7 @@
       "name": "Owl of Absolute Foresight",
       "type": "CHARACTER",
       "faction": "ATHENA",
-      "cost": 6,
+      "cost": 7,
       "attack": 5,
       "defense": 8,
       "range": 3,
@@ -943,12 +1086,24 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 22,
-      "keywords": [],
+      "keywords": [
+        "BULWARK"
+      ],
       "effects": [],
       "rulesText": "The ultimate defensive monument of the wisdom district.",
       "description": "The ultimate defensive monument of the wisdom district.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "BULWARK": {
+          "range": 0,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 3,
+      "archetypes": [
+        "FORTRESS"
+      ]
     },
     {
       "id": "athena_apex_strategos_command_vault",
@@ -961,12 +1116,21 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 18,
-      "keywords": [],
+      "keywords": [
+        "WATCHTOWER"
+      ],
       "effects": [],
       "rulesText": "A hardened chamber coordinating the entire formation.",
       "description": "A hardened chamber coordinating the entire formation.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "WATCHTOWER": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "athena_apex_gorgon_reflection_wall",
@@ -984,7 +1148,10 @@
       "rulesText": "A mirrored defense designed to halt enemy momentum.",
       "description": "A mirrored defense designed to halt enemy momentum.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "FORTRESS"
+      ]
     },
     {
       "id": "athena_apex_city_of_reason",
@@ -997,12 +1164,24 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 17,
-      "keywords": [],
+      "keywords": [
+        "COVER"
+      ],
       "effects": [],
       "rulesText": "A civic grid where every street supports the defensive plan.",
       "description": "A civic grid where every street supports the defensive plan.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "COVER": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1,
+      "archetypes": [
+        "URBAN"
+      ]
     },
     {
       "id": "athena_apex_perfect_counterstroke",
@@ -1026,7 +1205,10 @@
       "rulesText": "Athena answers an enemy commitment with exact lethal force.",
       "description": "Athena answers an enemy commitment with exact lethal force.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TACTICS"
+      ]
     },
     {
       "id": "hephaestus_apex_forge_of_divine_machines",
@@ -1044,7 +1226,10 @@
       "rulesText": "The supreme factory where god-scale automatons are born.",
       "description": "The supreme factory where god-scale automatons are born.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "WORKSHOP"
+      ]
     },
     {
       "id": "hephaestus_apex_talos_resurrection_cradle",
@@ -1057,12 +1242,21 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 22,
-      "keywords": [],
+      "keywords": [
+        "MEDIC_TENT"
+      ],
       "effects": [],
       "rulesText": "A rebuilding chamber large enough to restore a fallen colossus.",
       "description": "A rebuilding chamber large enough to restore a fallen colossus.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "MEDIC_TENT": {
+          "range": 1,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "hephaestus_apex_cyclops_star_furnace",
@@ -1075,12 +1269,24 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 20,
-      "keywords": [],
+      "keywords": [
+        "TURRET"
+      ],
       "effects": [],
       "rulesText": "A captive stellar reaction powers the entire forge district.",
       "description": "A captive stellar reaction powers the entire forge district.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "TURRET": {
+          "range": 2,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 3,
+      "archetypes": [
+        "WORKSHOP"
+      ]
     },
     {
       "id": "hephaestus_apex_daedalus_infinite_workshop",
@@ -1093,12 +1299,24 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 18,
-      "keywords": [],
+      "keywords": [
+        "WORKSHOP"
+      ],
       "effects": [],
       "rulesText": "Every surface rearranges itself into the tool currently required.",
       "description": "Every surface rearranges itself into the tool currently required.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "WORKSHOP": {
+          "range": 2,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 3,
+      "archetypes": [
+        "WORKSHOP"
+      ]
     },
     {
       "id": "hephaestus_apex_adamant_bulwark_engine",
@@ -1111,12 +1329,24 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 17,
-      "keywords": [],
+      "keywords": [
+        "BULWARK"
+      ],
       "effects": [],
       "rulesText": "A self-repairing wall forged from near-indestructible alloy.",
       "description": "A self-repairing wall forged from near-indestructible alloy.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "BULWARK": {
+          "range": 0,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 3,
+      "archetypes": [
+        "FORTRESS"
+      ]
     },
     {
       "id": "hephaestus_apex_olympian_magma_heart",
@@ -1152,7 +1382,11 @@
       "rulesText": "An automated city that never stops building.",
       "description": "An automated city that never stops building.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "INDUSTRIAL",
+        "URBAN"
+      ]
     },
     {
       "id": "hephaestus_apex_titan_salvage_expanse",
@@ -1165,12 +1399,21 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 16,
-      "keywords": [],
+      "keywords": [
+        "ARCHIVE"
+      ],
       "effects": [],
       "rulesText": "A field of ancient components awaiting new purpose.",
       "description": "A field of ancient components awaiting new purpose.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "ARCHIVE": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "hephaestus_apex_hephaestus_forge_avatar",
@@ -1198,7 +1441,7 @@
       "name": "Masterwork Restoration",
       "type": "SPELL",
       "faction": "HEPHAESTUS",
-      "cost": 7,
+      "cost": 5,
       "attack": 0,
       "defense": 0,
       "range": 0,
@@ -1215,7 +1458,10 @@
       "rulesText": "Perfect repair removes ten damage from a friendly Permanent.",
       "description": "Perfect repair removes ten damage from a friendly Permanent.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "ARTIFICE"
+      ]
     }
   ]
 }

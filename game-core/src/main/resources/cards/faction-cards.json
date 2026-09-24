@@ -29,7 +29,7 @@
       "type": "CHARACTER",
       "faction": "ZEUS",
       "cost": 1,
-      "attack": 2,
+      "attack": 1,
       "defense": 1,
       "range": 2,
       "movement": 3,
@@ -65,7 +65,7 @@
       "name": "Iris Signal Runner",
       "type": "CHARACTER",
       "faction": "ZEUS",
-      "cost": 2,
+      "cost": 3,
       "attack": 2,
       "defense": 2,
       "range": 2,
@@ -146,7 +146,7 @@
       "name": "Tempest Oracle",
       "type": "CHARACTER",
       "faction": "ZEUS",
-      "cost": 4,
+      "cost": 5,
       "attack": 3,
       "defense": 4,
       "range": 3,
@@ -423,7 +423,7 @@
       "cost": 1,
       "attack": 1,
       "defense": 2,
-      "range": 2,
+      "range": 1,
       "movement": 3,
       "hitPoints": 0,
       "keywords": [],
@@ -440,7 +440,7 @@
       "name": "Nereid Current-Rider",
       "type": "CHARACTER",
       "faction": "POSEIDON",
-      "cost": 1,
+      "cost": 2,
       "attack": 2,
       "defense": 1,
       "range": 1,
@@ -464,7 +464,7 @@
       "faction": "POSEIDON",
       "cost": 2,
       "attack": 2,
-      "defense": 4,
+      "defense": 3,
       "range": 1,
       "movement": 1,
       "hitPoints": 0,
@@ -783,14 +783,23 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 8,
-      "keywords": [],
+      "keywords": [
+        "BULWARK"
+      ],
       "rulesText": "",
       "description": "A regenerative wall hardened by mineral growth.",
       "rarity": 2,
       "contentStatus": "PROTOTYPE",
       "archetypes": [
         "FORTRESS"
-      ]
+      ],
+      "keywordValues": {
+        "BULWARK": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "poseidon_sonar_beacon",
@@ -836,7 +845,7 @@
       "name": "Shade Packet",
       "type": "CHARACTER",
       "faction": "HADES",
-      "cost": 1,
+      "cost": 2,
       "attack": 2,
       "defense": 1,
       "range": 2,
@@ -862,7 +871,7 @@
       "attack": 1,
       "defense": 2,
       "range": 1,
-      "movement": 3,
+      "movement": 4,
       "hitPoints": 0,
       "keywords": [],
       "rulesText": "",
@@ -1004,14 +1013,17 @@
       "rulesText": "VANGUARD",
       "description": "A three-mind guardian sealing the gates below.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "BEAST"
+      ]
     },
     {
       "id": "hades_lethe_memory_thief",
       "name": "Lethe Memory Thief",
       "type": "CHARACTER",
       "faction": "HADES",
-      "cost": 5,
+      "cost": 6,
       "attack": 4,
       "defense": 4,
       "range": 3,
@@ -1226,9 +1238,9 @@
       "faction": "ARES",
       "cost": 1,
       "attack": 2,
-      "defense": 1,
+      "defense": 2,
       "range": 1,
-      "movement": 3,
+      "movement": 2,
       "hitPoints": 0,
       "keywords": [],
       "rulesText": "",
@@ -1352,7 +1364,10 @@
       "rulesText": "VANGUARD",
       "description": "A disciplined heavy suit advancing without retreat.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "ares_warhound_assault_pack",
@@ -1389,7 +1404,10 @@
       "rulesText": "",
       "description": "A chaos machine amplifying every nearby conflict.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "ares_ares_chariot_pilot",
@@ -1418,7 +1436,7 @@
       "name": "Titanblood Berserker",
       "type": "CHARACTER",
       "faction": "ARES",
-      "cost": 6,
+      "cost": 5,
       "attack": 7,
       "defense": 4,
       "range": 1,
@@ -1580,11 +1598,20 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 8,
-      "keywords": [],
+      "keywords": [
+        "BEACON"
+      ],
       "rulesText": "",
       "description": "A launch structure for rapid strike vehicles.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "BEACON": {
+          "range": 1,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "ares_ares_siege_citadel",
@@ -1615,7 +1642,7 @@
       "faction": "ATHENA",
       "cost": 1,
       "attack": 1,
-      "defense": 2,
+      "defense": 1,
       "range": 3,
       "movement": 3,
       "hitPoints": 0,
@@ -1694,7 +1721,7 @@
       "name": "Pallas Counter-Sniper",
       "type": "CHARACTER",
       "faction": "ATHENA",
-      "cost": 3,
+      "cost": 4,
       "attack": 3,
       "defense": 3,
       "range": 3,
@@ -1993,14 +2020,23 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 10,
-      "keywords": [],
+      "keywords": [
+        "BULWARK"
+      ],
       "rulesText": "",
       "description": "A hardened barrier of overlapping energy shields.",
       "rarity": 2,
       "contentStatus": "PROTOTYPE",
       "archetypes": [
         "FORTRESS"
-      ]
+      ],
+      "keywordValues": {
+        "BULWARK": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "athena_athena_strategy_core",
@@ -2046,7 +2082,7 @@
       "name": "Tunnel Riveter",
       "type": "CHARACTER",
       "faction": "HEPHAESTUS",
-      "cost": 1,
+      "cost": 2,
       "attack": 2,
       "defense": 2,
       "range": 1,
@@ -2095,7 +2131,7 @@
       "faction": "HEPHAESTUS",
       "cost": 2,
       "attack": 1,
-      "defense": 4,
+      "defense": 5,
       "range": 1,
       "movement": 1,
       "hitPoints": 0,
@@ -2127,7 +2163,10 @@
       "rulesText": "MOLE",
       "description": "A heatproof explorer mapping buried power veins.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "hephaestus_talos_patrol_frame",
@@ -2136,7 +2175,7 @@
       "faction": "HEPHAESTUS",
       "cost": 3,
       "attack": 3,
-      "defense": 5,
+      "defense": 4,
       "range": 1,
       "movement": 2,
       "hitPoints": 0,
@@ -2157,7 +2196,7 @@
       "type": "CHARACTER",
       "faction": "HEPHAESTUS",
       "cost": 4,
-      "attack": 5,
+      "attack": 6,
       "defense": 3,
       "range": 1,
       "movement": 2,
@@ -2173,7 +2212,7 @@
       "name": "Daedalus Prototype",
       "type": "CHARACTER",
       "faction": "HEPHAESTUS",
-      "cost": 4,
+      "cost": 5,
       "attack": 3,
       "defense": 4,
       "range": 3,
@@ -2193,13 +2232,15 @@
       "type": "CHARACTER",
       "faction": "HEPHAESTUS",
       "cost": 5,
-      "attack": 6,
+      "attack": 5,
       "defense": 5,
       "range": 2,
       "movement": 1,
       "hitPoints": 0,
-      "keywords": [],
-      "rulesText": "",
+      "keywords": [
+        "SIEGE"
+      ],
+      "rulesText": "Siege.",
       "description": "A slow engine built to dismantle enemy fortifications.",
       "rarity": 2,
       "contentStatus": "PROTOTYPE",
@@ -2375,14 +2416,23 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 9,
-      "keywords": [],
+      "keywords": [
+        "BULWARK"
+      ],
       "rulesText": "",
       "description": "A self-shaping wall that hardens under impact.",
       "rarity": 2,
       "contentStatus": "PROTOTYPE",
       "archetypes": [
         "FORTRESS"
-      ]
+      ],
+      "keywordValues": {
+        "BULWARK": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "hephaestus_cyclops_plasma_furnace",

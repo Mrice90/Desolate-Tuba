@@ -89,7 +89,7 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     InfiniteConquestGui(boolean screenshotMode) {
-        super("Infinite Conquest — Hex & Allies 0.3");
+        super("Infinite Conquest — Hex & Allies 0.4");
         captureMode=screenshotMode;
         presentationQueue = new PresentationQueue(this::playPresentation);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -2092,8 +2092,8 @@ public final class InfiniteConquestGui extends JFrame {
             };
             String effect = switch (ability.effect()) {
                 case DRAW_CARD -> "draw " + ability.amount();
-                case DRAW_CHARACTER -> "draw a random Character from your deck";
-                case DRAW_STRUCTURE -> "draw a random Structure from your deck";
+                case DRAW_CHARACTER -> "draw a next Character from your deck";
+                case DRAW_STRUCTURE -> "draw a next Structure from your deck";
                 case GAIN_GP -> "gain " + ability.amount() + " GP";
                 case HEAL_SELF -> "heal this " + ability.amount();
                 case HEAL_CAPITAL -> "heal your Capital " + ability.amount();

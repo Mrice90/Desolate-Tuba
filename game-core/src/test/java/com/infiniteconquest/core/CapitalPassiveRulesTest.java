@@ -81,6 +81,58 @@ class CapitalPassiveRulesTest {
         assertEquals(1, passiveEvents(state, CapitalPassive.BRONZE_REGENERATION));
     }
 
+    @Test
+    void ferryTollRewardsOnlyTheFirstEnemyReturnAndResetsNextTurn() {
+        GameState state = new GameState(8L);
+        var rules = new CapitalPassiveRules();
+        add(state, 0, capital("hades_capital_styx_gate"), Zone.BATTLEFIELD, new BoardPosition(1, 0));
+        var enemy = add(state, 1, character("enemy", 2, 2, 2), Zone.HAND, null);
+        var friendly = add(state, 0, character("friendly", 2, 2, 2), Zone.HAND, null);
+        var spell = add(state, 0, new CardDefinition("spell", "Spell", CardType.SPELL, "HADES", 4,
+                0, 0, 0, 0, 0, Set.of(), List.of(new SpellEffect(SpellEffectType.RETURN_CHARACTER, 1, SpellTarget.ENEMY))), Zone.HAND, null);
+        int start = state.player(0).currentGp();
+        rules.onCardPlayed(state, spell);
+        rules.onCharacterReturnedBySpell(state, 0, friendly);
+        assertEquals(start, state.player(0).currentGp());
+        rules.onCharacterReturnedBySpell(state, 0, enemy);
+        rules.onCharacterReturnedBySpell(state, 0, enemy);
+        assertEquals(start + 2, state.player(0).currentGp());
+        assertEquals(1, passiveEvents(state, CapitalPassive.FERRY_TOLL));
+        new GameEngine().apply(state, new GameAction.EndTurn(0));
+        int next = state.player(0).currentGp();
+        rules.onCharacterReturnedBySpell(state, 0, enemy);
+        assertEquals(next + 2, state.player(0).currentGp());
+    }
+
+    @Test
+    void deathlessLevyReturnsOneCharacterWithoutAlsoRepairingCapital() {
+        GameState state = new GameState(9L);
+        var house = add(state, 0, capital("hades_capital_house_of_hades"), Zone.BATTLEFIELD, new BoardPosition(1, 0));
+        house.addDamage(6);
+        var first = add(state, 0, character("first", 1, 1, 1), Zone.DISCARD, null);
+        var last = add(state, 0, character("last", 2, 1, 1), Zone.DISCARD, null);
+        state.player(0).addToDiscard(first.instanceId()); state.player(0).addToDiscard(last.instanceId());
+        new CapitalPassiveRules().onTurnStarted(state, 0);
+        assertEquals(Zone.HAND, last.zone()); assertEquals(Zone.DISCARD, first.zone());
+        assertEquals(6, house.damage());
+    }
+
+    @Test
+    void zeusCapitalBonusesUseTheNewTwoPointBudget() {
+        var rules = new CapitalPassiveRules();
+        var blink = new CardDefinition("blink", "Blink", CardType.CHARACTER, "ZEUS", 3,
+                2, 2, 3, 1, 0, Set.of(com.infiniteconquest.data.Keyword.BLINK));
+        GameState muster = new GameState(10L);
+        add(muster, 0, capital("zeus_capital_olympus_citadel"), Zone.BATTLEFIELD, new BoardPosition(1, 0));
+        var attacker = add(muster, 0, blink, Zone.BATTLEFIELD, new BoardPosition(0, 0));
+        rules.onTurnStarted(muster, 0); assertEquals(4, attacker.effectiveAttack());
+        GameState cloud = new GameState(11L);
+        add(cloud, 0, capital("zeus_capital_cloud_throne"), Zone.BATTLEFIELD, new BoardPosition(1, 0));
+        var defender = add(cloud, 0, blink, Zone.BATTLEFIELD, new BoardPosition(0, 0));
+        rules.onBlinked(cloud, defender); rules.onBlinked(cloud, defender);
+        assertEquals(4, defender.effectiveDefense());
+    }
+
     private CardDefinition capital(String id) {
         return capitals.stream().filter(card -> card.id().equals(id)).findFirst().orElseThrow();
     }

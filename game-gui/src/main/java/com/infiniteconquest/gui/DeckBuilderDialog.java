@@ -141,8 +141,8 @@ final class DeckBuilderDialog extends JDialog {
         for(SpellEffect e:c.effects())text.append("<p>").append(e.type().name().replace('_',' ')).append(" ").append(e.amount()).append(" — ").append(e.target()).append("</p>");
         for(CardAbility a:c.abilities())text.append("<p>").append(switch(a.trigger()){case ENTERS_PLAY->"When played";case DESTROYED->"When destroyed";case PASSIVE->"Start of your turn";case ACTIVATED->"Activate once per turn ("+a.gpCost()+" GP)";}).append(": ").append(switch(a.effect()){
             case DRAW_CARD->"draw "+a.amount()+" card(s)";
-            case DRAW_CHARACTER->"draw "+a.amount()+" random Character(s) from your deck";
-            case DRAW_STRUCTURE->"draw "+a.amount()+" random Structure(s) from your deck";
+            case DRAW_CHARACTER->"draw "+a.amount()+" next Character(s) from your deck";
+            case DRAW_STRUCTURE->"draw "+a.amount()+" next Structure(s) from your deck";
             case GAIN_GP->"gain "+a.amount()+" GP";
             case HEAL_SELF->"heal this card for "+a.amount();
             case HEAL_CAPITAL->"heal your Capital for "+a.amount();

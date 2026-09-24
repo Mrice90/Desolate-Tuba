@@ -9,7 +9,7 @@ public record BalanceReport(
         int completedMatches,
         int draws,
         double averageTurns,
-        double firstPlayerWinRate,
+        double seatZeroWinRate,
         double averageUnusedGpAtEndTurn,
         double averageEndingHandSize,
         int matchesWithExhaustion,

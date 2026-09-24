@@ -1,6 +1,7 @@
 package com.infiniteconquest.cli;
 
 import com.infiniteconquest.core.*;
+import com.infiniteconquest.data.Keyword;
 
 import java.util.*;
 
@@ -39,13 +40,31 @@ final class FactionTutorExpansion {
     private static CardDefinition tutor(String faction, String name, CardType type, int cost, int index) {
         int hp = type == CardType.LAND ? Math.min(22, 8 + index * 4) : 10 + index * 4;
         int gpGeneration = 1 + index / 2;
-        int activationCost = 1 + index / 2;
+        int activationCost = 2;
+        int gold = index < 2 ? 0 : index == 2 ? 1 : 2;
+        Keyword specialty = type == CardType.LAND ? switch (faction) {
+            case "ZEUS", "ATHENA" -> Keyword.HIGH_GROUND;
+            case "POSEIDON" -> Keyword.SANCTUARY;
+            case "HADES", "HEPHAESTUS" -> Keyword.ARCHIVE;
+            default -> Keyword.WAYSTATION;
+        } : switch (faction) {
+            case "ZEUS" -> Keyword.WATCHTOWER;
+            case "POSEIDON" -> Keyword.MEDIC_TENT;
+            case "ATHENA" -> Keyword.BULWARK;
+            case "HEPHAESTUS" -> Keyword.WORKSHOP;
+            default -> Keyword.BEACON;
+        };
+        Set<Keyword> keywords = index >= 3 ? Set.of(specialty) : Set.of();
+        Map<Keyword, KeywordValue> values = index >= 3 ? Map.of(specialty,
+                new KeywordValue(Set.of(Keyword.MEDIC_TENT, Keyword.WORKSHOP, Keyword.BEACON).contains(specialty) ? 1 : 0, 1)) : Map.of();
+        Set<String> archetypes = type == CardType.STRUCTURE ? Set.of("RECRUITMENT") : Set.of("MUSTER_GROUND");
         AbilityEffectType effect = type == CardType.LAND
                 ? AbilityEffectType.DRAW_STRUCTURE : AbilityEffectType.DRAW_CHARACTER;
         String id = faction.toLowerCase(Locale.ROOT) + "_tutor_"
                 + type.name().toLowerCase(Locale.ROOT) + "_" + (index + 1);
         return new CardDefinition(id, name, type, faction, cost, 0, 0, 0, 0, hp,
-                Set.of(), List.of(), gpGeneration, DevelopmentPassive.NONE,
-                List.of(new CardAbility(AbilityTrigger.ACTIVATED, effect, 1, activationCost)));
+                keywords, List.of(), gpGeneration, DevelopmentPassive.NONE,
+                List.of(new CardAbility(AbilityTrigger.ACTIVATED, effect, 1, activationCost)),
+                values, archetypes, gold);
     }
 }

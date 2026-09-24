@@ -10,7 +10,15 @@ class TerrainCatalogTest {
         assertEquals(6,TerrainRules.landKeywords().size());assertEquals(6,TerrainRules.structureKeywords().size());
         for(var keyword:TerrainRules.landKeywords())assertTrue(pool.cards().stream().anyMatch(c->c.type()==CardType.LAND && c.hasKeyword(keyword)),keyword.name());
         for(var keyword:TerrainRules.structureKeywords())assertTrue(pool.cards().stream().anyMatch(c->c.type()==CardType.STRUCTURE && c.hasKeyword(keyword)),keyword.name());
-        assertEquals(14,pool.cards().stream().filter(c->c.developmentGoldCost()>0).count());
+        for (String faction : FactionDecks.FACTIONS) {
+            var cards = pool.cardsForFaction(faction);
+            for (CardType type : List.of(CardType.LAND, CardType.STRUCTURE)) {
+                assertTrue(cards.stream().anyMatch(c -> c.type()==type && c.cost()<=2 && c.goldCost()==0), faction+" free opening "+type);
+                assertTrue(cards.stream().anyMatch(c -> c.type()==type && c.goldCost()>0), faction+" paid utility "+type);
+            }
+            assertTrue(cards.stream().filter(c -> c.cost()<=2 && c.goldCost()==0 && c.type()==CardType.LAND).count()>=2, faction);
+        }
+        assertTrue(pool.cards().stream().filter(c->c.developmentGoldCost()>0).allMatch(c->c.goldCost()<=3));
         assertEquals(0,pool.require("zeus_olympian_cloudbank").goldCost());
         assertEquals(2,pool.require("ares_ballistic_shrine").developmentGoldCost());
         assertEquals(2,pool.require("ares_ballistic_shrine").cost());

@@ -13,7 +13,9 @@
       "movement": 0,
       "hitPoints": 9,
       "gpGeneration": 1,
-      "keywords": [],
+      "keywords": [
+        "HIGH_GROUND"
+      ],
       "effects": [],
       "rulesText": "Turn 2. Generates 1 GP each turn.",
       "description": "High stone storing the storm's first charge.",
@@ -21,7 +23,14 @@
       "contentStatus": "PROTOTYPE",
       "archetypes": [
         "HIGHLAND"
-      ]
+      ],
+      "keywordValues": {
+        "HIGH_GROUND": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "zeus_land_aurora_reach",
@@ -35,12 +44,21 @@
       "movement": 0,
       "hitPoints": 15,
       "gpGeneration": 3,
-      "keywords": [],
+      "keywords": [
+        "WAYSTATION"
+      ],
       "effects": [],
       "rulesText": "Turn 5. Generates 3 GP each turn.",
       "description": "A radiant frontier above the weather.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "WAYSTATION": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "zeus_structure_stormglass_relay",
@@ -54,12 +72,21 @@
       "movement": 0,
       "hitPoints": 11,
       "gpGeneration": 2,
-      "keywords": [],
+      "keywords": [
+        "WATCHTOWER"
+      ],
       "effects": [],
       "rulesText": "Turn 3. Generates 2 GP each turn.",
       "description": "It catches lightning and sells the echo.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "WATCHTOWER": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "zeus_structure_cloud_archive",
@@ -93,7 +120,9 @@
       "movement": 0,
       "hitPoints": 10,
       "gpGeneration": 1,
-      "keywords": [],
+      "keywords": [
+        "SANCTUARY"
+      ],
       "effects": [],
       "rulesText": "Turn 2. Generates 1 GP each turn.",
       "description": "Young reefs channel tribute toward Atlantis.",
@@ -101,7 +130,14 @@
       "contentStatus": "PROTOTYPE",
       "archetypes": [
         "COAST"
-      ]
+      ],
+      "keywordValues": {
+        "SANCTUARY": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "poseidon_land_leviathan_shelf",
@@ -122,6 +158,7 @@
       "rarity": 3,
       "contentStatus": "PROTOTYPE",
       "archetypes": [
+        "COAST",
         "HIGHLAND"
       ]
     },
@@ -191,12 +228,21 @@
       "movement": 0,
       "hitPoints": 9,
       "gpGeneration": 1,
-      "keywords": [],
+      "keywords": [
+        "ARCHIVE"
+      ],
       "effects": [],
       "rulesText": "Turn 2. Generates 1 GP each turn.",
       "description": "Even the dead pay for quiet ground.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "ARCHIVE": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "hades_land_erebus_claim",
@@ -210,12 +256,21 @@
       "movement": 0,
       "hitPoints": 16,
       "gpGeneration": 3,
-      "keywords": [],
+      "keywords": [
+        "ARCHIVE"
+      ],
       "effects": [],
       "rulesText": "Turn 5. Generates 3 GP each turn.",
       "description": "Darkness itself is entered in the ledger.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "ARCHIVE": {
+          "range": 0,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "hades_structure_obol_counting_house",
@@ -249,12 +304,21 @@
       "hitPoints": 17,
       "gpGeneration": 2,
       "developmentPassive": "SELF_REPAIR",
-      "keywords": [],
+      "keywords": [
+        "WORKSHOP"
+      ],
       "effects": [],
       "rulesText": "Turn 6. Generates 2 GP. Repairs itself each turn.",
       "description": "Nothing broken stays restless for long.",
       "rarity": 4,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "WORKSHOP": {
+          "range": 1,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "ares_land_red_dust_march",
@@ -268,12 +332,21 @@
       "movement": 0,
       "hitPoints": 9,
       "gpGeneration": 1,
-      "keywords": [],
+      "keywords": [
+        "WAYSTATION"
+      ],
       "effects": [],
       "rulesText": "Turn 2. Generates 1 GP each turn.",
       "description": "Boots turn the plain into a war road.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "WAYSTATION": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "ares_land_conquerors_divide",
@@ -287,12 +360,21 @@
       "movement": 0,
       "hitPoints": 16,
       "gpGeneration": 3,
-      "keywords": [],
+      "keywords": [
+        "HIGH_GROUND"
+      ],
       "effects": [],
       "rulesText": "Turn 5. Generates 3 GP each turn.",
       "description": "A border measured by advancing shields.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "HIGH_GROUND": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "ares_structure_spoil_depot",
@@ -345,7 +427,9 @@
       "movement": 0,
       "hitPoints": 10,
       "gpGeneration": 1,
-      "keywords": [],
+      "keywords": [
+        "HIGH_GROUND"
+      ],
       "effects": [],
       "rulesText": "Turn 2. Generates 1 GP each turn.",
       "description": "Every stone occupies its proven position.",
@@ -353,7 +437,14 @@
       "contentStatus": "PROTOTYPE",
       "archetypes": [
         "HIGHLAND"
-      ]
+      ],
+      "keywordValues": {
+        "HIGH_GROUND": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "athena_land_oracles_province",
@@ -367,12 +458,21 @@
       "movement": 0,
       "hitPoints": 17,
       "gpGeneration": 3,
-      "keywords": [],
+      "keywords": [
+        "ARCHIVE"
+      ],
       "effects": [],
       "rulesText": "Turn 5. Generates 3 GP each turn.",
       "description": "Wisdom compounds across a cultivated realm.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "ARCHIVE": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "athena_structure_logistics_stoa",
@@ -450,7 +550,9 @@
       "movement": 0,
       "hitPoints": 18,
       "gpGeneration": 3,
-      "keywords": [],
+      "keywords": [
+        "FERTILE"
+      ],
       "effects": [],
       "rulesText": "Turn 5. Generates 3 GP each turn.",
       "description": "The mountain is both mine and furnace.",
@@ -458,7 +560,14 @@
       "contentStatus": "PROTOTYPE",
       "archetypes": [
         "INDUSTRIAL"
-      ]
+      ],
+      "keywordValues": {
+        "FERTILE": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 3
     },
     {
       "id": "hephaestus_structure_gear_mint",
@@ -492,7 +601,9 @@
       "hitPoints": 20,
       "gpGeneration": 2,
       "developmentPassive": "SELF_REPAIR",
-      "keywords": [],
+      "keywords": [
+        "WORKSHOP"
+      ],
       "effects": [],
       "rulesText": "Turn 6. Generates 2 GP. Repairs itself each turn.",
       "description": "The workshop maintains its own heartbeat.",
@@ -500,7 +611,14 @@
       "contentStatus": "PROTOTYPE",
       "archetypes": [
         "WORKSHOP"
-      ]
+      ],
+      "keywordValues": {
+        "WORKSHOP": {
+          "range": 1,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 2
     }
   ]
 }

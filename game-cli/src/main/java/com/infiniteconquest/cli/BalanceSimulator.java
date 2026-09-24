@@ -48,7 +48,16 @@ public final class BalanceSimulator {
                             CardDefinition firstCapital, CardDefinition secondCapital) {
         List<CardDefinition> firstDeck = decks.starter(firstFaction);
         List<CardDefinition> secondDeck = decks.starter(secondFaction);
-        GameState state = matches.create(seed, firstDeck, secondDeck, firstCapital, secondCapital);
+        return play(seed, firstFaction, secondFaction, firstCapital, secondCapital, firstDeck, secondDeck);
+    }
+
+    public MatchResult play(long seed, String firstFaction, String secondFaction,
+                            CardDefinition firstCapital, CardDefinition secondCapital,
+                            List<CardDefinition> firstDeck, List<CardDefinition> secondDeck) {
+        GameState state = matches.create(seed,
+                new DeckBuild("Balance", firstFaction, ally(firstFaction, firstDeck), firstCapital, firstDeck),
+                new DeckBuild("Balance", secondFaction, ally(secondFaction, secondDeck), secondCapital, secondDeck),
+                new BoardPosition(1, 0), new BoardPosition(2, 5), BoardGeometry.HEX);
         CommandProcessor commands = new CommandProcessor(state);
         int unusedGp = 0;
         int endedTurns = 0;
@@ -103,6 +112,11 @@ public final class BalanceSimulator {
         }
     }
 
+    private String ally(String primary, List<CardDefinition> deck) {
+        return deck.stream().map(CardDefinition::faction).filter(f -> !f.equals(primary) && DeckBuild.FACTIONS.contains(f))
+                .findFirst().orElse(null);
+    }
+
     private long mixSeed(long baseSeed, long index) {
         long value = baseSeed + 0x9E3779B97F4A7C15L * (index + 1);
         value = (value ^ (value >>> 30)) * 0xBF58476D1CE4E5B9L;
@@ -117,7 +131,7 @@ public final class BalanceSimulator {
                               double averageUnusedGp, double averageEndingHand,
                               int[] passiveTriggers, Map<String, Integer> cardPlays) {}
 
-    private static final class Accumulator {
+    static final class Accumulator {
         private final int matchesPerPair;
         private final long seed;
         private final Map<String, MutableResult> factions = new TreeMap<>();
@@ -132,7 +146,7 @@ public final class BalanceSimulator {
         private double unusedGp;
         private double endingHands;
 
-        private Accumulator(int matchesPerPair, long seed) { this.matchesPerPair = matchesPerPair; this.seed = seed; }
+        Accumulator(int matchesPerPair, long seed) { this.matchesPerPair = matchesPerPair; this.seed = seed; }
 
         void add(MatchResult match) {
             total++; turns += match.turns(); unusedGp += match.averageUnusedGp(); endingHands += match.averageEndingHand();
@@ -156,13 +170,13 @@ public final class BalanceSimulator {
             if (match.winner() == 0) firstWins++;
             List<CardDefinition> winningDeck = match.winner() == 0 ? match.firstDeck() : match.secondDeck();
             int winner = match.winner();
-            for (CardDefinition card : winningDeck) if (match.cardPlays().containsKey(winner + ":" + card.id())) {
+            for (CardDefinition card : new LinkedHashSet<>(winningDeck)) if (match.cardPlays().containsKey(winner + ":" + card.id())) {
                 cards.get(card.id()).winsWhenPlayed++;
             }
         }
 
         private void addDeck(int playerId, List<CardDefinition> deck, Map<String, Integer> plays) {
-            for (CardDefinition card : deck) {
+            for (CardDefinition card : new LinkedHashSet<>(deck)) {
                 MutableCard stat = cards.computeIfAbsent(card.id(), ignored -> new MutableCard(card.faction()));
                 stat.appearances++;
                 stat.plays += plays.getOrDefault(playerId + ":" + card.id(), 0);

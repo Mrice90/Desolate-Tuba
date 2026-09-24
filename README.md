@@ -4,9 +4,11 @@ Infinite Conquest is a tactical card game combining deck construction, a shared 
 
 This repository was rebuilt from the former Medieval Duel prototype. The original project remains recoverable through Git history. The separate `Mrice90/Creepy-Tomatoe` Ninja vs Zombies repository is not touched by this work.
 
-## Play the graphical game (Hex & Allies 0.3)
+## Play the graphical game (Hex & Allies 0.4)
 
 Requires JDK 17, Gradle 8+, and a desktop environment.
+
+The [0.4 balance pass](docs/balance/README.md) reviews all 402 faction cards and Capitals, retains free basic developments, prices stronger upgrades, and includes a complete card ledger and reproducible hex-match reports.
 
 ```bash
 gradle :game-gui:run
@@ -54,7 +56,7 @@ gradle :game-cli:run --args="42"
 
 ## Build a custom deck
 
-The graphical **Deck Builder** and command-line editor support 408 editable prototypes: 384 faction cards across regular, apex, keyword, tactical, development, tutor, and triggered-ability tiers, plus 24 neutral/development cards. Each faction has 64 choices, including five Lands that draw random Structures and five Structures that draw random Characters. Its 60-card starter uses 18 Lands, 18 Structures, and 24 action cards centered on a unique two-keyword identity. Custom decks require at least 40 cards and allow no more than four copies of one card. The 18 Capitals are selected separately and never count toward the deck.
+The graphical **Deck Builder** supports 384 faction cards across regular, apex, keyword, tactical, development, tutor, and triggered-ability tiers. The CLI additionally retains 24 legacy DEMO/UNASSIGNED prototypes; those are not eligible for faction decks. Each faction has 64 choices, including five Lands that draw the next Structure from the deck and five Structures that draw the next Character from the deck. Its 60-card starter uses 18 Lands, 18 Structures, and 24 action cards centered on a unique two-keyword identity. Custom decks require at least 40 cards and allow no more than four copies of one card. The 18 Capitals are selected separately and never count toward the deck.
 
 Lands, Structures, and Characters can now carry data-driven abilities with four timing windows: **When this enters play**, **When this is destroyed**, **Start of your turn** passive effects, and once-per-turn **Activated** effects with a printed GP cost. The current effect set supports card draw, GP gain, self-repair, Capital repair, temporary self Attack/Defense bonuses, and direct enemy-Capital damage. Select the top card of a stack and use its highlighted **Activate** legal action to pay for an activated ability.
 

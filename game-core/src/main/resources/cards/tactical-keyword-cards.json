@@ -19,7 +19,10 @@
       "rulesText": "Fast Strike.",
       "description": "The thunder arrives before the warning.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "zeus_siege_thunder_ram",
@@ -102,7 +105,10 @@
       "rulesText": "Siege.",
       "description": "Stone yields to enough patient arms.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "BEAST"
+      ]
     },
     {
       "id": "poseidon_sharp_tidewall_harpooner",
@@ -133,7 +139,7 @@
       "type": "CHARACTER",
       "faction": "HADES",
       "cost": 3,
-      "attack": 4,
+      "attack": 5,
       "defense": 1,
       "range": 1,
       "movement": 3,

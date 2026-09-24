@@ -2,10 +2,10 @@
 
 Each faction receives ten new development cards: five Lands and five Structures.
 
-- Lands activate once per turn to draw a random Structure from the player's shuffled deck.
-- Structures activate once per turn to draw a random Character from the player's shuffled deck.
-- The five tiers cost 2, 4, 6, 8, and 10 GP. Activation costs rise from 1 to 3 GP.
-- Names evoke each faction's primary and secondary keyword identities without restricting the draw, so the cards remain useful in custom decks.
+- Lands activate once per turn to draw the next Structure from the player's shuffled deck.
+- Structures activate once per turn to draw the next Character from the player's shuffled deck.
+- The five tiers unlock on personal turns 2, 4, 6, 8, and 10. Their separate play costs are 0, 0, 1, 2, and 2 gold. Every activation costs 2 GP.
+- The last two tiers add faction terrain utility. Zeus: High Ground / Watchtower; Poseidon: Sanctuary / Medic Tent; Hades: Archive / Beacon; Ares: Waystation / Beacon; Athena: High Ground / Bulwark; Hephaestus: Archive / Workshop (Land / Structure respectively). Each effect has strength 1; Medic Tent, Beacon and Workshop have radius 1. Tutors can draw cards of the permitted type from the deck's ally faction too.
 
 | Faction | Character themes reflected in names |
 | --- | --- |

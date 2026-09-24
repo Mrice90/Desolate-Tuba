@@ -1,10 +1,10 @@
-# Height, development keywords and archetypes — playable alpha 0.3
+# Height, development keywords and archetypes — playable alpha 0.4
 
 ## Economy
 
 A development has two independent requirements: its personal-turn unlock and its gold cost. A basic Land or Structure is still free at its printed turn. Selected developments with stronger utility require additional gold. For example, Ballistic Shrine requires personal turn 2 and 2 gold. Both conditions must be met; rejected plays neither spend gold nor use the once-per-turn development allowance. Each player may still play one Land and one Structure per turn.
 
-The 14 upgrades below are a first balance pass, not a claim of final competitive balance. IDs are unchanged, so saved decks and share codes remain usable and pick up the revised card rules.
+The 14 initial upgrades below were introduced in 0.3. The [0.4 balance pass](balance/README.md) expands assignments and costs across the full faction pool. Neither pass claims final competitive balance. IDs are unchanged, so saved decks and share codes remain usable and pick up the revised card rules.
 
 ## Height and sight
 

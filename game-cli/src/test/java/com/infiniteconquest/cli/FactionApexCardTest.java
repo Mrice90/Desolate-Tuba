@@ -34,12 +34,12 @@ class FactionApexCardTest {
     }
 
     @Test
-    void apexCardsUseLateGameCostsAndExecutableEffects() {
+    void apexCardsPriceTheirActualEffectsAndKeepLateGameBodies() {
         PrototypeCardPool pool = new PrototypeCardPool();
         for (String faction : FactionDecks.FACTIONS) {
             for (CardDefinition card : pool.cardsForFaction(faction).stream()
                     .filter(value -> value.id().contains("_apex_")).toList()) {
-                assertTrue(card.cost() >= 5 && card.cost() <= 10, card.id());
+                assertTrue(card.cost() >= (card.type() == CardType.SPELL ? 2 : 5) && card.cost() <= 10, card.id());
                 if (card.type() == CardType.SPELL) assertFalse(card.effects().isEmpty(), card.id());
                 if (card.type() == CardType.LAND) assertTrue(card.hitPoints() >= 14, card.id());
                 if (card.type() == CardType.STRUCTURE) assertTrue(card.hitPoints() >= 16, card.id());

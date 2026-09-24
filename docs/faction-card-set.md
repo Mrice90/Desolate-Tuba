@@ -4,7 +4,7 @@ The current playable pool contains 64 prototype deck-building choices per factio
 
 Each faction starter contains 60 cards: 18 Lands, 18 Structures, and 24 Characters/Spells. Custom decks must contain at least 40 cards and may contain no more than four copies of one card.
 
-Every faction has five tutor Lands and five tutor Structures at costs 2, 4, 6, 8, and 10. Tutor Lands have an activated ability that draws a random Structure; tutor Structures draw a random Character. Only one Land and one Structure may be played each turn, tracked separately.
+Every faction has five tutor Lands and five tutor Structures unlocking on turns 2, 4, 6, 8, and 10. Tutor Lands have an activated ability that draws the next Structure; tutor Structures draw the next Character. Only one Land and one Structure may be played each turn, tracked separately.
 
 | Faction | Identity | Stat and keyword emphasis |
 |---|---|---|
@@ -27,3 +27,5 @@ Every faction has five tutor Lands and five tutor Structures at costs 2, 4, 6, 8
 - All values and names remain `PROTOTYPE` content and can change after match telemetry and playtesting.
 
 Neutral Drive imports and development cards remain available alongside the faction sets.
+
+Current prices, stat changes and retained-card decisions are in the [0.4 balance ledger](balance/card-ledger.md). Development turn gates and gold surcharges are separate.

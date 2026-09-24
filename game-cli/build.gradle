@@ -13,3 +13,12 @@ dependencies {
 application {
     mainClass = 'com.infiniteconquest.cli.InfiniteConquestCli'
 }
+
+// Run with -PbalanceOutput=... -PbalanceManifest=...; reuse the manifest for comparisons.
+tasks.register('balancePass', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.infiniteconquest.cli.BalancePassRunner'
+    maxHeapSize = '768m'
+    args rootProject.file(findProperty('balanceOutput') ?: 'docs/balance/current').absolutePath,
+         rootProject.file(findProperty('balanceManifest') ?: 'docs/balance/scenarios.json').absolutePath
+}

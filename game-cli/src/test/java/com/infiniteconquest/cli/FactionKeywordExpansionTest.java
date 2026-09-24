@@ -17,8 +17,8 @@ class FactionKeywordExpansionTest {
             List<CardDefinition> expansion = pool.cardsForFaction(faction).stream()
                     .filter(card -> card.id().contains("_keyword_")).toList();
             assertEquals(5, expansion.size(), faction);
-            assertKeywordCards(expansion, FactionDecks.PRIMARY_KEYWORDS.get(faction), List.of(2, 5, 8));
-            assertKeywordCards(expansion, FactionDecks.SECONDARY_KEYWORDS.get(faction), List.of(3, 6));
+            assertKeywordCards(expansion, FactionDecks.PRIMARY_KEYWORDS.get(faction), faction.equals("ZEUS") ? List.of(2, 5, 9) : List.of(2, 5, 8));
+            assertKeywordCards(expansion, FactionDecks.SECONDARY_KEYWORDS.get(faction), faction.equals("ATHENA") ? List.of(4, 6) : List.of(3, 6));
         }
     }
 

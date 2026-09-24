@@ -32,17 +32,17 @@ class FactionCardSetTest {
     }
 
     @Test
-    void factionStatsStayInsideTheFirstSetBalanceEnvelope() {
+    void factionStatsStayInsideTheBalanceEnvelope() {
         PrototypeCardPool pool = new PrototypeCardPool();
 
         for (String faction : FactionDecks.FACTIONS) {
             for (CardDefinition card : pool.cardsForFaction(faction)) {
                 int maximumCost = card.type() == CardType.LAND || card.type() == CardType.STRUCTURE ? 10
-                        : card.id().contains("_apex_") ? 10 : card.id().contains("_keyword_") ? 8 : 7;
+                        : card.id().contains("_apex_") ? 10 : card.id().contains("_keyword_") ? 9 : 7;
                 assertTrue(card.cost() >= 0 && card.cost() <= maximumCost, card.id());
                 if (card.type() == CardType.CHARACTER) {
-                    assertTrue(card.attack() <= card.cost() + 1, card.id() + " attack");
-                    assertTrue(card.defense() <= card.cost() + 2, card.id() + " defense");
+                    assertTrue(card.attack() <= card.cost() + (card.range() == 1 && (card.keywords().isEmpty() || card.defense() == 1) ? 2 : 1), card.id() + " attack");
+                    assertTrue(card.defense() <= card.cost() + (card.movement() == 1 ? 3 : 2), card.id() + " defense");
                     assertTrue(card.range() >= 1 && card.range() <= 3, card.id() + " range");
                     assertTrue(card.movement() >= 1 && card.movement() <= 4, card.id() + " movement");
                 } else if (card.type() == CardType.LAND) {

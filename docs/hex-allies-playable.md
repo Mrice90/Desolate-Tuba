@@ -1,6 +1,10 @@
-# Hex & Allies playable desktop alpha (0.3)
+# Hex & Allies playable desktop alpha (0.4)
 
-The approved browser concept now has a playable desktop implementation. Run `gradle :game-gui:run`, or extract the desktop distribution and run `bin/game-gui.bat` on Windows with Java 17 installed. The window title includes **Hex & Allies 0.3** so it can be distinguished from older builds.
+The approved browser concept now has a playable desktop implementation. Run `gradle :game-gui:run`, or extract the desktop distribution and run `bin/game-gui.bat` on Windows with Java 17 installed. The window title includes **Hex & Allies 0.4** so it can be distinguished from older builds.
+
+## Faction balance in 0.4
+
+See the [balance pass and full card ledger](balance/README.md) for stat and cost changes, expanded faction terrain packages, tutor adjustments and Capital tuning. Saved deck IDs and codes remain valid and resolve to current card rules.
 
 ## Height and development expansion in 0.3
 

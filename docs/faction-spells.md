@@ -22,7 +22,7 @@ This power has a deck-building cost: every Spell occupies a deck slot that could
 | Chain Lightning | 3 | Strike an enemy Character with power 4 |
 | Skybreaker Bolt | 4 | Deal 4 damage to an enemy Permanent |
 | Windstep Protocol | 2 | Teleport a friendly Character |
-| Stormcharge | 3 | Friendly Character gets +2 Attack temporarily |
+| Stormcharge | 2 | Friendly Character gets +2 Attack temporarily |
 | Aegis of the Sky | 2 | Friendly Character gets +3 Defense temporarily |
 
 ## Poseidon
@@ -31,7 +31,7 @@ This power has a deck-building cost: every Spell occupies a deck slot that could
 |---|---:|---|
 | Crushing Depths | 3 | Strike an enemy Character with power 4 |
 | Erode Foundation | 3 | Deal 3 damage to an enemy Permanent |
-| Restorative Tide | 3 | Heal 4 damage from a friendly Permanent |
+| Restorative Tide | 2 | Heal 4 damage from a friendly Permanent |
 | Undertow Recall | 4 | Return an enemy Character to its owner's hand |
 | Tidal Armor | 2 | Friendly Character gets +3 Defense temporarily |
 
@@ -42,7 +42,7 @@ This power has a deck-building cost: every Spell occupies a deck slot that could
 | Soul Sever | 4 | Strike an enemy Character with power 5 |
 | Grave Pressure | 4 | Deal 4 damage to an enemy Permanent |
 | Lethe's Embrace | 4 | Return an enemy Character to its owner's hand |
-| Deathly Vigor | 3 | Friendly Character gets +2 Attack temporarily |
+| Deathly Vigor | 2 | Friendly Character gets +2 Attack temporarily |
 | Shroud of Erebus | 2 | Friendly Character gets +3 Defense temporarily |
 
 ## Ares
@@ -52,7 +52,7 @@ This power has a deck-building cost: every Spell occupies a deck slot that could
 | Spear Volley | 2 | Strike an enemy Character with power 3 |
 | Siege Fury | 4 | Deal 5 damage to an enemy Permanent |
 | Forced March | 2 | Teleport a friendly Character |
-| Blood Frenzy | 3 | Friendly Character gets +3 Attack temporarily |
+| Blood Frenzy | 2 | Friendly Character gets +3 Attack temporarily |
 | Defiant Roar | 2 | Friendly Character gets +2 Defense temporarily |
 
 ## Athena
@@ -61,7 +61,7 @@ This power has a deck-building cost: every Spell occupies a deck slot that could
 |---|---:|---|
 | Calculated Shot | 3 | Strike an enemy Character with power 4 |
 | Expose Structural Weakness | 3 | Deal 3 damage to an enemy Permanent |
-| Aegis Restoration | 3 | Heal 4 damage from a friendly Permanent |
+| Aegis Restoration | 2 | Heal 4 damage from a friendly Permanent |
 | Tactical Edge | 2 | Friendly Character gets +2 Attack temporarily |
 | Brace Formation | 3 | Friendly Character gets +4 Defense temporarily |
 
@@ -71,8 +71,10 @@ This power has a deck-building cost: every Spell occupies a deck slot that could
 |---|---:|---|
 | Plasma Cut | 3 | Strike an enemy Character with power 4 |
 | Core Meltdown | 4 | Deal 5 damage to an enemy Permanent |
-| Field Repair | 3 | Heal 5 damage from a friendly Permanent |
+| Field Repair | 2 | Heal 5 damage from a friendly Permanent |
 | Overclock | 2 | Friendly Character gets +2 Attack temporarily |
-| Reactive Plating | 3 | Friendly Character gets +3 Defense temporarily |
+| Reactive Plating | 2 | Friendly Character gets +3 Defense temporarily |
 
 All values remain prototype balance.
+
+Apex and all other current cards are included in the [0.4 card ledger](balance/card-ledger.md). A Strike destroys a Character only when its printed threshold meets that Character's effective Defense; it is not accumulated attack damage.
