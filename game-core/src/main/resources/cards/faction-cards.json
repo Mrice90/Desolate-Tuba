@@ -18,7 +18,10 @@
       "rulesText": "BLINK",
       "description": "A winged messenger riding the Olympian data-stream.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "zeus_arc_relay_scout",
@@ -35,7 +38,10 @@
       "rulesText": "",
       "description": "A light recon frame that marks safe firing lanes.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "zeus_thunderhead_skirmisher",
@@ -71,7 +77,10 @@
       "rulesText": "BLINK",
       "description": "A prism-linked courier carrying battlefield commands.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "zeus_aegis_airguard",
@@ -107,7 +116,10 @@
       "rulesText": "",
       "description": "A patient shooter stabilized by wind-control gyros.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "zeus_boltwing_cavalier",
@@ -124,7 +136,10 @@
       "rulesText": "",
       "description": "A mounted striker descending with artificial lightning.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "zeus_tempest_oracle",
@@ -141,7 +156,10 @@
       "rulesText": "",
       "description": "A predictive intelligence reading combat like weather.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "zeus_hera_protocol_warden",
@@ -179,7 +197,10 @@
       "rulesText": "BLINK",
       "description": "A spatial technician stepping through ionized gates.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "zeus_eagle_of_the_high_grid",
@@ -196,7 +217,10 @@
       "rulesText": "",
       "description": "Zeus's sovereign hunter above the neon cloudline.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "BEAST"
+      ]
     },
     {
       "id": "zeus_keraunos_prime",
@@ -245,11 +269,20 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 6,
-      "keywords": [],
-      "rulesText": "",
+      "keywords": [
+        "WAYSTATION"
+      ],
+      "rulesText": "Waystation (range 0, amount 1).",
       "description": "A charged transit lane linking the upper towers.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "keywordValues": {
+        "WAYSTATION": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "zeus_eagles_perch_array",
@@ -262,11 +295,23 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 7,
-      "keywords": [],
-      "rulesText": "",
+      "keywords": [
+        "HIGH_GROUND"
+      ],
+      "rulesText": "High Ground (range 0, amount 1).",
       "description": "A sensor plateau overlooking Neo-Olympus.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HIGHLAND"
+      ],
+      "keywordValues": {
+        "HIGH_GROUND": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "zeus_throneward_conduit",
@@ -283,7 +328,10 @@
       "rulesText": "",
       "description": "A fortified power route feeding Zeus's command spire.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "INDUSTRIAL"
+      ]
     },
     {
       "id": "zeus_storm_relay_pylon",
@@ -313,11 +361,23 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 7,
-      "keywords": [],
-      "rulesText": "",
+      "keywords": [
+        "BULWARK"
+      ],
+      "rulesText": "Bulwark (range 0, amount 1).",
       "description": "A dense weather shield that breaks enemy sightlines.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "FORTRESS"
+      ],
+      "keywordValues": {
+        "BULWARK": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "zeus_keraunos_charging_spire",
@@ -370,7 +430,10 @@
       "rulesText": "",
       "description": "A coastal drone mapping pressure shifts and hidden paths.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "MERFOLK"
+      ]
     },
     {
       "id": "poseidon_nereid_current_rider",
@@ -389,7 +452,10 @@
       "rulesText": "BLINK",
       "description": "A water-born scout slipping between holographic currents.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NYMPH"
+      ]
     },
     {
       "id": "poseidon_reefline_defender",
@@ -408,7 +474,10 @@
       "rulesText": "VANGUARD",
       "description": "A coral-armored sentinel grown to hold narrow lanes.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "MERFOLK"
+      ]
     },
     {
       "id": "poseidon_undertow_stalker",
@@ -446,7 +515,10 @@
       "rulesText": "VANGUARD",
       "description": "A disciplined marine carrying a resonant trident.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "MERFOLK"
+      ]
     },
     {
       "id": "poseidon_delphic_sonar_adept",
@@ -463,7 +535,10 @@
       "rulesText": "",
       "description": "A ranged operator reading enemies through reflected sound.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "MERFOLK"
+      ]
     },
     {
       "id": "poseidon_kraken_tendril_drone",
@@ -480,7 +555,10 @@
       "rulesText": "",
       "description": "A severed machine-limb guided by abyssal code.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "poseidon_naiad_flowshaper",
@@ -499,7 +577,10 @@
       "rulesText": "BLINK",
       "description": "A liquid-motion engineer who bends battlefield routes.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NYMPH"
+      ]
     },
     {
       "id": "poseidon_abyssal_molecrab",
@@ -518,7 +599,10 @@
       "rulesText": "MOLE",
       "description": "A plated excavator concealed beneath seabed holdings.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "BEAST"
+      ]
     },
     {
       "id": "poseidon_oceanid_pressure_mage",
@@ -535,7 +619,10 @@
       "rulesText": "",
       "description": "A hydrokinetic artillery specialist from the deep arcologies.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NYMPH"
+      ]
     },
     {
       "id": "poseidon_leviathan_wakeborn",
@@ -554,7 +641,10 @@
       "rulesText": "VANGUARD",
       "description": "A massive bioframe rising in the wake of old sea gods.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "BEAST"
+      ]
     },
     {
       "id": "poseidon_poseidons_trident_core",
@@ -588,7 +678,10 @@
       "rulesText": "",
       "description": "Shallow luminous water surrounding the sea districts.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "COAST"
+      ]
     },
     {
       "id": "poseidon_coral_data_reef",
@@ -605,7 +698,10 @@
       "rulesText": "",
       "description": "A living archive grown through synthetic coral.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "COAST"
+      ]
     },
     {
       "id": "poseidon_abyssal_pressure_trench",
@@ -622,7 +718,10 @@
       "rulesText": "",
       "description": "A deep channel armored against surface assault.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "COAST"
+      ]
     },
     {
       "id": "poseidon_palace_of_tides_approach",
@@ -639,7 +738,10 @@
       "rulesText": "",
       "description": "A fortified current leading toward Poseidon's domain.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "COAST"
+      ]
     },
     {
       "id": "poseidon_tidal_pump_station",
@@ -652,11 +754,23 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 6,
-      "keywords": [],
-      "rulesText": "",
+      "keywords": [
+        "MEDIC_TENT"
+      ],
+      "rulesText": "Medic Tent (range 1, amount 1).",
       "description": "A pressure engine sustaining the flooded grid.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "MEDICAL"
+      ],
+      "keywordValues": {
+        "MEDIC_TENT": {
+          "range": 1,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "poseidon_coral_bulwark",
@@ -673,7 +787,10 @@
       "rulesText": "",
       "description": "A regenerative wall hardened by mineral growth.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "FORTRESS"
+      ]
     },
     {
       "id": "poseidon_sonar_beacon",
@@ -709,7 +826,10 @@
       "rarity": 3,
       "contentStatus": "PROTOTYPE",
       "gpGeneration": 1,
-      "developmentPassive": "HEAL_CAPITAL_ON_DEPLOY"
+      "developmentPassive": "HEAL_CAPITAL_ON_DEPLOY",
+      "archetypes": [
+        "FORTRESS"
+      ]
     },
     {
       "id": "hades_shade_packet",
@@ -728,7 +848,10 @@
       "rulesText": "MOLE",
       "description": "A dead process hiding beneath abandoned infrastructure.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "SPIRIT"
+      ]
     },
     {
       "id": "hades_styx_ferryman_drone",
@@ -745,7 +868,10 @@
       "rulesText": "",
       "description": "A quiet carrier moving memory-fragments across dark networks.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "hades_gravecode_collector",
@@ -783,7 +909,10 @@
       "rulesText": "VANGUARD",
       "description": "One young head of a distributed underworld watchdog.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "BEAST"
+      ]
     },
     {
       "id": "hades_erebus_sniper",
@@ -853,7 +982,10 @@
       "rulesText": "",
       "description": "A precise machine designed to end damaged targets.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "hades_cerberus_tri_core",
@@ -976,11 +1108,23 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 8,
-      "keywords": [],
-      "rulesText": "",
+      "keywords": [
+        "ARCHIVE"
+      ],
+      "rulesText": "Archive (range 0, amount 1).",
       "description": "A lightless district below Neo-Olympus.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "URBAN"
+      ],
+      "keywordValues": {
+        "ARCHIVE": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "hades_gate_of_the_dead_grid",
@@ -1031,7 +1175,10 @@
       "rulesText": "",
       "description": "A vigilant checkpoint with three redundant minds.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "FORTRESS"
+      ]
     },
     {
       "id": "hades_lethe_reservoir",
@@ -1067,7 +1214,10 @@
       "rulesText": "",
       "description": "The sealed command crypt of the underworld network.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "FORTRESS"
+      ]
     },
     {
       "id": "ares_redline_recruit",
@@ -1084,7 +1234,10 @@
       "rulesText": "",
       "description": "A disposable shock soldier running beyond safe limits.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "ares_phobos_pursuer",
@@ -1118,7 +1271,10 @@
       "rulesText": "",
       "description": "A close-assault unit trained to crack defensive lines.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "ares_deimos_raidbike",
@@ -1154,7 +1310,10 @@
       "rulesText": "",
       "description": "A survivor of a thousand broadcast combat trials.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "ares_enyo_demolitionist",
@@ -1171,7 +1330,10 @@
       "rulesText": "",
       "description": "A battlefield saboteur who treats cover as kindling.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "ares_spartan_exoframe",
@@ -1207,7 +1369,10 @@
       "rulesText": "",
       "description": "Linked attack drones hunting as a single beast.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "BEAST"
+      ]
     },
     {
       "id": "ares_eris_riot_engine",
@@ -1243,7 +1408,10 @@
       "rulesText": "BLINK",
       "description": "A champion striking wherever battle burns hottest.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "ares_titanblood_berserker",
@@ -1347,7 +1515,10 @@
       "rulesText": "",
       "description": "A fortified industrial line supplying endless conflict.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "INDUSTRIAL"
+      ]
     },
     {
       "id": "ares_forward_barricade",
@@ -1364,7 +1535,10 @@
       "rulesText": "",
       "description": "A cheap obstacle thrown up during an advance.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "FORTRESS"
+      ]
     },
     {
       "id": "ares_ballistic_shrine",
@@ -1377,11 +1551,23 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 6,
-      "keywords": [],
-      "rulesText": "",
+      "keywords": [
+        "TURRET"
+      ],
+      "rulesText": "Turret (range 2, amount 1).",
       "description": "A weapon altar calibrating troops for lethal force.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "EMPLACEMENT"
+      ],
+      "keywordValues": {
+        "TURRET": {
+          "range": 2,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 2
     },
     {
       "id": "ares_chariot_deployment_rack",
@@ -1417,7 +1603,10 @@
       "rarity": 3,
       "contentStatus": "PROTOTYPE",
       "gpGeneration": 1,
-      "developmentPassive": "SELF_REPAIR"
+      "developmentPassive": "SELF_REPAIR",
+      "archetypes": [
+        "FORTRESS"
+      ]
     },
     {
       "id": "athena_owl_recon_unit",
@@ -1453,7 +1642,10 @@
       "rulesText": "VANGUARD",
       "description": "A young defender drilled to protect the formation.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "athena_grid_tactician",
@@ -1470,7 +1662,10 @@
       "rulesText": "",
       "description": "A field analyst translating forecasts into movement.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "athena_silver_shield_drone",
@@ -1489,7 +1684,10 @@
       "rulesText": "VANGUARD",
       "description": "A dedicated protector with a broad projected barrier.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "athena_pallas_counter_sniper",
@@ -1506,7 +1704,10 @@
       "rulesText": "",
       "description": "A disciplined marksman denying exposed firing lanes.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "athena_owlwing_repositioner",
@@ -1544,7 +1745,10 @@
       "rulesText": "VANGUARD",
       "description": "A veteran anchor coordinating overlapping defenses.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "athena_medusa_pattern_analyst",
@@ -1561,7 +1765,10 @@
       "rulesText": "",
       "description": "A prediction engine that freezes reckless advances.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "athena_nike_strategic_runner",
@@ -1580,7 +1787,10 @@
       "rulesText": "BLINK",
       "description": "A victory courier exploiting the smallest opening.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "athena_parthenon_sentinel",
@@ -1616,7 +1826,10 @@
       "rulesText": "",
       "description": "A war intelligence that models battles before they begin.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "HUMAN"
+      ]
     },
     {
       "id": "athena_aegis_prime_strategos",
@@ -1652,7 +1865,10 @@
       "rulesText": "",
       "description": "A measured arena for rehearsing tactical responses.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "URBAN"
+      ]
     },
     {
       "id": "athena_owlwatch_promenade",
@@ -1686,7 +1902,10 @@
       "rulesText": "",
       "description": "A civic archive where strategy and law converge.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "URBAN"
+      ]
     },
     {
       "id": "athena_aegis_defensive_quarter",
@@ -1699,11 +1918,23 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 10,
-      "keywords": [],
-      "rulesText": "",
+      "keywords": [
+        "COVER"
+      ],
+      "rulesText": "Cover (range 0, amount 1).",
       "description": "A layered district designed around mutually supporting walls.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "URBAN"
+      ],
+      "keywordValues": {
+        "COVER": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "athena_tactical_relay_post",
@@ -1733,11 +1964,23 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 8,
-      "keywords": [],
-      "rulesText": "",
+      "keywords": [
+        "WATCHTOWER"
+      ],
+      "rulesText": "Watchtower (range 0, amount 1).",
       "description": "A tall observation fortification controlling sightlines.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "EMPLACEMENT"
+      ],
+      "keywordValues": {
+        "WATCHTOWER": {
+          "range": 0,
+          "amount": 1
+        }
+      },
+      "developmentGoldCost": 1
     },
     {
       "id": "athena_aegis_projection_wall",
@@ -1754,7 +1997,10 @@
       "rulesText": "",
       "description": "A hardened barrier of overlapping energy shields.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "FORTRESS"
+      ]
     },
     {
       "id": "athena_athena_strategy_core",
@@ -1790,7 +2036,10 @@
       "rulesText": "",
       "description": "A tiny maintenance unit born from a shower of code-sparks.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "hephaestus_tunnel_riveter",
@@ -1807,7 +2056,12 @@
         "SIEGE"
       ],
       "abilities": [
-        {"trigger":"DESTROYED","effect":"GAIN_GP","amount":1,"gpCost":0}
+        {
+          "trigger": "DESTROYED",
+          "effect": "GAIN_GP",
+          "amount": 1,
+          "gpCost": 0
+        }
       ],
       "rulesText": "SIEGE. When this is destroyed, gain 1 GP.",
       "description": "A compact worker that tears hostile foundations apart for scrap.",
@@ -1829,7 +2083,10 @@
       "rulesText": "",
       "description": "A reliable factory hand repurposed for battlefield duty.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "hephaestus_automaton_shieldsmith",
@@ -1848,7 +2105,10 @@
       "rulesText": "VANGUARD",
       "description": "A mobile fabricator carrying a slab of smart-metal.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "hephaestus_volcanic_survey_rig",
@@ -1886,7 +2146,10 @@
       "rulesText": "VANGUARD",
       "description": "A bronze guardian descended from the legendary automaton.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "hephaestus_cyclops_arc_welder",
@@ -1939,7 +2202,10 @@
       "rulesText": "",
       "description": "A slow engine built to dismantle enemy fortifications.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "AUTOMATON"
+      ]
     },
     {
       "id": "hephaestus_golden_hand_artificer",
@@ -2013,7 +2279,10 @@
       "rulesText": "",
       "description": "A soot-dark factory parcel alive with assembly drones.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "INDUSTRIAL"
+      ]
     },
     {
       "id": "hephaestus_magma_conduit_field",
@@ -2030,7 +2299,10 @@
       "rulesText": "",
       "description": "A buried heat network feeding the industrial grid.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "INDUSTRIAL"
+      ]
     },
     {
       "id": "hephaestus_cyclops_foundry_floor",
@@ -2047,7 +2319,10 @@
       "rulesText": "",
       "description": "A reinforced workspace sized for giant fabricators.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "INDUSTRIAL"
+      ]
     },
     {
       "id": "hephaestus_hephaestus_core_forge",
@@ -2064,7 +2339,10 @@
       "rulesText": "",
       "description": "A deep industrial heart built to survive divine accidents.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "INDUSTRIAL"
+      ]
     },
     {
       "id": "hephaestus_automaton_assembly_line",
@@ -2081,7 +2359,10 @@
       "rulesText": "",
       "description": "A modular factory producing replacement machine parts.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "WORKSHOP"
+      ]
     },
     {
       "id": "hephaestus_smart_metal_bulwark",
@@ -2098,7 +2379,10 @@
       "rulesText": "",
       "description": "A self-shaping wall that hardens under impact.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "FORTRESS"
+      ]
     },
     {
       "id": "hephaestus_cyclops_plasma_furnace",
@@ -2111,11 +2395,24 @@
       "range": 0,
       "movement": 0,
       "hitPoints": 10,
-      "keywords": [],
-      "rulesText": "",
+      "keywords": [
+        "TURRET"
+      ],
+      "rulesText": "Turret (range 2, amount 2).",
       "description": "A massive reactor powering advanced fabrication.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "EMPLACEMENT",
+        "WORKSHOP"
+      ],
+      "keywordValues": {
+        "TURRET": {
+          "range": 2,
+          "amount": 2
+        }
+      },
+      "developmentGoldCost": 3
     },
     {
       "id": "hephaestus_talos_foundry_citadel",
@@ -2134,7 +2431,11 @@
       "rarity": 3,
       "contentStatus": "PROTOTYPE",
       "gpGeneration": 1,
-      "developmentPassive": "SELF_REPAIR"
+      "developmentPassive": "SELF_REPAIR",
+      "archetypes": [
+        "FORTRESS",
+        "WORKSHOP"
+      ]
     }
   ]
 }

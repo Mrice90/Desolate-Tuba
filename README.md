@@ -4,7 +4,7 @@ Infinite Conquest is a tactical card game combining deck construction, a shared 
 
 This repository was rebuilt from the former Medieval Duel prototype. The original project remains recoverable through Git history. The separate `Mrice90/Creepy-Tomatoe` Ninja vs Zombies repository is not touched by this work.
 
-## Play the graphical game (Hex & Allies 0.2.2)
+## Play the graphical game (Hex & Allies 0.3)
 
 Requires JDK 17, Gradle 8+, and a desktop environment.
 
@@ -12,7 +12,7 @@ Requires JDK 17, Gradle 8+, and a desktop environment.
 gradle :game-gui:run
 ```
 
-The graphical client now runs playable hex matches with allied decks and shareable deck codes. See [Hex & Allies](docs/hex-allies-playable.md) for migration, controls and compatibility. The graphical client uses the same tested engine as the CLI. Choose both factions and one of three Capitals per side before the match, with strategy and passive summaries shown in setup.
+The graphical client now runs height-aware hex matches with allied decks, twelve functional development keywords, archetype tags and shareable deck codes. See [terrain, height and card upgrades](docs/terrain-keywords-and-height.md). See [Hex & Allies](docs/hex-allies-playable.md) for migration, controls and compatibility. The graphical client uses the same tested engine as the CLI. Choose both factions and one of three Capitals per side before the match, with strategy and passive summaries shown in setup.
 
 - Drag a hand card or battlefield unit onto a gold-highlighted legal destination. Click selection plus the **Legal Moves** tab remains available as a keyboard-friendly fallback.
 - Hover over the tucked hand to reveal cards, or click/tap **Hand** to pin it open. Selecting a card tucks the tray away; Escape closes it. The hand floats over the battlefield without moving or shrinking the hexes.

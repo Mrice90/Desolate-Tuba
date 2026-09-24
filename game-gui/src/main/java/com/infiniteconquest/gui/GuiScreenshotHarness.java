@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 /** Deterministic visual fixture runner used by CI under Xvfb. */
 public final class GuiScreenshotHarness {
-    private static final String[] STATIC_SCENARIOS = {"opening-board", "selected-hand", "expanded-hand", "crowded-board"};
+    private static final String[] STATIC_SCENARIOS = {"opening-board", "selected-hand", "expanded-hand", "crowded-board", "terrain-board"};
 
     private GuiScreenshotHarness() { }
 
@@ -34,14 +34,14 @@ public final class GuiScreenshotHarness {
             } finally { gui.dispose(); }
         });
         SwingUtilities.invokeAndWait(() -> {
-            for(int winner=0;winner<2;winner++) {
-                InitiativeCoinPanel coin = new InitiativeCoinPanel(winner);
-                coin.setSize(460,330);
+            for(var skin:InitiativeCoinPanel.Skin.values())for(int winner=0;winner<2;winner++) {
+                InitiativeCoinPanel coin = new InitiativeCoinPanel(winner,skin);
+                coin.setSize(460,410);
                 for(int frame=0;frame<=8;frame++) {
                     coin.setProgress(frame/8.0);
-                    var image = new java.awt.image.BufferedImage(460,330,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+                    var image = new java.awt.image.BufferedImage(460,410,java.awt.image.BufferedImage.TYPE_INT_ARGB);
                     var graphics=image.createGraphics();coin.paint(graphics);graphics.dispose();
-                    try { javax.imageio.ImageIO.write(image,"png",outputDirectory.resolve("coin-player-"+(winner+1)+"-frame-"+frame+".png").toFile()); }
+                    try { javax.imageio.ImageIO.write(image,"png",outputDirectory.resolve("coin-"+skin.name()+"-player-"+(winner+1)+"-frame-"+frame+".png").toFile()); }
                     catch(java.io.IOException e) { throw new IllegalStateException(e); }
                 }
             }

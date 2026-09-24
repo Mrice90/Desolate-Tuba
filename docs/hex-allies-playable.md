@@ -1,6 +1,10 @@
-# Hex & Allies playable desktop alpha (0.2.2)
+# Hex & Allies playable desktop alpha (0.3)
 
-The approved browser concept now has a playable desktop implementation. Run `gradle :game-gui:run`, or extract the desktop distribution and run `bin/game-gui.bat` on Windows with Java 17 installed. The window title includes **Hex & Allies 0.2.2** so it can be distinguished from older builds.
+The approved browser concept now has a playable desktop implementation. Run `gradle :game-gui:run`, or extract the desktop distribution and run `bin/game-gui.bat` on Windows with Java 17 installed. The window title includes **Hex & Allies 0.3** so it can be distinguished from older builds.
+
+## Height and development expansion in 0.3
+
+See [the complete terrain and keyword guide](terrain-keywords-and-height.md) for height-aware sight, six Land and six Structure keywords, paid utility developments, archetypes and coin skins. Existing basic developments remain free. Fourteen existing cards gain keyword effects and an additional gold cost.
 
 ## Animation and hex readability in 0.2.2
 
@@ -15,7 +19,7 @@ The compact header and floating hand give the battlefield more room. Hover to re
 ## Playing
 
 - Desktop matches use a 24-hex battlefield, with 12 starting spaces per player. The board is rotated for landscape: Player 2's territory is on the left, Player 1's on the right. Capital placement, reactions, and teleport selection use the same orientation.
-- Movement follows six neighbors; range uses hex distance. Deployment, retaliation and opportunity attacks use the same geometry as the bot's legal actions. Hex sight ignores endpoints and permits either of two nudged cube-coordinate traces for shared-edge ambiguity. Structures, Capitals and top Vanguard cards retain their blocking behavior.
+- Movement follows six neighbors; range uses hex distance. Deployment, retaliation and opportunity attacks use the same geometry as the bot's legal actions. Hex sight ignores endpoints and permits either of two nudged cube-coordinate traces for shared-edge ambiguity. Structures, Capitals and top Vanguard cards now block according to their height; occupied Structures remain obstacles.
 - Click **Background** to switch Stormfront scenery and Obsidian Table. Full board view remains available through F4, and Escape restores the HUD and hand.
 - Card ownership and stack counts are displayed on occupied hexes. Select cards to inspect them; right-click opens existing full-card/stack inspection. Game outcomes, resources, actions, animation, reactions and bot turns use the actual engine.
 

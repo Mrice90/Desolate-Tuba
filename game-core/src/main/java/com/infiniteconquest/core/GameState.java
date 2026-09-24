@@ -1,6 +1,7 @@
 package com.infiniteconquest.core;
 
 import java.util.*;
+import com.infiniteconquest.data.Keyword;
 
 public final class GameState {
     private final long seed;
@@ -13,6 +14,7 @@ public final class GameState {
     private final boolean[] mulliganCompleted = new boolean[2];
     private final int[] landsPlayedThisTurn = new int[2];
     private final int[] structuresPlayedThisTurn = new int[2];
+    private final Set<String> terrainTriggersUsed = new HashSet<>();
     private final Set<String> capitalPassivesUsedThisTurn = new HashSet<>();
     private final CapitalPassiveRules capitalPassiveRules = new CapitalPassiveRules();
     private final CardAbilityRules cardAbilityRules = new CardAbilityRules();
@@ -61,7 +63,7 @@ public final class GameState {
                         || card.definition().type() == CardType.STRUCTURE
                         || card.definition().type() == CardType.CAPITAL)
                 .mapToInt(card -> card.definition().type() == CardType.CAPITAL
-                        ? 1 : card.definition().gpGeneration()).sum();
+                        ? 1 : card.definition().income()).sum();
     }
 
     public void mulligan(int playerId, Collection<UUID> discardedCardIds) {
@@ -178,6 +180,7 @@ public final class GameState {
         player(card.owner()).addToHand(card.instanceId());
     }
     void destroy(CardInstance card) {
+        if(card.zone()!=Zone.BATTLEFIELD)return;
         boolean permanent = card.definition().isPermanent();
         BoardPosition formerPosition = board.positionOf(card.instanceId()).orElse(null);
         board.remove(card.instanceId());
@@ -185,6 +188,11 @@ public final class GameState {
         player(card.owner()).addToDiscard(card.instanceId());
         emit(GameEvent.Type.CARD_DESTROYED, card.owner(), card.instanceId().toString());
         cardAbilityRules.resolve(this, card, AbilityTrigger.DESTROYED);
+        if(card.definition().hasKeyword(Keyword.ARCHIVE)) {
+            int amount=card.definition().keywordValue(Keyword.ARCHIVE).amount();
+            recordTerrain(card,card,Keyword.ARCHIVE,amount);
+            drawCards(card.owner(),amount);
+        }
         if (permanent) capitalPassiveRules.onPermanentDestroyed(this, card);
         if (permanent && phase != Phase.GAME_OVER) {
             int result = new VictoryEvaluator().winnerAfterPermanentLoss(this, card.owner());
@@ -202,6 +210,7 @@ public final class GameState {
 
     private void startTurn() {
         capitalPassivesUsedThisTurn.clear();
+        terrainTriggersUsed.clear();
         landsPlayedThisTurn[activePlayer] = 0;
         structuresPlayedThisTurn[activePlayer] = 0;
         cards.values().forEach(CardInstance::clearCombatDamage);
@@ -210,6 +219,7 @@ public final class GameState {
         generatePermanentGp(activePlayer);
         applyDevelopmentStartPassives(activePlayer);
         resetControlledCards(activePlayer);
+        TerrainRules.startTurn(this, activePlayer);
         battlefieldCards(activePlayer).forEach(card -> cardAbilityRules.resolve(this, card, AbilityTrigger.PASSIVE));
         if (turnNumber > 1) {
             for (int i = 0; i < rules.cardsDrawnAtTurnStart(); i++) drawCard(activePlayer);
@@ -310,6 +320,14 @@ public final class GameState {
         emit(GameEvent.Type.CARD_ABILITY_TRIGGERED, card.owner(), card.instanceId() + " "
                 + ability.trigger() + " " + ability.effect() + " " + ability.amount()
                 + (ability.gpCost() > 0 ? " cost " + ability.gpCost() : ""));
+    }
+    boolean useTerrainTrigger(CardInstance source, CardInstance target, Keyword keyword) {
+        return terrainTriggersUsed.add(source.instanceId()+":"+target.instanceId()+":"+keyword);
+    }
+    void recordTerrain(CardInstance source,CardInstance target,Keyword keyword,int amount) {
+        BoardPosition position=board.positionOf(target.instanceId()).orElse(null);
+        emit(GameEvent.Type.TERRAIN_TRIGGERED,source.owner(),source.instanceId()+" "+target.instanceId()+" "+keyword+" "+amount
+                + (position==null?"":" "+position.x()+","+position.y()));
     }
     private void finishGame(Integer winningPlayer, String detail) {
         winner = winningPlayer;

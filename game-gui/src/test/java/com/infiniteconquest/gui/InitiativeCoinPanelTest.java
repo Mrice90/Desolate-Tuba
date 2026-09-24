@@ -18,4 +18,13 @@ class InitiativeCoinPanelTest {
             }
         }
     }
+    @Test void tossHasALargeAirborneArcAndSmallerLandingBounces() {
+        assertEquals(0,InitiativeCoinPanel.pose(0,0).lift());
+        assertEquals(132,InitiativeCoinPanel.pose(.39,0).lift(),.001);
+        assertEquals(0,InitiativeCoinPanel.pose(.78,0).lift(),.001);
+        assertTrue(InitiativeCoinPanel.pose(.82,0).lift()>5);
+        assertTrue(InitiativeCoinPanel.pose(.94,0).lift()<InitiativeCoinPanel.pose(.82,0).lift());
+        assertEquals(0,InitiativeCoinPanel.pose(1,0).lift(),.001);
+        assertTrue(InitiativeCoinPanel.DURATION_NANOS>=3_500_000_000L);
+    }
 }

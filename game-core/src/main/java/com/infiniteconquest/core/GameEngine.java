@@ -135,6 +135,7 @@ public final class GameEngine {
                 BoardPosition origin = state.board().positionOf(target.instanceId()).orElseThrow();
                 state.board().moveTop(origin, destination, target.instanceId());
                 state.recordCharacterMoved(target, origin, destination, 0);
+                TerrainRules.entered(state,target,origin,destination,false);
             }
             case RETURN_CHARACTER -> {
                 state.returnCharacterToHand(target);
@@ -165,6 +166,7 @@ public final class GameEngine {
         card.moveTo(Zone.BATTLEFIELD);
         state.board().push(destination, card.instanceId());
         state.recordCardPlayed(card);
+        TerrainRules.entered(state,card,null,destination,true);
         return ActionResult.accepted("Character summoned");
     }
 
@@ -192,7 +194,7 @@ public final class GameEngine {
             return ActionResult.rejected("Only one Structure may be played per turn");
         }
         CardInstance card = developableFromHand(state, action.playerId(), action.cardId(), CardType.STRUCTURE);
-        if (card == null) return ActionResult.rejected("Structure must be in hand and its turn value must be reached");
+        if (card == null) return ActionResult.rejected("Structure must be in hand and its turn value must be reached and its gold cost affordable");
         Optional<UUID> top = state.board().topAt(action.destination());
         if (top.isEmpty()) return ActionResult.rejected("Structure requires a controlled Land");
         CardInstance foundation = state.card(top.get()).orElseThrow();
@@ -223,7 +225,8 @@ public final class GameEngine {
         state.board().moveTop(origin, action.destination(), card.instanceId());
         card.markBlinkUsed();
         state.recordCharacterMoved(card, origin, action.destination(), 0);
-        new CapitalPassiveRules().onBlinked(state, card);
+        TerrainRules.entered(state,card,origin,action.destination(),false);
+        if(card.zone()==Zone.BATTLEFIELD)new CapitalPassiveRules().onBlinked(state, card);
         return ActionResult.accepted("Character Blinked");
     }
 
@@ -247,14 +250,14 @@ public final class GameEngine {
         if (target.definition().type() == CardType.CHARACTER) {
             int attackerPower = effectiveAttack(state, attacker);
             int defenderPower = effectiveAttack(state, target);
-            target.addCombatDamage(attackerPower);
+            target.addCombatDamage(TerrainRules.reduceDamage(state,target,attackerPower,state.rules().geometry().distance(from,to)>1));
             boolean targetDies = target.combatDamage() >= target.effectiveDefense();
             boolean fastStrikeStopsRetaliation = attacker.definition().hasKeyword(Keyword.FAST_STRIKE)
                     && attackerPower > target.effectiveDefense();
             boolean canRetaliate = !fastStrikeStopsRetaliation && defenderPower > 0
                     && state.rules().geometry().distance(to, from) <= effectiveRange(state, target)
                     && lineOfSightRules.hasLineOfSight(state, to, from);
-            if (canRetaliate) attacker.addCombatDamage(defenderPower);
+            if (canRetaliate) attacker.addCombatDamage(TerrainRules.reduceDamage(state,attacker,defenderPower,state.rules().geometry().distance(to,from)>1));
             boolean attackerDies = canRetaliate && attacker.combatDamage() >= attacker.effectiveDefense();
             if (targetDies) state.destroy(target);
             if (attackerDies) state.destroy(attacker);
@@ -267,7 +270,7 @@ public final class GameEngine {
         } else if (target.definition().isPermanent()) {
             int damage = effectiveAttack(state, attacker);
             if (attacker.definition().hasKeyword(Keyword.SIEGE)) damage *= 2;
-            target.addDamage(damage);
+            target.addDamage(TerrainRules.reduceDamage(state,target,damage,state.rules().geometry().distance(from,to)>1));
             if (target.damage() >= target.definition().hitPoints()) state.destroy(target);
         } else return ActionResult.rejected("Target cannot be attacked");
         return ActionResult.accepted("Attack resolved");
@@ -289,7 +292,7 @@ public final class GameEngine {
             reacted.add(enemy.instanceId());
             opportunityAttacks++;
             state.recordOpportunityAttack(enemy, card, origin);
-            card.addCombatDamage(effectiveAttack(state, enemy));
+            card.addCombatDamage(TerrainRules.reduceDamage(state,card,effectiveAttack(state,enemy),state.rules().geometry().distance(threat.attackerPosition(),origin)>1));
             if (card.combatDamage() >= card.effectiveDefense()) {
                 state.destroy(card);
                 break;
@@ -298,14 +301,18 @@ public final class GameEngine {
         for (BoardPosition step : path) {
             if (card.zone() != Zone.BATTLEFIELD) break;
             state.board().moveTop(current, step, card.instanceId());
+            BoardPosition previous=current;
             current = step;
             traveled++;
+            card.spendMovement(1);
+            TerrainRules.entered(state,card,previous,step,false);
+            if(card.zone()!=Zone.BATTLEFIELD)break;
             for (OpportunityThreat threat : opportunityThreatsAt(state, card, step, reacted)) {
                 CardInstance enemy = state.card(threat.attackerId()).orElseThrow();
                 reacted.add(enemy.instanceId());
                 opportunityAttacks++;
                 state.recordOpportunityAttack(enemy, card, step);
-                card.addCombatDamage(effectiveAttack(state, enemy));
+                card.addCombatDamage(TerrainRules.reduceDamage(state,card,effectiveAttack(state,enemy),state.rules().geometry().distance(threat.attackerPosition(),step)>1));
                 if (card.combatDamage() >= card.effectiveDefense()) {
                     state.destroy(card);
                     break;
@@ -313,11 +320,10 @@ public final class GameEngine {
             }
             if (card.zone() != Zone.BATTLEFIELD) break;
         }
-        card.spendMovement(traveled);
         state.recordCharacterMoved(card, origin, current, traveled);
         if (card.zone() == Zone.BATTLEFIELD) new CapitalPassiveRules().onMoved(state, card);
         if (card.zone() != Zone.BATTLEFIELD) {
-            return ActionResult.accepted("Movement stopped: Character destroyed by opportunity attack");
+            return ActionResult.accepted("Movement stopped: Character destroyed by an entry effect or opportunity attack");
         }
         return ActionResult.accepted(opportunityAttacks == 0 ? "Character moved"
                 : "Character moved through " + opportunityAttacks + " opportunity attack" + (opportunityAttacks == 1 ? "" : "s"));
@@ -370,7 +376,7 @@ public final class GameEngine {
     }
 
     public int effectiveRange(GameState state, CardInstance card) {
-        return card.definition().range() + (sharpShotActive(state, card) ? 1 : 0);
+        return card.definition().range() + (sharpShotActive(state, card) ? 1 : 0) + TerrainRules.rangeBonus(state,card);
     }
 
     private boolean sharpShotActive(GameState state, CardInstance card) {
@@ -390,7 +396,7 @@ public final class GameEngine {
             return ActionResult.rejected("Only one Land may be played per turn");
         }
         CardInstance card = developableFromHand(state, action.playerId(), action.cardId(), CardType.LAND);
-        if (card == null) return ActionResult.rejected("Land must be in hand and its turn value must be reached");
+        if (card == null) return ActionResult.rejected("Land must be in hand and its turn value must be reached and its gold cost affordable");
         if (!action.destination().isOnPlayerSide(action.playerId()) || !state.board().isEmpty(action.destination()))
             return ActionResult.rejected("Land requires an empty space on owner's plot");
         removeDevelopmentFromHand(state, card);
@@ -404,17 +410,19 @@ public final class GameEngine {
         CardInstance card = state.card(id).orElse(null);
         if (card == null || card.owner() != playerId || card.definition().type() != type
                 || card.zone() != Zone.HAND || !state.player(playerId).hasInHand(id)
-                || card.definition().cost() > state.player(playerId).currentGp()) return null;
+                || card.definition().goldCost() > state.player(playerId).currentGp()) return null;
         return card;
     }
     private CardInstance developableFromHand(GameState state, int playerId, UUID id, CardType type) {
         CardInstance card = state.card(id).orElse(null);
         if (card == null || card.owner() != playerId || card.definition().type() != type
                 || card.zone() != Zone.HAND || !state.player(playerId).hasInHand(id)
-                || state.personalTurnNumber(playerId) < card.definition().cost()) return null;
+                || state.personalTurnNumber(playerId) < card.definition().cost()
+                || state.player(playerId).currentGp() < card.definition().developmentGoldCost()) return null;
         return card;
     }
     private void removeDevelopmentFromHand(GameState state, CardInstance card) {
+        state.spendGp(card.owner(),card.definition().developmentGoldCost(),card.definition().name());
         state.player(card.owner()).removeFromHand(card.instanceId());
     }
     private void payAndRemoveFromHand(GameState state, CardInstance card) {

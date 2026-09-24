@@ -67,7 +67,7 @@ public final class BattlefieldRenderer {
                 .append(" — ").append(playerLabel(card.owner()))
                 .append(" — ").append(d.type()).append(" — ")
                 .append(d.type() == CardType.LAND || d.type() == CardType.STRUCTURE
-                        ? "Turn " + Math.max(1, d.cost()) + " (free)" : d.cost() + " GP");
+                        ? "Turn " + Math.max(1, d.cost()) + " ("+(d.developmentGoldCost()==0?"free":d.developmentGoldCost()+" Gold")+")" : d.cost() + " GP");
         if (d.type() == CardType.CHARACTER) {
             out.append(" — A").append(card.effectiveAttack()).append("/D").append(card.defenseRemaining())
                     .append('/').append(card.effectiveDefense())
@@ -76,7 +76,7 @@ public final class BattlefieldRenderer {
             out.append(" — HP ").append(d.hitPoints());
         }
         if (d.type() == CardType.LAND || d.type() == CardType.STRUCTURE) {
-            out.append(" — +").append(d.gpGeneration()).append(" GP/turn");
+            out.append(" — +").append(d.income()).append(" GP/turn");
             String passive = DevelopmentRules.passiveText(d.developmentPassive());
             if (!passive.isBlank()) out.append(" — ").append(passive);
         }

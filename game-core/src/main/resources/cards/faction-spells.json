@@ -23,7 +23,10 @@
       "rulesText": "A forked bolt overwhelms a vulnerable enemy Character.",
       "description": "A forked bolt overwhelms a vulnerable enemy Character.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "STORM"
+      ]
     },
     {
       "id": "zeus_skybreaker_bolt",
@@ -47,7 +50,10 @@
       "rulesText": "A focused thunder strike tears into hostile infrastructure.",
       "description": "A focused thunder strike tears into hostile infrastructure.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "STORM"
+      ]
     },
     {
       "id": "zeus_windstep_protocol",
@@ -71,7 +77,10 @@
       "rulesText": "Storm code relocates a friendly Character to an empty square.",
       "description": "Storm code relocates a friendly Character to an empty square.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "STORM"
+      ]
     },
     {
       "id": "zeus_stormcharge",
@@ -95,7 +104,10 @@
       "rulesText": "Charged air grants a friendly Character +2 Attack until its controller's next turn.",
       "description": "Charged air grants a friendly Character +2 Attack until its controller's next turn.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "STORM"
+      ]
     },
     {
       "id": "zeus_aegis_of_the_sky",
@@ -119,7 +131,10 @@
       "rulesText": "A storm shield grants a friendly Character +3 Defense until its controller's next turn.",
       "description": "A storm shield grants a friendly Character +3 Defense until its controller's next turn.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "STORM"
+      ]
     },
     {
       "id": "poseidon_crushing_depths",
@@ -143,7 +158,10 @@
       "rulesText": "A pressure wave tests an enemy Character against the deep.",
       "description": "A pressure wave tests an enemy Character against the deep.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TIDAL"
+      ]
     },
     {
       "id": "poseidon_erode_foundation",
@@ -167,7 +185,10 @@
       "rulesText": "Relentless currents grind down an enemy Permanent.",
       "description": "Relentless currents grind down an enemy Permanent.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TIDAL"
+      ]
     },
     {
       "id": "poseidon_restorative_tide",
@@ -191,7 +212,10 @@
       "rulesText": "Mineral-rich water repairs four damage from a friendly Permanent.",
       "description": "Mineral-rich water repairs four damage from a friendly Permanent.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TIDAL"
+      ]
     },
     {
       "id": "poseidon_undertow_recall",
@@ -215,7 +239,10 @@
       "rulesText": "A violent current returns an exposed enemy Character to hand.",
       "description": "A violent current returns an exposed enemy Character to hand.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TIDAL"
+      ]
     },
     {
       "id": "poseidon_tidal_armor",
@@ -239,7 +266,10 @@
       "rulesText": "Living water grants a friendly Character +3 Defense until its controller's next turn.",
       "description": "Living water grants a friendly Character +3 Defense until its controller's next turn.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TIDAL"
+      ]
     },
     {
       "id": "hades_soul_sever",
@@ -263,7 +293,10 @@
       "rulesText": "A black-code blade judges an enemy Character's defenses.",
       "description": "A black-code blade judges an enemy Character's defenses.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NECROMANCY"
+      ]
     },
     {
       "id": "hades_grave_pressure",
@@ -287,7 +320,10 @@
       "rulesText": "The weight of the undercity crushes an enemy Permanent.",
       "description": "The weight of the undercity crushes an enemy Permanent.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NECROMANCY"
+      ]
     },
     {
       "id": "hades_lethes_embrace",
@@ -311,7 +347,10 @@
       "rulesText": "A target forgets the battle and returns to its owner's hand.",
       "description": "A target forgets the battle and returns to its owner's hand.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NECROMANCY"
+      ]
     },
     {
       "id": "hades_deathly_vigor",
@@ -335,7 +374,10 @@
       "rulesText": "Underworld power grants a friendly Character +2 Attack until its controller's next turn.",
       "description": "Underworld power grants a friendly Character +2 Attack until its controller's next turn.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NECROMANCY"
+      ]
     },
     {
       "id": "hades_shroud_of_erebus",
@@ -359,7 +401,10 @@
       "rulesText": "Erebus grants a friendly Character +3 Defense until its controller's next turn.",
       "description": "Erebus grants a friendly Character +3 Defense until its controller's next turn.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "NECROMANCY"
+      ]
     },
     {
       "id": "ares_spear_volley",
@@ -383,7 +428,10 @@
       "rulesText": "A direct barrage punishes lightly defended Characters.",
       "description": "A direct barrage punishes lightly defended Characters.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "WARFARE"
+      ]
     },
     {
       "id": "ares_siege_fury",
@@ -407,7 +455,10 @@
       "rulesText": "Concentrated violence deals five damage to an enemy Permanent.",
       "description": "Concentrated violence deals five damage to an enemy Permanent.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "WARFARE"
+      ]
     },
     {
       "id": "ares_forced_march",
@@ -431,7 +482,10 @@
       "rulesText": "A friendly Character is redeployed into immediate conflict.",
       "description": "A friendly Character is redeployed into immediate conflict.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "WARFARE"
+      ]
     },
     {
       "id": "ares_blood_frenzy",
@@ -455,7 +509,10 @@
       "rulesText": "Battle rage grants a friendly Character +3 Attack until its controller's next turn.",
       "description": "Battle rage grants a friendly Character +3 Attack until its controller's next turn.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "WARFARE"
+      ]
     },
     {
       "id": "ares_defiant_roar",
@@ -479,7 +536,10 @@
       "rulesText": "Defiance grants a friendly Character +2 Defense until its controller's next turn.",
       "description": "Defiance grants a friendly Character +2 Defense until its controller's next turn.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "WARFARE"
+      ]
     },
     {
       "id": "athena_calculated_shot",
@@ -503,7 +563,10 @@
       "rulesText": "A perfect firing solution tests an enemy Character's Defense.",
       "description": "A perfect firing solution tests an enemy Character's Defense.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TACTICS"
+      ]
     },
     {
       "id": "athena_expose_structural_weakness",
@@ -527,7 +590,10 @@
       "rulesText": "Analysis reveals a fault and deals three Permanent damage.",
       "description": "Analysis reveals a fault and deals three Permanent damage.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TACTICS"
+      ]
     },
     {
       "id": "athena_aegis_restoration",
@@ -551,7 +617,10 @@
       "rulesText": "Repair drones remove four damage from a friendly Permanent.",
       "description": "Repair drones remove four damage from a friendly Permanent.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TACTICS"
+      ]
     },
     {
       "id": "athena_tactical_edge",
@@ -575,7 +644,10 @@
       "rulesText": "Perfect timing grants a friendly Character +2 Attack until its controller's next turn.",
       "description": "Perfect timing grants a friendly Character +2 Attack until its controller's next turn.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TACTICS"
+      ]
     },
     {
       "id": "athena_brace_formation",
@@ -599,7 +671,10 @@
       "rulesText": "A prepared formation grants a friendly Character +4 Defense until its controller's next turn.",
       "description": "A prepared formation grants a friendly Character +4 Defense until its controller's next turn.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "TACTICS"
+      ]
     },
     {
       "id": "hephaestus_plasma_cut",
@@ -623,7 +698,10 @@
       "rulesText": "An industrial torch becomes a precise anti-personnel weapon.",
       "description": "An industrial torch becomes a precise anti-personnel weapon.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "ARTIFICE"
+      ]
     },
     {
       "id": "hephaestus_core_meltdown",
@@ -647,7 +725,10 @@
       "rulesText": "A forced overload deals five damage to hostile infrastructure.",
       "description": "A forced overload deals five damage to hostile infrastructure.",
       "rarity": 3,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "ARTIFICE"
+      ]
     },
     {
       "id": "hephaestus_field_repair",
@@ -671,7 +752,10 @@
       "rulesText": "Forge drones remove five damage from a friendly Permanent.",
       "description": "Forge drones remove five damage from a friendly Permanent.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "ARTIFICE"
+      ]
     },
     {
       "id": "hephaestus_overclock",
@@ -695,7 +779,10 @@
       "rulesText": "Unsafe output grants a friendly Character +2 Attack until its controller's next turn.",
       "description": "Unsafe output grants a friendly Character +2 Attack until its controller's next turn.",
       "rarity": 1,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "ARTIFICE"
+      ]
     },
     {
       "id": "hephaestus_reactive_plating",
@@ -719,7 +806,10 @@
       "rulesText": "Smart-metal plating grants a friendly Character +3 Defense until its controller's next turn.",
       "description": "Smart-metal plating grants a friendly Character +3 Defense until its controller's next turn.",
       "rarity": 2,
-      "contentStatus": "PROTOTYPE"
+      "contentStatus": "PROTOTYPE",
+      "archetypes": [
+        "ARTIFICE"
+      ]
     }
   ]
 }

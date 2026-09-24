@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.*;
 
 public final class InfiniteConquestGui extends JFrame {
+    private InitiativeCoinPanel.Skin coinSkin = InitiativeCoinPanel.Skin.OLYMPIAN_GOLD;
     private final JLabel turnLabel = new JLabel();
     private final JLabel humanLabel = new JLabel();
     private final JLabel botLabel = new JLabel();
@@ -88,7 +89,7 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     InfiniteConquestGui(boolean screenshotMode) {
-        super("Infinite Conquest — Hex & Allies 0.2.2");
+        super("Infinite Conquest — Hex & Allies 0.3");
         captureMode=screenshotMode;
         presentationQueue = new PresentationQueue(this::playPresentation);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -178,6 +179,12 @@ public final class InfiniteConquestGui extends JFrame {
 
     void prepareScreenshotScenario(String scenario) {
         interaction.clearSelection();
+        if("terrain-board".equals(scenario)) {
+            BoardPosition high=new BoardPosition(2,0), gun=new BoardPosition(2,4), medic=new BoardPosition(0,1);
+            fixtureCard("zeus_eagles_perch_array",high,0);fixtureCard("athena_owlwatch_tower",high,0);fixtureCard("zeus_cyclone_marksman",high,0);
+            fixtureCard("ares_ballistic_shrine",gun,1);fixtureCard("poseidon_tidal_pump_station",medic,0);
+            boardPanel.inspect(matchFactory.pool().require("athena_owlwatch_tower"));
+        }
         if ("crowded-board".equals(scenario)) {
             List<CardDefinition> characters = matchFactory.pool().cardsForFaction("ZEUS").stream()
                     .filter(card -> card.type() == CardType.CHARACTER).toList();
@@ -228,6 +235,11 @@ public final class InfiniteConquestGui extends JFrame {
         if ("card-destruction".equals(scenario)) {
             previewCardDestruction();
         }
+    }
+
+    private void fixtureCard(String id,BoardPosition position,int owner) {
+        CardInstance card=new CardInstance(UUID.nameUUIDFromBytes((id+position+owner).getBytes(java.nio.charset.StandardCharsets.UTF_8)),matchFactory.pool().require(id),owner,Zone.BATTLEFIELD);
+        state.register(card);state.board().push(position,card.instanceId());
     }
 
     private void saveDebugScreenshot() {
@@ -730,8 +742,10 @@ public final class InfiniteConquestGui extends JFrame {
         addSetupRow(setup,c,0,"YOUR FACTION & DECK",humanIdentity,"OPPONENT",botIdentity);
         addSetupRow(setup,c,1,"YOUR CAPITAL",humanCapitalBox,"BOT CAPITAL",botCapitalBox);
         addSetupRow(setup,c,2,"CAPITAL PASSIVE",humanPassive,"CAPITAL PASSIVE",botPassive);
-        JLabel botControl=new JLabel("Computer opponent");botControl.setForeground(Color.WHITE);
-        addSetupRow(setup,c,3,"PLAY AS",playerOneControl,"CONTROL",botControl);
+        JComboBox<InitiativeCoinPanel.Skin> coinChoice=new JComboBox<>(InitiativeCoinPanel.Skin.values());
+        coinChoice.setSelectedItem(coinSkin);coinChoice.setPreferredSize(new Dimension(380,36));coinChoice.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,16));
+        coinChoice.addActionListener(e->coinSkin=(InitiativeCoinPanel.Skin)coinChoice.getSelectedItem());
+        addSetupRow(setup,c,3,"PLAY AS",playerOneControl,"INITIATIVE COIN",coinChoice);
         JButton editDecks = button("Deck Builder", e -> { openDeckEditor((String) humanFactionBox.getSelectedItem()); previousFaction[0]=null; update.run(); });
         JPanel pages=new JPanel(new CardLayout());pages.setBackground(PANEL);
         JScrollPane settings=new JScrollPane(setup);settings.setBorder(null);settings.getVerticalScrollBar().setUnitIncrement(24);
@@ -784,8 +798,8 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void showCoinFlip(int winner) {
-        InitiativeCoinPanel coin = new InitiativeCoinPanel(winner);
-        coin.setPreferredSize(new Dimension(460, 330));
+        InitiativeCoinPanel coin = new InitiativeCoinPanel(winner,coinSkin);
+        coin.setPreferredSize(new Dimension(460, 410));
         JDialog dialog = new JDialog(this, "Determine First Player", true);
         dialog.add(coin);
         dialog.pack();
@@ -1017,6 +1031,7 @@ public final class InfiniteConquestGui extends JFrame {
             cell.putClientProperty("outline", outline);
             cell.putClientProperty("outlineWidth", outlineWidth);
             cell.putClientProperty("card", null);
+            cell.putClientProperty("height", TerrainRules.height(state,position));
             cell.putClientProperty("badge", intent == null ? "" : intent.label);
             cell.setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED,
                     surface.brighter(), surface.brighter(), surface.darker(), surface.darker()), new CompoundBorder(
@@ -1060,6 +1075,7 @@ public final class InfiniteConquestGui extends JFrame {
                     + (badge == null ? "" : " <b><font color='" + badge.color() + "'>" + html(badge.text()) + "</font></b>")
                     + (intent == null ? "" : " <b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
             cell.setToolTipText("<html><b>" + html(def.name()) + "</b><br>" + stats
+                    + "<br>Height "+TerrainRules.height(state,position)+" · Stack "+stack
                     + (badge == null ? "" : "<br>" + html(badge.text())) + "<br>" + html(keywordLine(def))
                     + (developmentText(def).isBlank() ? "" : "<br>" + html(developmentText(def)))
                     + (abilityLine(def).isBlank() ? "" : "<br>" + html(abilityLine(def)))
@@ -1102,7 +1118,7 @@ public final class InfiniteConquestGui extends JFrame {
                 g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Math.max(9, fontSize - 1)));
                 g.setColor(new Color(5, 12, 20, 205));g.fillRect(0, 0, getWidth(), fontSize + 7);
                 g.setColor(((Integer)getClientProperty("owner"))==0?new Color(130,231,255):new Color(255,157,160));
-                centered(g,"P"+(((Integer)getClientProperty("owner"))+1)+" · ×"+getClientProperty("stack"),fontSize + 2);
+                centered(g,"P"+(((Integer)getClientProperty("owner"))+1)+" · H"+Objects.toString(getClientProperty("height"),"0"),fontSize + 2);
             }else{
                 g.setColor(new Color(182,209,218,100));BoardPosition p=(BoardPosition)getClientProperty("position");
                 g.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,11));centered(g,p.x()+","+p.y(),getHeight()/2);
@@ -1120,7 +1136,7 @@ public final class InfiniteConquestGui extends JFrame {
 
     private JButton auxiliaryHex(BoardPosition position) {
         JButton cell = new BattlefieldCell();
-        cell.putClientProperty("position", position);cell.putClientProperty("outline", PANEL_LIGHT);cell.putClientProperty("outlineWidth",1);
+        cell.putClientProperty("position", position);cell.putClientProperty("height", TerrainRules.height(state,position));cell.putClientProperty("outline", PANEL_LIGHT);cell.putClientProperty("outlineWidth",1);
         cell.putClientProperty("badge", "");cell.setBackground(position.isOnPlayerSide(0)?HUMAN_PLOT:BOT_PLOT);
         state.board().topAt(position).flatMap(state::card).ifPresent(card -> {
             CardDefinition def=card.definition();cell.putClientProperty("card",def);cell.putClientProperty("owner",card.owner());
@@ -1542,13 +1558,13 @@ public final class InfiniteConquestGui extends JFrame {
         }
         if (resolution.command().startsWith("move ") || resolution.command().startsWith("blink ")) {
             String[] parts = resolution.command().split("\\s+");
-            return Set.of(position(parts, 3));
+            return Set.of(resolution.movementDestination());
         }
         if (resolution.command().startsWith("attack ")) {
             String[] parts = resolution.command().split("\\s+");
             BoardPosition from = position(parts, 1);
             BoardPosition target = position(parts, 3);
-            return from.distanceTo(target) <= 1 ? Set.of(from) : Set.of();
+            return state.rules().geometry().distance(from,target) <= 1 ? Set.of(from) : Set.of();
         }
         return Set.of();
     }
@@ -1560,7 +1576,7 @@ public final class InfiniteConquestGui extends JFrame {
         switch (p[0]) {
             case "move", "blink" -> {
                 BoardPosition from = position(p, 1);
-                BoardPosition to = position(p, 3);
+                BoardPosition to = resolution.movementDestination();
                 boolean blink = p[0].equals("blink");
                 badge(to, blink ? "BLINK" : "MOVE", "#71d7ff");
                 PresentationSnapshot.CardVisual moving = before.cards().values().stream()
@@ -1599,7 +1615,7 @@ public final class InfiniteConquestGui extends JFrame {
             case "attack" -> {
                 BoardPosition from = position(p, 1);
                 BoardPosition target = position(p, 3);
-                boolean ranged = from.distanceTo(target) > 1;
+                boolean ranged = state.rules().geometry().distance(from,target) > 1;
                 showTargetResult(target, resolution, ranged ? "RANGED" : "MELEE", ranged ? "#ffb45b" : "#ff7373");
                 PresentationSnapshot.CardVisual originalAttacker = before.cards().values().stream()
                         .filter(value -> Objects.equals(value.position(), from) && value.top())
@@ -1630,16 +1646,6 @@ public final class InfiniteConquestGui extends JFrame {
             }
             default -> { }
         }
-        for (PresentationSnapshot.CardChange change : resolution.changes()) {
-            if (change.change() != PresentationSnapshot.Change.DESTROYED
-                    || change.before() == null || change.before().position() == null) continue;
-            PresentationSnapshot.CardVisual destroyed = change.before();
-            CardDefinition definition = state.card(destroyed.id())
-                    .map(CardInstance::definition).orElse(null);
-            if (definition != null) {
-                combatOverlay.animateDestroyed(definition, destroyed.owner(), destroyed.position());
-            }
-        }
         for (GameEvent event : resolution.events()) {
             if (event.type() == GameEvent.Type.OPPORTUNITY_ATTACK) {
                 String[] detail = event.detail().split("\\s+");
@@ -1659,6 +1665,16 @@ public final class InfiniteConquestGui extends JFrame {
                     }
                 } catch (IllegalArgumentException ignored) { }
             }
+            if(event.type()==GameEvent.Type.TERRAIN_TRIGGERED) {
+                String[] parts=event.detail().split(" ");
+                if(parts.length>=5)try {
+                    String[] xy=parts[4].split(",");BoardPosition target=new BoardPosition(Integer.parseInt(xy[0]),Integer.parseInt(xy[1]));
+                    var source=before.card(UUID.fromString(parts[0]));
+                    boolean attack=parts[2].equals("TURRET");
+                    badge(target,(attack?parts[3]+" DMG":parts[2].replace('_',' ')),attack?"#ff7373":"#78e29a");
+                    combatOverlay.animate(source==null?null:source.position(),target,attack?ATTACK:DEPLOY,false,attack?AnimationStyle.RANGED:AnimationStyle.SPELL);
+                } catch(IllegalArgumentException ignored) { }
+            }
             if (event.type() != GameEvent.Type.EXHAUSTION_DAMAGE) continue;
             try {
                 UUID id = UUID.fromString(event.detail().split("\\s+")[0]);
@@ -1672,6 +1688,15 @@ public final class InfiniteConquestGui extends JFrame {
                 combatOverlay.animate(null, old.position(), new Color(255, 207, 92), true, AnimationStyle.RULES);
                 SoundEffects.play(SoundEffects.Cue.PENALTY);
             } catch (IllegalArgumentException ignored) { }
+        }
+        Set<UUID> deaths=new LinkedHashSet<>();
+        resolution.changes().stream().filter(c->c.change()==PresentationSnapshot.Change.DESTROYED)
+                .map(c->c.before().id()).forEach(deaths::add);
+        resolution.events().stream().filter(e->e.type()==GameEvent.Type.CARD_DESTROYED)
+                .map(e->UUID.fromString(e.detail())).forEach(deaths::add);
+        for(UUID id:deaths) {
+            CardInstance card=state.card(id).orElse(null);BoardPosition position=resolution.destructionPosition(id);
+            if(card!=null && position!=null)combatOverlay.animateDestroyed(card.definition(),card.owner(),position);
         }
     }
 
@@ -1723,6 +1748,7 @@ public final class InfiniteConquestGui extends JFrame {
                 case CAPITAL_PASSIVE_TRIGGERED -> "Capital passive — " + event.detail().replace('_', ' ').toLowerCase(Locale.ROOT);
                 case DEVELOPMENT_PASSIVE_TRIGGERED -> friendlyDevelopmentPassive(event.detail());
                 case CARD_ABILITY_TRIGGERED -> friendlyCardAbility(event.detail());
+                case TERRAIN_TRIGGERED -> friendlyTerrain(event.detail());
                 case OPPORTUNITY_ATTACK -> friendlyOpportunityDetail(event.detail());
                 case GAME_OVER -> "GAME OVER — " + event.detail();
                 default -> null;
@@ -1734,6 +1760,15 @@ public final class InfiniteConquestGui extends JFrame {
             }
             lastSystemEvent = event.sequence();
         }
+    }
+
+    private String friendlyTerrain(String detail) {
+        String[] parts=detail.split(" ");
+        try {
+            String source=state.card(UUID.fromString(parts[0])).orElseThrow().definition().name();
+            String target=state.card(UUID.fromString(parts[1])).orElseThrow().definition().name();
+            return source+" — "+title(parts[2].replace('_',' '))+" "+parts[3]+" → "+target;
+        } catch(RuntimeException error){return detail;}
     }
 
     private String friendlyCardDetail(String detail, String suffix) {
@@ -1878,15 +1913,18 @@ public final class InfiniteConquestGui extends JFrame {
                 + (abilityLine(def).isBlank() ? "" : "<br><br><font color='#9be7ff'>" + html(abilityLine(def)) + "</font>")
                 + (def.type() == CardType.CAPITAL ? "<br><br>" + html(passiveRules.description(def)) : "")
                 + "</div></html>";
-        JLabel information = new JLabel(details, SwingConstants.CENTER);
+        String terrainText=def.keywords().stream().map(k->TerrainRules.describe(def,k)).filter(t->!t.isBlank()).collect(java.util.stream.Collectors.joining("<br><br>"));
+        details=details.replace("</div></html>",(terrainText.isBlank()?"":"<br><br>"+terrainText)+"</div></html>");
+        JEditorPane information = new JEditorPane("text/html",details);
+        information.setEditable(false);information.setOpaque(false);information.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES,true);
         information.setForeground(Color.WHITE);
         information.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
-        information.setVerticalAlignment(SwingConstants.TOP);
+
 
         JPanel body = new JPanel(new BorderLayout(0, 14));
         body.setOpaque(false);
         body.add(art, BorderLayout.NORTH);
-        body.add(information, BorderLayout.CENTER);
+        JScrollPane informationScroll=new JScrollPane(information);informationScroll.setBorder(null);body.add(informationScroll, BorderLayout.CENTER);
         fullCard.add(body, BorderLayout.CENTER);
         fullCard.setPreferredSize(new Dimension(470, 610));
         JOptionPane.showMessageDialog(this, fullCard, def.name(), JOptionPane.PLAIN_MESSAGE);
@@ -2025,7 +2063,7 @@ public final class InfiniteConquestGui extends JFrame {
         if (handExpanded) return cardHtml(def);
         String stats = def.type() == CardType.CHARACTER
                 ? "A " + def.attack() + "  D " + def.defense() + "  M " + def.movement() + "  R " + def.range()
-                : def.isPermanent() ? "HP " + def.hitPoints() + "  •  +" + def.gpGeneration() + " GP/TURN"
+                : def.isPermanent() ? "HP " + def.hitPoints() + "  •  +" + def.income() + " GP/TURN"
                 : compactName(effectLine(def), 30);
         return "<html><font color='#f0bf49'><b>" + html(playRequirement(def)) + "</b></font>"
                 + " &nbsp; " + compactType(def.type())
@@ -2070,19 +2108,20 @@ public final class InfiniteConquestGui extends JFrame {
     private String developmentText(CardDefinition definition) {
         if (definition.type() != CardType.LAND && definition.type() != CardType.STRUCTURE) return "";
         String passive = DevelopmentRules.passiveText(definition.developmentPassive());
-        return "+" + definition.gpGeneration() + " GP/TURN" + (passive.isBlank() ? "" : " • " + passive);
+        return "+" + definition.income() + " GP/TURN" + (passive.isBlank() ? "" : " • " + passive);
     }
 
     private String playRequirement(CardDefinition definition) {
         if (definition.type() == CardType.LAND || definition.type() == CardType.STRUCTURE) {
-            return "TURN " + Math.max(1, definition.cost()) + " • FREE";
+            return "TURN " + Math.max(1, definition.cost()) + " • " + (definition.developmentGoldCost()==0?"FREE":definition.developmentGoldCost()+" GOLD");
         }
         return definition.cost() + " GP";
     }
 
     private String keywordLine(CardDefinition def) {
-        if (def.keywords().isEmpty()) return def.faction();
-        return def.faction() + " • " + def.keywords().stream()
+        String identity=def.faction()+(def.archetypes().isEmpty()?"":" • "+String.join(" / ",def.archetypes()).replace('_',' '));
+        if (def.keywords().isEmpty()) return identity;
+        return identity + " • " + def.keywords().stream()
                 .map(keyword -> title(keyword.name().replace('_', ' ')))
                 .collect(java.util.stream.Collectors.joining(" • "));
     }

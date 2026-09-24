@@ -26,6 +26,8 @@ final class HexBoardPanel extends JPanel {
     }
     @Override protected void paintComponent(Graphics graphics){
         Graphics2D g=(Graphics2D)graphics.create();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g.setPaint(new GradientPaint(0,0,storm?new Color(28,57,77):new Color(42,40,38),getWidth(),getHeight(),new Color(8,14,23)));
         g.fillRect(0,0,getWidth(),getHeight());
         if(storm&&backgroundCard!=null){
@@ -39,9 +41,11 @@ final class HexBoardPanel extends JPanel {
         double h=Math.max(1,Math.min((getHeight()-22)/4.5,(getWidth()-22)/5.485));
         int margin=(int)((getWidth()-h*2/Math.sqrt(3)*4.75)/2);
         if(showContext&&margin>230){
-            g.setFont(new Font(Font.SERIF,Font.PLAIN,26));g.setColor(new Color(232,216,176));g.drawString(storm?"Stormfront":"Obsidian Table",30,85);
-            g.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,15));g.setColor(new Color(209,222,230));
-            g.drawString("One field. Two strongholds.",30,120);g.drawString("Every hex is a decision.",30,145);
+            g.setFont(new Font("Palatino Linotype",Font.BOLD,28));g.setColor(new Color(232,216,176));g.drawString(storm?"Stormfront":"Obsidian Table",30,85);
+            g.setFont(new Font("Georgia",Font.ITALIC,16));g.setColor(new Color(209,222,230));
+            g.setColor(new Color(210,174,100,170));g.drawLine(30,98,Math.min(margin-30,225),98);
+            g.setColor(new Color(209,222,230));g.drawString("Claim the heights.",30,127);g.drawString("Command the field.",30,151);
+            g.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,13));drawWrapped(g,"H = stack height. Structures block lower sightlines; units above them can see farther over cover.",30,192,margin-58,19);
             int x=getWidth()-margin+24,width=margin-48;
             if(inspectedCard!=null){
                 g.drawImage(CardArtFactory.iconFor(inspectedCard,200,100).getImage(),x,45,Math.min(200,width),90,null);

@@ -10,6 +10,8 @@ import com.infiniteconquest.core.CardAbility;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Map;
+import com.infiniteconquest.core.KeywordValue;
 
 public record CardData(
         String id,
@@ -30,7 +32,10 @@ public record CardData(
         ContentStatus contentStatus,
         Integer gpGeneration,
         DevelopmentPassive developmentPassive,
-        List<CardAbility> abilities
+        List<CardAbility> abilities,
+        Map<Keyword, KeywordValue> keywordValues,
+        Set<String> archetypes,
+        int developmentGoldCost
 ) {
     public CardData {
         if (id == null || !id.matches("[a-z0-9]+(?:_[a-z0-9]+)*")) {
@@ -60,6 +65,6 @@ public record CardData(
                 hitPoints, Set.copyOf(keywords), effects,
                 gpGeneration == null ? DevelopmentRules.standardGp(type, cost) : gpGeneration,
                 developmentPassive == null ? DevelopmentPassive.NONE : developmentPassive,
-                abilities);
+                abilities, keywordValues, archetypes, developmentGoldCost);
     }
 }

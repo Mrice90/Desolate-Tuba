@@ -96,7 +96,7 @@ class FactionCardSetTest {
             var secondary = FactionDecks.SECONDARY_KEYWORDS.get(faction);
             assertTrue(deck.stream().anyMatch(card -> card.hasKeyword(primary)), faction + " primary keyword");
             assertTrue(deck.stream().anyMatch(card -> card.hasKeyword(secondary)), faction + " secondary keyword");
-            assertTrue(deck.stream().flatMap(card -> card.keywords().stream())
+            assertTrue(deck.stream().filter(card -> card.type()==CardType.CHARACTER).flatMap(card -> card.keywords().stream())
                     .allMatch(keyword -> keyword == primary || keyword == secondary), faction + " off-theme keyword");
             assertTrue(deck.stream().anyMatch(card -> !card.abilities().isEmpty()), faction + " triggered abilities");
         }

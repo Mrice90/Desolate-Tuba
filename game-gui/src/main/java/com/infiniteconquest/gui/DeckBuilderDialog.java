@@ -105,10 +105,10 @@ final class DeckBuilderDialog extends JDialog {
             availableModel.clear();pool.cards().stream().filter(c->DeckBuild.eligible(c,primary(),ally())).sorted(Comparator.comparing(CardDefinition::type).thenComparing(CardDefinition::name)).forEach(availableModel::addElement);
             JPanel lists=new JPanel(new GridLayout(1,2,12,0));lists.add(listPanel("Available cards",available));lists.add(listPanel("Your deck",deck));
             JPanel collection=new JPanel(new BorderLayout(8,8));collection.add(lists);
-            JTextField search=new JTextField();search.setToolTipText("Search name, faction, type or keyword");
+            JTextField search=new JTextField();search.setToolTipText("Search name, faction, type, keyword or archetype");
             JPanel searchPanel=new JPanel(new BorderLayout(8,0));searchPanel.add(new JLabel("Search cards"),BorderLayout.WEST);searchPanel.add(search);collection.add(searchPanel,BorderLayout.NORTH);
             search.getDocument().addDocumentListener(new javax.swing.event.DocumentListener(){
-                private void filter(){String query=search.getText().toLowerCase(Locale.ROOT);availableModel.clear();pool.cards().stream().filter(c->DeckBuild.eligible(c,primary(),ally())).filter(c->(c.name()+" "+c.faction()+" "+c.type()+" "+c.keywords()).toLowerCase(Locale.ROOT).contains(query)).sorted(Comparator.comparing(CardDefinition::type).thenComparing(CardDefinition::name)).forEach(availableModel::addElement);}
+                private void filter(){String query=search.getText().toLowerCase(Locale.ROOT);availableModel.clear();pool.cards().stream().filter(c->DeckBuild.eligible(c,primary(),ally())).filter(c->(c.name()+" "+c.faction()+" "+c.type()+" "+c.keywords()+" "+c.archetypes()).toLowerCase(Locale.ROOT).contains(query)).sorted(Comparator.comparing(CardDefinition::type).thenComparing(CardDefinition::name)).forEach(availableModel::addElement);}
                 public void insertUpdate(javax.swing.event.DocumentEvent e){filter();}public void removeUpdate(javax.swing.event.DocumentEvent e){filter();}public void changedUpdate(javax.swing.event.DocumentEvent e){filter();}
             });
             JPanel buttons=new JPanel();JButton add=new JButton("Add copy →"),remove=new JButton("Remove copy"),starter=new JButton("Use faction starter");buttons.add(add);buttons.add(remove);buttons.add(starter);collection.add(buttons,BorderLayout.SOUTH);
@@ -125,8 +125,9 @@ final class DeckBuilderDialog extends JDialog {
     private void inspect(CardDefinition c){inspection.setText(details(c));inspection.setCaretPosition(0);}
     static String details(CardDefinition c){
         StringBuilder text=new StringBuilder("<html><body style='font-family:sans-serif;font-size:14pt;color:#edf0f1;background:#1c2835;padding:12px'><h2>"+escape(c.name())+"</h2><p>"+c.faction()+" · "+c.type()+" · "+cost(c)+"</p>");
+        if(!c.archetypes().isEmpty())text.append("<p>Archetypes: ").append(escape(String.join(" · ",c.archetypes()).replace('_',' '))).append("</p>");
         if(c.type()==CardType.CHARACTER)text.append("<p>Attack ").append(c.attack()).append(" · Defense ").append(c.defense()).append("<br>Move ").append(c.movement()).append(" · Range ").append(c.range()).append("</p>");
-        if(c.isPermanent())text.append("<p>HP ").append(c.hitPoints()).append(" · +").append(c.type()==CardType.CAPITAL?1:c.gpGeneration()).append(" GP/turn</p>");
+        if(c.isPermanent())text.append("<p>HP ").append(c.hitPoints()).append(" · +").append(c.type()==CardType.CAPITAL?1:c.income()).append(" GP/turn</p>");
         for(var keyword:c.keywords())text.append("<p><b>").append(keyword.name().replace('_',' ')).append("</b><br>").append(switch(keyword){
             case BLINK -> "Once per personal turn, move to any empty hex without spending normal movement.";
             case MOLE -> "May deploy beneath a controlled Land using Burrow.";
@@ -134,6 +135,7 @@ final class DeckBuilderDialog extends JDialog {
             case FAST_STRIKE -> "Prevents retaliation when this attack strictly exceeds the defender's Defense.";
             case SIEGE -> "Deals double attack damage to Lands, Structures and Capitals.";
             case SHARP_SHOT -> "Gains +1 Attack and +1 Range on top of a friendly Structure or Capital.";
+            default -> TerrainRules.describe(c,keyword);
         }).append("</p>");
         if(c.type()==CardType.CAPITAL)text.append("<h3>Capital passive</h3><p>").append(escape(new CapitalPassiveRules().description(c))).append("</p>");
         for(SpellEffect e:c.effects())text.append("<p>").append(e.type().name().replace('_',' ')).append(" ").append(e.amount()).append(" — ").append(e.target()).append("</p>");
@@ -151,7 +153,7 @@ final class DeckBuilderDialog extends JDialog {
         String passive=DevelopmentRules.passiveText(c.developmentPassive());if(!passive.isBlank())text.append("<p>").append(escape(passive)).append("</p>");
         return text.append("</body></html>").toString();
     }
-    private static String cost(CardDefinition c){return c.type()==CardType.LAND||c.type()==CardType.STRUCTURE?"Turn "+Math.max(1,c.cost())+" · free":c.cost()+" GP";}
+    private static String cost(CardDefinition c){return c.type()==CardType.LAND||c.type()==CardType.STRUCTURE?"Turn "+Math.max(1,c.cost())+" · "+(c.developmentGoldCost()==0?"free":c.developmentGoldCost()+" Gold"):c.cost()+" GP";}
     private void showCode(String code){JTextArea text=new JTextArea(code,8,55);text.setLineWrap(true);text.setWrapStyleWord(false);text.setEditable(false);JPanel panel=new JPanel(new BorderLayout(8,8));panel.add(new JScrollPane(text));JButton copy=new JButton("Copy deck code");copy.addActionListener(e->{try{Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(code),null);copy.setText("Copied");}catch(IllegalStateException ex){text.selectAll();text.requestFocusInWindow();}});panel.add(copy,BorderLayout.SOUTH);JOptionPane.showMessageDialog(this,panel,"Share this complete deck code",JOptionPane.PLAIN_MESSAGE);}
     private void importDeck(){JTextArea input=new JTextArea(8,55);input.setLineWrap(true);if(JOptionPane.showConfirmDialog(this,new JScrollPane(input),"Paste deck code",JOptionPane.OK_CANCEL_OPTION)!=JOptionPane.OK_OPTION)return;try{
         DeckBuild imported=store.importCode(input.getText());JTextArea preview=new JTextArea(imported.primaryFaction()+" + "+Objects.toString(imported.allyFaction(),"No ally")+"\n"+imported.capital().name()+"\n\n"+summary(imported.cards())+"\nReplace the current draft?",18,50);preview.setEditable(false);

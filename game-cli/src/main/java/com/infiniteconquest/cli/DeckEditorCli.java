@@ -90,7 +90,7 @@ public final class DeckEditorCli {
             out.append(card.id()).append(" | ").append(card.name()).append(" | ")
                     .append(card.faction()).append(" | ").append(card.type())
                     .append(" | ").append(card.type() == CardType.LAND || card.type() == CardType.STRUCTURE
-                            ? "Turn " + Math.max(1, card.cost()) + " (free), +" + card.gpGeneration() + " GP/turn"
+                            ? "Turn " + Math.max(1, card.cost()) + " ("+(card.developmentGoldCost()==0?"free":card.developmentGoldCost()+" Gold")+"), +" + card.income() + " GP/turn"
                             : card.cost() + " GP");
             if (!card.keywords().isEmpty()) out.append(" | ").append(card.keywords());
             out.append(System.lineSeparator());

@@ -107,6 +107,34 @@ final class PresentationSnapshot {
         return new PresentationSnapshot(command, before, after, List.of());
     }
 
+    BoardPosition movementDestination() {
+        String[] parts=command.split(" ");
+        BoardPosition from=new BoardPosition(Integer.parseInt(parts[1]),Integer.parseInt(parts[2]));
+        BoardPosition requested=new BoardPosition(Integer.parseInt(parts[3]),Integer.parseInt(parts[4]));
+        CardVisual mover=before.topAt(from);
+        if(mover==null)return requested;
+        CardVisual current=after.card(mover.id());
+        if(current!=null && current.position()!=null)return current.position();
+        BoardPosition stopped=destructionPosition(mover.id());
+        return stopped==null?requested:stopped;
+    }
+
+    BoardPosition destructionPosition(UUID id) {
+        CardVisual old=before.card(id);
+        BoardPosition position=old==null?null:old.position();
+        for(GameEvent event:events) {
+            String[] parts=event.detail().split(" ");
+            try {
+                boolean terrain=event.type()==GameEvent.Type.TERRAIN_TRIGGERED && parts.length>=5 && parts[1].equals(id.toString());
+                boolean opportunity=event.type()==GameEvent.Type.OPPORTUNITY_ATTACK && parts.length>=5 && parts[2].equals(id.toString());
+                if(terrain || opportunity) {
+                    String[] xy=parts[4].split(",");position=new BoardPosition(Integer.parseInt(xy[0]),Integer.parseInt(xy[1]));
+                }
+            } catch(IllegalArgumentException ignored) { }
+        }
+        return position;
+    }
+
     private static List<CardChange> classify(Frame before, Frame after) {
         LinkedHashSet<UUID> ids = new LinkedHashSet<>(before.cards().keySet());
         ids.addAll(after.cards().keySet());

@@ -18,8 +18,8 @@ public final class ActionHints {
             if (!state.canPlayDevelopment(player, card.definition().type())) continue;
             boolean development = card.definition().type() == CardType.LAND
                     || card.definition().type() == CardType.STRUCTURE;
-            if (development ? card.definition().cost() > state.personalTurnNumber(player)
-                    : card.definition().cost() > state.player(player).currentGp()) continue;
+            if ((development && card.definition().cost() > state.personalTurnNumber(player))
+                    || card.definition().goldCost() > state.player(player).currentGp()) continue;
             for (BoardPosition position : state.board().positions()) {
                 if (card.definition().type() == CardType.LAND
                         && position.isOnPlayerSide(player) && state.board().isEmpty(position)) {

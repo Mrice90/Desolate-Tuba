@@ -86,5 +86,9 @@ public final class CardInstance {
         defenseBonus = 0;
         tapped = false;
     }
+    public void healCombatDamage(int amount) {
+        if(amount<0)throw new IllegalArgumentException("Healing cannot be negative");
+        combatDamage=Math.max(0,combatDamage-amount);
+    }
     public void clearCombatDamage() { combatDamage = 0; }
 }
