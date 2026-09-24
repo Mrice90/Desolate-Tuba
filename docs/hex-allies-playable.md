@@ -1,6 +1,12 @@
-# Hex & Allies playable desktop alpha (0.2.1)
+# Hex & Allies playable desktop alpha (0.2.2)
 
-The approved browser concept now has a playable desktop implementation. Run `gradle :game-gui:run`, or extract the desktop distribution and run `bin/game-gui.bat` on Windows with Java 17 installed. The window title includes **Hex & Allies 0.2.1** so it can be distinguished from older builds.
+The approved browser concept now has a playable desktop implementation. Run `gradle :game-gui:run`, or extract the desktop distribution and run `bin/game-gui.bat` on Windows with Java 17 installed. The window title includes **Hex & Allies 0.2.2** so it can be distinguished from older builds.
+
+## Animation and hex readability in 0.2.2
+
+The initiative coin uses elapsed time at a 16 ms repaint cadence, with a slowing spin and a stable final face for either winner. Automated players wait for complete presentations, including reactions, and leave a short settling beat before making another decision. This prevents the live board from advancing ahead of its animation queue. Match results also wait for the final presentation.
+
+Occupied hexes reserve consistent rows for owner/stack, name, combat stats and a short status. Text is measured against the sloped edges and ellipsized when necessary; hover tooltips retain the full name, stats and action outcome, and right-click inspection retains complete rules. The screenshot review captures both coin outcomes and verifies during ten seconds of real bot playback that the state remains unchanged throughout each active presentation.
 
 ## Desktop polish in 0.2.1
 

@@ -88,7 +88,7 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     InfiniteConquestGui(boolean screenshotMode) {
-        super("Infinite Conquest — Hex & Allies 0.2.1");
+        super("Infinite Conquest — Hex & Allies 0.2.2");
         captureMode=screenshotMode;
         presentationQueue = new PresentationQueue(this::playPresentation);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -170,6 +170,12 @@ public final class InfiniteConquestGui extends JFrame {
         }
     }
 
+    void beginAutomatedCapture() { playerOneBot = true; runBotTurn(); }
+    PresentationSnapshot captureActivePresentation() { return presentationQueue.active(); }
+    String captureStateFingerprint() {
+        return state.turnNumber()+":"+state.activePlayer()+":"+state.events().size()+":"+PresentationSnapshot.capture(state).cards();
+    }
+
     void prepareScreenshotScenario(String scenario) {
         interaction.clearSelection();
         if ("crowded-board".equals(scenario)) {
@@ -184,6 +190,10 @@ public final class InfiniteConquestGui extends JFrame {
                     state.register(card);
                     state.board().push(position, card.instanceId());
                 }
+            }
+            int badgeIndex = 0;
+            for (BoardPosition position : state.board().positions()) {
+                if (badgeIndex++ % 4 == 0) effectBadges.put(position, new EffectBadge("RETALIATION • DESTROYED", "#ff7373"));
             }
         }
         if ("selected-hand".equals(scenario)) {
@@ -774,66 +784,22 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void showCoinFlip(int winner) {
-        CoinFlipPanel coin = new CoinFlipPanel(winner);
-        coin.setPreferredSize(new Dimension(430, 310));
+        InitiativeCoinPanel coin = new InitiativeCoinPanel(winner);
+        coin.setPreferredSize(new Dimension(460, 330));
         JDialog dialog = new JDialog(this, "Determine First Player", true);
-        dialog.getContentPane().setBackground(PANEL);
         dialog.add(coin);
         dialog.pack();
         dialog.setLocationRelativeTo(this);
-        final int[] frame = {0};
-        javax.swing.Timer animation = new javax.swing.Timer(75, e -> {
-            frame[0]++;
-            coin.setFrame(frame[0]);
-            if (frame[0] >= 28) {
-                ((javax.swing.Timer) e.getSource()).stop();
-                javax.swing.Timer hold = new javax.swing.Timer(850, ignored -> dialog.dispose());
-                hold.setRepeats(false); hold.start();
-            }
+        long started = System.nanoTime();
+        javax.swing.Timer animation = new javax.swing.Timer(16, e -> {
+            long elapsed = System.nanoTime() - started;
+            coin.setProgress((double) elapsed / InitiativeCoinPanel.DURATION_NANOS);
+            if (elapsed >= InitiativeCoinPanel.DURATION_NANOS + 950_000_000L) dialog.dispose();
         });
+        animation.setCoalesce(true);
         animation.start();
-        dialog.setVisible(true);
-    }
-
-    private final class CoinFlipPanel extends JPanel {
-        private final int winner;
-        private int frame;
-
-        CoinFlipPanel(int winner) { this.winner = winner; setOpaque(false); }
-        void setFrame(int value) { frame = value; repaint(); }
-
-        @Override protected void paintComponent(Graphics graphics) {
-            super.paintComponent(graphics);
-            Graphics2D g = (Graphics2D) graphics.create();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            boolean settled = frame >= 24;
-            int face = settled ? winner : (frame / 3) % 2;
-            double squash = settled ? 1.0 : Math.max(.10, Math.abs(Math.cos(frame * Math.PI / 6.0)));
-            int diameter = 150;
-            int coinWidth = Math.max(15, (int) (diameter * squash));
-            int x = (getWidth() - coinWidth) / 2;
-            int y = 38 + (settled ? 0 : (int) (18 * Math.abs(Math.sin(frame * Math.PI / 6.0))));
-            g.setPaint(new GradientPaint(x, y, new Color(255, 230, 132), x + coinWidth, y + diameter,
-                    new Color(170, 105, 27)));
-            g.fillOval(x, y, coinWidth, diameter);
-            g.setColor(new Color(255, 244, 184));
-            g.setStroke(new BasicStroke(5f));
-            g.drawOval(x + 4, y + 4, Math.max(7, coinWidth - 8), diameter - 8);
-            if (coinWidth > 70) {
-                g.setFont(new Font(Font.SERIF, Font.BOLD, 58));
-                String symbol = face == 0 ? "I" : "II";
-                FontMetrics metrics = g.getFontMetrics();
-                g.setColor(new Color(92, 55, 18));
-                g.drawString(symbol, getWidth() / 2 - metrics.stringWidth(symbol) / 2,
-                        y + diameter / 2 + metrics.getAscent() / 3);
-            }
-            g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, settled ? 25 : 20));
-            String caption = settled ? "PLAYER " + (winner + 1) + " STARTS" : "FLIPPING FOR INITIATIVE";
-            FontMetrics captionMetrics = g.getFontMetrics();
-            g.setColor(settled ? GOLD : Color.WHITE);
-            g.drawString(caption, (getWidth() - captionMetrics.stringWidth(caption)) / 2, 245);
-            g.dispose();
-        }
+        try { dialog.setVisible(true); }
+        finally { animation.stop(); dialog.dispose(); }
     }
 
     private void addSetupRow(JPanel panel, GridBagConstraints c, int row,
@@ -941,11 +907,17 @@ public final class InfiniteConquestGui extends JFrame {
     }
 
     private void runBotTurn() {
+        if (botRunning) return;
+        var match = state;
+        BotPresentationPacer pacer = new BotPresentationPacer();
+        boolean[] reactionOffered = {false};
         botRunning = true;
         interaction.beginBotTurn();
         refresh();
-        javax.swing.Timer timer = new javax.swing.Timer(380, null);
+        javax.swing.Timer timer = new javax.swing.Timer(60, null);
         timer.addActionListener(e -> {
+            if (state != match || !isDisplayable()) { timer.stop(); return; }
+            if (!pacer.ready(System.nanoTime(), presentationQueue.isPlaying())) return;
             if (state.phase() == Phase.GAME_OVER || !isAutomatedPlayer(state.activePlayer())) {
                 timer.stop();
                 botRunning = false;
@@ -955,10 +927,16 @@ public final class InfiniteConquestGui extends JFrame {
                 return;
             }
             int active = state.activePlayer();
-            offerReaction(active);
+            if (!reactionOffered[0]) {
+                reactionOffered[0] = true;
+                offerReaction(active);
+                if (presentationQueue.isPlaying()) return;
+            }
             if (state.phase() == Phase.GAME_OVER || state.activePlayer() != active) return;
+            reactionOffered[0] = false;
             PresentationSnapshot.Frame before = PresentationSnapshot.capture(state);
             BotPlayer.Decision decision = bot.takeNextAction(state, commands, active);
+            pacer.acted(System.nanoTime());
             showResolution(PresentationSnapshot.between(decision.command(), before, state));
             addHistory(active == 0 ? "Bot 1" : "Bot 2", describe(decision.command()));
             message((active == 0 ? "Bot 1: " : "Bot 2: ") + describe(decision.command()) + " — " + decision.result());
@@ -1019,7 +997,7 @@ public final class InfiniteConquestGui extends JFrame {
         refreshBoard();
         refreshHand();
         refreshActions();
-        if (state.phase() == Phase.GAME_OVER) showWinner();
+        if (state.phase() == Phase.GAME_OVER && !presentationQueue.isPlaying()) showWinner();
     }
 
     private void refreshBoard() {
@@ -1081,7 +1059,8 @@ public final class InfiniteConquestGui extends JFrame {
                     + "<br><font size='-2'>" + stats + "</font>"
                     + (badge == null ? "" : " <b><font color='" + badge.color() + "'>" + html(badge.text()) + "</font></b>")
                     + (intent == null ? "" : " <b><font color='" + intent.hex + "'>" + intent.label + "</font></b>") + "</html>");
-            cell.setToolTipText("<html><b>" + html(def.name()) + "</b><br>" + html(keywordLine(def))
+            cell.setToolTipText("<html><b>" + html(def.name()) + "</b><br>" + stats
+                    + (badge == null ? "" : "<br>" + html(badge.text())) + "<br>" + html(keywordLine(def))
                     + (developmentText(def).isBlank() ? "" : "<br>" + html(developmentText(def)))
                     + (abilityLine(def).isBlank() ? "" : "<br>" + html(abilityLine(def)))
                     + "<br>Click a highlighted cell or drag; right-click to inspect stack.</html>");
@@ -1113,21 +1092,30 @@ public final class InfiniteConquestGui extends JFrame {
             CardDefinition card=(CardDefinition)getClientProperty("card");
             if(card!=null){
                 Image image=CardArtFactory.iconFor(card,160,140).getImage();g.drawImage(image,0,0,getWidth(),getHeight(),null);
-                g.setColor(new Color(5,12,20,210));g.fillRect(0,getHeight()/2,getWidth(),getHeight()/2);
-                g.setColor(Color.WHITE);g.setFont(new Font(Font.SANS_SERIF,Font.BOLD,Math.max(9,Math.min(13,getHeight()/7))));
-                String name=card.name();int limit=Math.max(7,getWidth()/7);if(name.length()>limit)name=name.substring(0,limit-1)+"…";
-                centered(g,name,getHeight()/2+13);centered(g,(String)getClientProperty("stats"),getHeight()/2+27);
+                g.setColor(new Color(5,12,20,210));g.fillRect(0,(int)(getHeight()*.43),getWidth(),getHeight());
+                int fontSize = Math.max(10, Math.min(14, getHeight() / 8));
+                g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontSize));
+                g.setColor(Color.WHITE);
+                centered(g, card.name(), (int)(getHeight() * .59));
+                g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, fontSize));
+                centered(g, (String)getClientProperty("stats"), (int)(getHeight() * .75));
+                g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Math.max(9, fontSize - 1)));
+                g.setColor(new Color(5, 12, 20, 205));g.fillRect(0, 0, getWidth(), fontSize + 7);
                 g.setColor(((Integer)getClientProperty("owner"))==0?new Color(130,231,255):new Color(255,157,160));
-                centered(g,"P"+(((Integer)getClientProperty("owner"))+1)+" · ×"+getClientProperty("stack"),15);
+                centered(g,"P"+(((Integer)getClientProperty("owner"))+1)+" · ×"+getClientProperty("stack"),fontSize + 2);
             }else{
                 g.setColor(new Color(182,209,218,100));BoardPosition p=(BoardPosition)getClientProperty("position");
                 g.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,11));centered(g,p.x()+","+p.y(),getHeight()/2);
             }
-            String badge=(String)getClientProperty("badge");if(badge!=null&&!badge.isEmpty()){g.setColor(new Color(252,226,137));centered(g,badge,getHeight()-10);}
+            String badge=(String)getClientProperty("badge");if(badge!=null&&!badge.isEmpty()){g.setFont(new Font(Font.SANS_SERIF,Font.BOLD,Math.max(9,Math.min(11,getHeight()/10))));g.setColor(new Color(252,226,137));centered(g,HexText.status(badge),(int)(getHeight()*.9));}
             g.setClip(null);g.setStroke(new BasicStroke(isFocusOwner()?3:((Number)getClientProperty("outlineWidth")).floatValue()));
             g.setColor(isFocusOwner()?Color.WHITE:(Color)getClientProperty("outline"));g.draw(hex);g.dispose();
         }
-        private void centered(Graphics2D g,String text,int y){g.drawString(text,(getWidth()-g.getFontMetrics().stringWidth(text))/2,y);}
+        private void centered(Graphics2D g,String text,int y){
+            FontMetrics metrics = g.getFontMetrics();
+            String fitted = HexText.fit(text, metrics, HexText.lineWidth(getWidth(),getHeight(),y-metrics.getAscent(),y+metrics.getDescent()));
+            g.drawString(fitted,(getWidth()-metrics.stringWidth(fitted))/2,y);
+        }
     }
 
     private JButton auxiliaryHex(BoardPosition position) {

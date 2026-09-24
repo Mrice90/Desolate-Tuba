@@ -33,7 +33,61 @@ public final class GuiScreenshotHarness {
                 for (int step=0;step<4;step++) new DeckBuilderDialog(gui,factory.pool(),factory.capitals(),build).captureForReview(step,outputDirectory.resolve("deck-builder-step-"+step+".png"));
             } finally { gui.dispose(); }
         });
+        SwingUtilities.invokeAndWait(() -> {
+            for(int winner=0;winner<2;winner++) {
+                InitiativeCoinPanel coin = new InitiativeCoinPanel(winner);
+                coin.setSize(460,330);
+                for(int frame=0;frame<=8;frame++) {
+                    coin.setProgress(frame/8.0);
+                    var image = new java.awt.image.BufferedImage(460,330,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+                    var graphics=image.createGraphics();coin.paint(graphics);graphics.dispose();
+                    try { javax.imageio.ImageIO.write(image,"png",outputDirectory.resolve("coin-player-"+(winner+1)+"-frame-"+frame+".png").toFile()); }
+                    catch(java.io.IOException e) { throw new IllegalStateException(e); }
+                }
+            }
+        });
+        verifyAutomatedPlayback(outputDirectory);
         System.exit(0);
+    }
+
+    private static void verifyAutomatedPlayback(Path outputDirectory) throws Exception {
+        CountDownLatch finished = new CountDownLatch(1);
+        var failure = new java.util.concurrent.atomic.AtomicReference<Throwable>();
+        SwingUtilities.invokeAndWait(() -> {
+            InfiniteConquestGui gui = new InfiniteConquestGui(true);
+            prepare(gui, "opening-board");
+            gui.prepareCaptureSize(1280,650,true);
+            gui.beginAutomatedCapture();
+            long started = System.nanoTime();
+            PresentationSnapshot[] previous = {null};
+            String[] fingerprint = {""};
+            int[] samples = {0};
+            int[] actions = {0};
+            Timer monitor = new Timer(16, event -> {
+                try {
+                    var active = gui.captureActivePresentation();
+                    String current = gui.captureStateFingerprint();
+                    if(active != null) {
+                        samples[0]++;
+                        if(active == previous[0] && !current.equals(fingerprint[0]))
+                            throw new IllegalStateException("Bot changed game state before the active presentation completed");
+                        if(active != previous[0]) actions[0]++;
+                    }
+                    previous[0] = active; fingerprint[0] = current;
+                    if (System.nanoTime()-started > 10_000_000_000L) {
+                        if(samples[0]<20 || actions[0]<4) throw new IllegalStateException("Bot review did not exercise enough animated actions");
+                        gui.prepareCaptureSize(1280,650,true);
+                        gui.captureScreenshot(outputDirectory.resolve("bot-playback.png"));
+                        ((Timer)event.getSource()).stop();gui.dispose();finished.countDown();
+                    }
+                } catch(Throwable error) {
+                    failure.set(error);((Timer)event.getSource()).stop();gui.dispose();finished.countDown();
+                }
+            });
+            monitor.start();
+        });
+        if(!finished.await(20,TimeUnit.SECONDS))throw new IllegalStateException("Bot playback review timed out");
+        if(failure.get()!=null)throw new IllegalStateException("Bot playback review failed",failure.get());
     }
 
     private static void capture(Path outputDirectory, String scenario, int width, int height) {
